@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/stanciudrg/restaurant-page/issues"
   },
-  "homepage": "https://github.com/stanciudrg/restaurant-page#readme"
+  "homepage": "https://github.com/stanciudrg/restaurant-page#readme",
+  "devDependencies": {
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
 }
