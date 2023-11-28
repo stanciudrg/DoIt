@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/stanciudrg/restaurant-page#readme",
   "devDependencies": {
+    "css-minimizer-webpack-plugin": "^5.0.1",
+    "html-webpack-plugin": "^5.5.3",
+    "mini-css-extract-plugin": "^2.7.6",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
-    "html-webpack-plugin": "^5.5.3"
+    "webpack-cli": "^5.1.4"
   }
 }
