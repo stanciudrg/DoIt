@@ -18,6 +18,7 @@
   "homepage": "https://github.com/stanciudrg/restaurant-page#readme",
   "devDependencies": {
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "html-webpack-plugin": "^5.5.3"
   }
 }
