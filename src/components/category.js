@@ -55,8 +55,37 @@ export const devCategoryProto = {
     getName() { return this.name },
     setSortingMethod(newMethod) { this.sortingMethod = newMethod },
     getCurrentSortingMethod() { return this.sortingMethod },
+
+    // 1. Gets the current sortingMethod property of the Category (defined by the Controller)
+    // 2. Uses the sortingMethod property name to access the property of the sortingMethods object
+    // 3. The property on the sortingMethods object refers to a function, therefore it calls it.
+    // 4. The function returns a sorting function, which is passed to the sort() array method.
+    // 5. The sort array method is called on the 'todos' array
+    // 6. The updateIndexOfTodos function is called to update the index of each todo
+    sort() {
+
+        this.todos.sort(sortingMethods[this.sortingMethod]())
+        this.updateIndexOfTodos()
+
+    },
+
     setFilterMethod(newMethod) { this.filterMethod = newMethod },
     getCurrentFilterMethod() { return this.filterMethod },
+
+    // 1. Goes through the todos of the Category and resets their filteredOut property & resets the filteredOutTodos array
+    // 2. Goes through similar steps as the ones described for the sort() method (step 1 to step 4)
+    // 3. Stores the filtered todos in the filteredOutTodos array and then sets the property
+    // of all filtered todos to 'filteredOut'
+    // 4. The updateIndexOfTodos function is called to update their indexes
+    filter() {
+
+        this.todos.forEach(todo => todo.set('filteredOut', false));
+        this.filteredOutTodos = [];
+        this.filteredOutTodos = this.todos.filter(filterMethods[this.filterMethod]());
+        this.filteredOutTodos.forEach(todo => todo.set('filteredOut', true));
+
+    },
+
     updateIndexOfTodos() { this.todos.forEach(todo => todo.set('index', (this.todos.indexOf(todo)))) },
 
 }
