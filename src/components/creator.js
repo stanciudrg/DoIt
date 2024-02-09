@@ -13,3 +13,38 @@ export function createElementWithID(type, id) {
     return element;
 
 }
+
+function createNamedButton(name, svg, ID) {
+
+    const button = createElementWithClass('button', 'named-button');
+
+    if (ID) button.id = ID;
+
+    if (svg) {
+
+        const icon = createElementWithClass('span', 'icon')
+        icon.innerHTML = svg;
+        button.appendChild(icon);
+
+        const buttonName = createElementWithClass('span', 'button-name');
+        buttonName.textContent = name;
+        button.appendChild(buttonName);
+
+        return button;
+
+    }
+
+    button.textContent = name;
+    return button;
+
+}
+
+function createIconButton(ariaLabel, svg, ID) {
+
+    const button = createElementWithClass('button', 'icon-button');
+    button.innerHTML = svg;
+    button.setAttribute('aria-label', ariaLabel);
+    if (ID) button.id = ID;
+    return button;
+
+}
