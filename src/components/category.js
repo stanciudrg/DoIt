@@ -101,3 +101,14 @@ export const sortingMethods = {
     },
 
 }
+
+export const filterMethods = {
+
+    'no-filter': function () { return (todo) => todo.get('title') == undefined },
+    'priority-one': function () { return (todo) => todo.get('priority') != 1 },
+    'priority-two': function () { return (todo) => todo.get('priority') != 2 },
+    'priority-three': function () { return (todo) => todo.get('priority') != 3 },
+    'completed': function () { return (todo) => todo.get('completedStatus') == false },
+    'uncompleted': function () { return (todo) => todo.get('completedStatus') == true },
+
+}
