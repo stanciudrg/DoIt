@@ -67,3 +67,37 @@ export const userCategoryProto = {
     getCreationDate() { return this.creationDate },
 
 }
+
+export const sortingMethods = {
+
+    // The sorting methods always take into account whether a Todo is also filteredOut, 
+    // to keep them at the end of the array.
+    'creation-date': function () { return (todoA, todoB) => { return Number(todoA.get('filteredOut')) - Number(todoB.get('filteredOut')) || new Date(todoA.get('creationDate')) - new Date(todoB.get('creationDate')) } },
+
+    'name': function () { return (todoA, todoB) => { return Number(todoA.get('filteredOut')) - Number(todoB.get('filteredOut')) || todoA.get('title').localeCompare(todoB.get('title')) } },
+
+    'due-date': function () {
+
+        return (todoA, todoB) => {
+
+            const A = todoA.get('dueDate') ? new Date(todoA.get('dueDate')) : Infinity;
+            const B = todoB.get('dueDate') ? new Date(todoB.get('dueDate')) : Infinity;
+            return Number(todoA.get('filteredOut')) - Number(todoB.get('filteredOut')) || A - B;
+
+        }
+
+    },
+
+    'priority': function () {
+
+        return (todoA, todoB) => {
+
+            const A = todoA.get('priority') ? todoA.get('priority') : Infinity;
+            const B = todoB.get('priority') ? todoB.get('priority') : Infinity;
+            return Number(todoA.get('filteredOut')) - Number(todoB.get('filteredOut')) || A - B;
+
+        }
+
+    },
+
+}
