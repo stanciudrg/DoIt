@@ -42,10 +42,18 @@ export function Todo(title, description, priority, dueDate, miniDueDate, categor
 export const todoProto = {
 
     get(property) { return this[property] },
-    set(property, newValue) { this[property] = newValue },
+    set(property, newValue) {
+
+        // Prevents the modification of Todo's Universally Unique IDentifier and creationDate
+        if (nonEditableProperties.find(nonEditableProperty => nonEditableProperty == property)) return;
+        this[property] = newValue
+
+    },
 
     // Whether the Todo has more properties than it's title, which is required by default.
     hasAdditionalInfo() { if (this.description || this.priority || this.dueDate || this.categoryID) return true },
     toggleCompletedStatus() { this.completedStatus == false ? this.completedStatus = true : this.completedStatus = false },
 
 }
+
+const nonEditableProperties = ['id', 'creationDate'];
