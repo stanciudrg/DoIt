@@ -383,6 +383,42 @@ export function createTodoAdditionalFeature(feature, value) {
 
 }
 
+// Creates the close and submit/delete buttons of modals
+function createModalActions(type) {
+
+    const buttonsContainer = createElementWithClass('div', 'modal-actions');
+
+    const closeButton = createNamedButton('Cancel');
+    closeButton.classList.add('close-modal');
+    closeButton.setAttribute('type', 'button');
+    buttonsContainer.appendChild(closeButton);
+
+    const methods = {
+
+        'submit': function () {
+
+            const submitButton = createNamedButton('Add');
+            submitButton.classList.add('submit-modal');
+            buttonsContainer.appendChild(submitButton);
+
+        },
+
+        'delete': function () {
+
+            const deleteButton = createNamedButton('Delete');
+            deleteButton.classList.add('confirm-delete-button');
+            buttonsContainer.appendChild(deleteButton);
+
+        }
+
+    }
+
+    methods[type]();
+
+    return buttonsContainer;
+
+}
+
 // Used when rendering the todo & category modals
 export function createFormModal(legendText, className) {
 
