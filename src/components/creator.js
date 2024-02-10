@@ -61,3 +61,35 @@ export function createSettingsButton(ariaLabel) {
     return container;
 
 }
+
+// Creates an input container containing a label and its corresponding input.
+// Accepts additional ...attrs arguments if setAttribute needs to be called
+export function createInput(name, className, ID, type, ...attrs) {
+
+    const inputContainer = createElementWithClass('div', 'input-container');
+    inputContainer.classList.add(className);
+    const [additionalAttributes] = attrs;
+
+    const label = document.createElement('label');
+    label.textContent = name;
+    label.setAttribute('for', ID);
+    inputContainer.appendChild(label);
+
+    const input = createElementWithID('input', ID);
+    input.setAttribute('type', type);
+    input.setAttribute('name', name);
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('spellcheck', 'false');
+    input.setAttribute('autocapitalize', 'off');
+
+    for (const attribute in additionalAttributes) {
+
+        input.setAttribute(`${attribute}`, `${additionalAttributes[attribute]}`)
+
+    }
+
+    inputContainer.appendChild(input);
+
+    return inputContainer;
+
+}
