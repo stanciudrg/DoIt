@@ -556,3 +556,14 @@ export function createCategorySelectItem(ID, name) {
     return li;
 
 }
+
+// Creates an icon only button containing an "X";
+// Used for deleting Due Date and Category input values
+export function createClearButton(ariaLabel, className) {
+
+    const clearButton = createIconButton(ariaLabel, icons['close']);
+    clearButton.classList.add(className);
+    clearButton.setAttribute('type', 'button');
+    return clearButton;
+
+}
