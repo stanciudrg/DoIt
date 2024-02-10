@@ -11,31 +11,74 @@ const devCategories = [DevCategory('All todos', 'all-todos'), DevCategory('Today
 // userCategory objects are manually created, edited, and removed on user input
 const userCategories = [];
 
-// Check whether localStorage is enabled by trying to access its methods
-const isLocalStorageEnabled = () => {
+// Organizer initialization function. Responsible with verifying whether localStorage is enabled and
+// contains any data. If it does, it retrieves and stores it in the application memory
+export function init() {
 
-    try {
+    if (isLocalStorageEnabled()) {
 
-        const key = `__storage__test`;
-        window.localStorage.setItem(key, null);
-        window.localStorage.removeItem(key);
-        return true;
+        devCategories.forEach(category => {
 
-    } catch (e) {
+            // If localStorage already has the devCategories stored, retrieve and use them to replace the in-memory devCategories
+            if (localStorage.getItem(`devCategory-${category.getID()}`)) return setDevCategoryDefaults(localStorage.getItem(`devCategory-${category.getID()}`));
+            // Otherwise get the in-memory devCategories and add them to localStorage
+            localStorage.setItem(`devCategory-${category.getID()}`, JSON.stringify(category));
 
-        return false;
+        })
+
+        // Get all userCategory objects from storage and push them into userCategories array...
+        Object.keys(localStorage).forEach(key => {
+
+            if (/userCategory-.*/.test(key)) { populateUserCategory(localStorage.getItem(key)) }
+
+        })
+
+        // ... then sort the userCategories array based on the creation date of the categories
+        userCategories.sort((a, b) => { return a.getCreationDate() - b.getCreationDate() });
+
+        Object.keys(localStorage).forEach(key => {
+
+            if (/todo-.*/.test(key)) { populateTodo(localStorage.getItem(key)) }
+
+        })
+
+        function setDevCategoryDefaults(storageDevCategory) {
+
+            // Get the devCategory and re-assign the prototype that was lost when it was stringified
+            const parsedUserCategory = JSON.parse(storageDevCategory);
+            Object.setPrototypeOf(parsedUserCategory, devCategoryProto);
+            // Find the where the current storageDevCategory is located in the devCategories in memory array...
+            const index = devCategories.map(category => category.id).indexOf(parsedUserCategory.getID());
+            // And replace the default devCategory with the storageDevCategory, that may hold different properties
+            // due to past user input (eg. modified sorting or filtering methods);
+            devCategories[index] = parsedUserCategory;
+
+        }
+
+        function populateUserCategory(storageUserCategory) {
+
+            // Get the userCategory and re-assign the prototype that was lost when it was stringified
+            const parsedUserCategory = JSON.parse(storageUserCategory);
+            const newProto = Object.assign({}, devCategoryProto, userCategoryProto);
+            Object.setPrototypeOf(parsedUserCategory, newProto);
+            userCategories.push(parsedUserCategory);
+
+        }
+
+        function populateTodo(storageTodo) {
+
+            // Get the Todo and re-assign the prototype that was lost when it was stringified
+            const parsedTodo = JSON.parse(storageTodo);
+            Object.setPrototypeOf(parsedTodo, todoProto);
+            // Run the Todo through the scanTodo function imported from the Controller.
+            // The function will determine where the Todo should be added based on its properties (dueDate and categoryID);
+            scanTodo(parsedTodo, addTodo);
+
+        }
 
     }
 
-};
-
-export function getAllCategories() { return devCategories.concat(userCategories) };
-export function getDevCategories() { return devCategories };
-export function getUserCategories() { return userCategories };
-export function getCategory(ID) { return devCategories.concat(userCategories).find(category => category.getID() == ID) };
-export function getUserCategory(ID) { return userCategories.find(category => category.getID() == ID) };
-export function getTodosOf(categoryID) { return getCategory(categoryID).getTodos() };
-export function hasTodo(categoryID, todoID) { return getTodosOf(categoryID).find(todo => todo.get('id') == todoID) }
+}
 
 export function addCategory(category) {
 
@@ -232,3 +275,29 @@ export function search(parameter) {
     return result;
 
 }
+
+// Check whether localStorage is enabled by trying to access its methods
+const isLocalStorageEnabled = () => {
+
+    try {
+
+        const key = `__storage__test`;
+        window.localStorage.setItem(key, null);
+        window.localStorage.removeItem(key);
+        return true;
+
+    } catch (e) {
+
+        return false;
+
+    }
+
+};
+
+export function getAllCategories() { return devCategories.concat(userCategories) };
+export function getDevCategories() { return devCategories };
+export function getUserCategories() { return userCategories };
+export function getCategory(ID) { return devCategories.concat(userCategories).find(category => category.getID() == ID) };
+export function getUserCategory(ID) { return userCategories.find(category => category.getID() == ID) };
+export function getTodosOf(categoryID) { return getCategory(categoryID).getTodos() };
+export function hasTodo(categoryID, todoID) { return getTodosOf(categoryID).find(todo => todo.get('id') == todoID) }
