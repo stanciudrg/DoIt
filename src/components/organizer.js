@@ -72,3 +72,36 @@ function removeFromUserCategory(todo, categoryID) {
     };
 
 }
+
+export function changeUserCategoryName(categoryID, newName) {
+
+    const category = getCategory(categoryID);
+    if (!category.isEditable()) return;
+    category.setName(newName);
+
+    // Go through each todo of the userCategory...
+    category.getTodos().forEach(todo => {
+
+        // ... rename its categoryName property...
+        todo.set('categoryName', newName);
+
+        if (isLocalStorageEnabled()) {
+
+            // ...then get the Todo from the localStorage, change its categoryName, and push it back
+            const storageTodo = JSON.parse(localStorage.getItem(`todo-${todo.get('id')}`));
+            storageTodo.categoryName = newName;
+            localStorage.setItem(`todo-${todo.get('id')}`, JSON.stringify(storageTodo));
+
+        }
+
+    })
+
+    if (isLocalStorageEnabled()) {
+
+        const storageCategory = JSON.parse(localStorage.getItem(`userCategory-${categoryID}`));
+        storageCategory.name = newName;
+        localStorage.setItem(`userCategory-${categoryID}`, JSON.stringify(storageCategory));
+
+    }
+
+}
