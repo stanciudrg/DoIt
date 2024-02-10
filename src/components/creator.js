@@ -383,6 +383,15 @@ export function createTodoAdditionalFeature(feature, value) {
 
 }
 
+export function createModal() {
+
+    const modal = createElementWithID('div', 'modal');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('role', 'dialog')
+    return modal;
+
+}
+
 // Creates the close and submit/delete buttons of modals
 function createModalActions(type) {
 
