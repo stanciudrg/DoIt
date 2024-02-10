@@ -604,3 +604,20 @@ export function createAnchorTodoItem(ID, title) {
     return anchorTodoItem;
 
 }
+
+// Used for requesting user confirmation regarding the deletion of:
+// 1. A todo;
+// 2. A category;
+// 3. A category and all its containing todos
+export function createDeleteModal() {
+
+    const deleteModal = createElementWithClass('div', 'delete-modal');
+    const deleteModalPara = createElementWithClass('p', 'delete-modal-paragraph');
+    deleteModal.appendChild(deleteModalPara);
+
+    const modalActions = createModalActions('delete');
+    deleteModal.appendChild(modalActions);
+
+    return deleteModal;
+
+}
