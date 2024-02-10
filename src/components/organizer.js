@@ -1,3 +1,4 @@
+import Fuse from 'fuse.js';
 import { DevCategory, UserCategory, devCategoryProto, userCategoryProto } from './category.js';
 import { Todo, todoProto } from './todo.js';
 import { scanTodo } from './controller.js';
@@ -211,5 +212,23 @@ export function toggleCompletedStatus(todo) {
         localStorage.setItem(`todo-${todo.get('id')}`, JSON.stringify(storageTodo));
 
     };
+
+}
+
+// Search the devCategories[0] ('All todos') devCategory for the Todos that contain the parameter within their Title,
+// and return an array of results; The parameter must be a string.
+export function search(parameter) {
+
+    const options = {
+
+        keys: ['title'],
+        includeMatches: true,
+        threshold: 0.2,
+
+    }
+
+    const fuse = new Fuse(devCategories[0].getTodos(), options);
+    const result = fuse.search(parameter);
+    return result;
 
 }
