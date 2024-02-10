@@ -157,3 +157,10 @@ export function setFilterMethod(categoryID, type) {
     }
 
 }
+
+export function getTodo(ID) { return devCategories[0].getTodos().find(todo => todo.get('id') == ID) };
+
+// Check whether the Todo is completely removed by looking for it in the devCategories[0] ('All todos') category,
+// which keeps track of all todos. The removeTodo function is called by the Controller for each devCategory or userCategory,
+// there is no function that completely deletes the Todo from all categories, thus why this function is needed.
+function isTodoWiped(id) { return !devCategories[0].getTodos().find(item => item.get('id') == id) };
