@@ -508,3 +508,51 @@ function createCheckboxInput(ID, name, value, textContent) {
     return inputContainer;
 
 }
+
+// Simulates an input by creating a button that opens a list of all user categories on click
+export function createCategoryInput() {
+
+    const inputContainer = createElementWithClass('div', 'input-container');
+    inputContainer.classList.add('category');
+
+    const button = createNamedButton('Category');
+    button.classList.add('categories-dropdown-button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('aria-label', 'Todo category: none. Click this button to select a category for this todo')
+    inputContainer.appendChild(button);
+
+    return inputContainer;
+
+}
+
+// Custom dropdown list containing existing user categories
+export function createCategoriesDropdown() {
+
+    const categoriesDropdown = createElementWithClass('div', 'categories-dropdown');
+    categoriesDropdown.classList.add('visible');
+
+    const categoriesDropdownTitle = createElementWithClass('h4', 'categories-dropdown-title');
+    categoriesDropdownTitle.setAttribute('tabindex', '0');
+    categoriesDropdownTitle.textContent = 'No categories created';
+    categoriesDropdown.appendChild(categoriesDropdownTitle);
+
+    const categoriesDropdownList = createElementWithClass('ul', 'categories-dropdown-list');
+    categoriesDropdown.appendChild(categoriesDropdownList);
+    return categoriesDropdown;
+
+}
+
+export function createCategorySelectItem(ID, name) {
+
+    const li = document.createElement('li');
+
+    const button = createNamedButton(name, icons['category']);
+    button.dataset.id = ID;
+    button.classList.add('category-select-item');
+    button.setAttribute('type', 'button');
+    button.setAttribute('aria-label', `Category: ${name}`)
+    li.appendChild(button);
+
+    return li;
+
+}
