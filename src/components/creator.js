@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import icons from './icons.js';
 
 export function createElementWithClass(type, className) {
@@ -258,4 +259,45 @@ export function createCustomizeSettingsList() {
     const ul = createElementWithClass('ul', 'dropdown-list');
     container.appendChild(ul);
     return container;
+}
+
+export function createTodoItem(ID, index, title) {
+
+    const todoItem = createElementWithClass('li', 'todo-item');
+    // Turns the todoItem into a focusable element
+    todoItem.setAttribute('tabindex', '0');
+    todoItem.classList.add('todo-item');
+    todoItem.dataset.id = ID;
+    todoItem.dataset.index = index;
+
+    const todoInfo = createElementWithClass('div', 'todo-info');
+    todoItem.appendChild(todoInfo);
+
+    // Creates a UUIDV to be used as the ID of the completedStatusInput, to ensure that
+    // the input's ID is not repeated throughout the webpage when multiple todos are created
+    const uuidv = uuidv4();
+
+    const completedStatusLabel = createElementWithClass('label', 'todo-completed-status');
+    completedStatusLabel.textContent = 'The todo has been completed'
+    completedStatusLabel.setAttribute('for', uuidv);
+    todoInfo.appendChild(completedStatusLabel);
+
+    const completedStatusInput = createElementWithID('input', uuidv);
+    completedStatusInput.setAttribute('type', 'checkbox');
+    completedStatusInput.setAttribute('name', 'todoCompletedStatus');
+    completedStatusLabel.appendChild(completedStatusInput);
+
+    // Creates a span for CSS styling purposes
+    const completedStatusSpan = document.createElement('span');
+    completedStatusLabel.appendChild(completedStatusSpan);
+
+    const todoTitle = createElementWithClass('h3', 'todo-title');
+    todoInfo.appendChild(todoTitle)
+    todoTitle.textContent = title;
+
+    const todoSettingsButton = createSettingsButton('Edit todo');
+    todoInfo.appendChild(todoSettingsButton);
+
+    return todoItem;
+
 }
