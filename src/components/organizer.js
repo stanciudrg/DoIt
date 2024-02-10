@@ -55,3 +55,20 @@ export function deleteCategory(categoryID) {
     if (isLocalStorageEnabled()) { localStorage.removeItem(`userCategory-${categoryID}`) };
 
 }
+
+function removeFromUserCategory(todo, categoryID) {
+
+    getUserCategory(categoryID).removeTodo(todo);
+    todo.set('categoryID', '');
+    todo.set('categoryName', '');
+
+    if (isLocalStorageEnabled()) {
+
+        const storageTodo = JSON.parse(localStorage.getItem(`todo-${todo.get('id')}`));
+        storageTodo.categoryID = '';
+        storageTodo.categoryName = '';
+        localStorage.setItem((`todo-${todo.get('id')}`), JSON.stringify(storageTodo));
+
+    };
+
+}
