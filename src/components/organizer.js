@@ -113,3 +113,47 @@ export function organize(categoryID) {
     category.sort();
 
 }
+
+export function setSortingMethod(categoryID, type) {
+
+    const category = getCategory(categoryID);
+    category.setSortingMethod(type);
+
+    if (isLocalStorageEnabled()) {
+
+        if (JSON.parse(localStorage.getItem(`devCategory-${categoryID}`))) return set('devCategory');
+        if (JSON.parse(localStorage.getItem(`userCategory-${categoryID}`))) return set('userCategory');
+
+        function set(categoryType) {
+
+            const storageCategory = JSON.parse(localStorage.getItem(`${categoryType}-${categoryID}`));
+            storageCategory.sortingMethod = type;
+            localStorage.setItem(`${categoryType}-${categoryID}`, JSON.stringify(storageCategory));
+
+        }
+
+    };
+
+}
+
+export function setFilterMethod(categoryID, type) {
+
+    const category = getCategory(categoryID);
+    category.setFilterMethod(type);
+
+    if (isLocalStorageEnabled()) {
+
+        if (JSON.parse(localStorage.getItem(`devCategory-${categoryID}`))) return set('devCategory');
+        if (JSON.parse(localStorage.getItem(`userCategory-${categoryID}`))) return set('userCategory');
+
+        function set(categoryType) {
+
+            const storageCategory = JSON.parse(localStorage.getItem(`${categoryType}-${categoryID}`));
+            storageCategory.filterMethod = type;
+            localStorage.setItem(`${categoryType}-${categoryID}`, JSON.stringify(storageCategory));
+
+        }
+
+    }
+
+}
