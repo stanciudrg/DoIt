@@ -301,3 +301,84 @@ export function createTodoItem(ID, index, title) {
     return todoItem;
 
 }
+
+// Creates the specified todo additional feature
+export function createTodoAdditionalFeature(feature, value) {
+
+    const methods = {
+
+        'miniDueDate': function () {
+
+            const miniDueDate = createElementWithClass('div', 'todo-mini-due-date');
+            miniDueDate.textContent = value;
+            return miniDueDate;
+
+        },
+
+        'description': function () {
+
+            const descriptionContainer = createElementWithClass('div', 'todo-description');
+
+            const descriptionParagraph = createElementWithClass('p', 'todo-description-paragraph');
+            descriptionParagraph.textContent = value;
+            descriptionContainer.appendChild(descriptionParagraph);
+
+            return descriptionContainer;
+
+        },
+
+        'priority': function () {
+
+            const priorityContainer = createElementWithClass('div', `todo-priority-${value}`);
+
+            const priorityTitle = createElementWithClass('div', 'info-holder-title');
+            priorityTitle.textContent = 'Priority';
+            priorityContainer.appendChild(priorityTitle);
+
+            const priorityValue = createElementWithClass('div', 'info-holder-value');
+            priorityValue.textContent = value;
+            priorityContainer.appendChild(priorityValue);
+
+            return priorityContainer;
+
+        },
+
+        'dueDate': function () {
+
+            const dueDateContainer = createElementWithClass('div', `todo-due-date`);
+
+            const dueDateTitle = createElementWithClass('div', 'info-holder-title');
+            dueDateTitle.textContent = 'Due Date';
+            dueDateContainer.appendChild(dueDateTitle);
+
+            const dueDateValue = createElementWithClass('div', 'info-holder-value');
+            dueDateValue.textContent = value;
+            dueDateContainer.appendChild(dueDateValue);
+
+            return dueDateContainer;
+
+        },
+
+        'categoryID': function () {
+
+            const categoryContainer = createElementWithClass('div', `todo-category`);
+
+            const categoryTitle = createElementWithClass('div', 'info-holder-title');
+            categoryTitle.textContent = 'Category';
+            categoryContainer.appendChild(categoryTitle);
+
+            const categoryValue = createElementWithClass('div', 'info-holder-value');
+            categoryValue.textContent = value;
+            categoryContainer.appendChild(categoryValue);
+
+            return categoryContainer;
+
+        },
+
+        'categoryName': function () { return this['categoryID']() },
+
+    }
+
+    return methods[feature]();
+
+}
