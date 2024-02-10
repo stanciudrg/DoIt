@@ -48,6 +48,21 @@ const categoriesContent = {};
 // The checkBounds function determines whether the element position needs to be changed 
 // as a result of it leaking out of the viewport, and changes its position using CSS classes;
 
+function disableScrolling() {
+    const html = document.querySelector('html');
+    // Add right padding to the HTML element of the DOM that is equal to the width of the scrollbar,
+    // to prevent the usual layout shift when the scrollbar appears and disappears
+    html.style.paddingRight = `${window.innerWidth - document.documentElement.clientWidth}px`
+    addClass(html, 'overlay-over');
+}
+
+function enableScrolling() {
+    const html = document.querySelector('html');
+    // Remove the right padding added by disableScrolling function
+    html.style.removeProperty('padding')
+    removeClass(html, 'overlay-over');
+}
+
 function checkBounds(element, breakpoint) {
     if (hasClass(element, 'top-positioned')) removeClass(element, 'top-positioned');
     if (hasClass(element, 'center-positioned')) removeClass(element, 'center-positioned');
