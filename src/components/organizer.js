@@ -199,3 +199,17 @@ export function removeTodo(todo, categoryID) {
     if (isLocalStorageEnabled() && isTodoWiped(todo.get('id'))) { localStorage.removeItem(`todo-${todo.get('id')}`) }
 
 }
+
+export function toggleCompletedStatus(todo) {
+
+    todo.toggleCompletedStatus();
+
+    if (isLocalStorageEnabled()) {
+
+        const storageTodo = JSON.parse(localStorage.getItem(`todo-${todo.get('id')}`));
+        storageTodo['completedStatus'] = todo.get('completedStatus');
+        localStorage.setItem(`todo-${todo.get('id')}`, JSON.stringify(storageTodo));
+
+    };
+
+}
