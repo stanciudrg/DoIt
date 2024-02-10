@@ -219,3 +219,11 @@ export function createUserCategoryButton(name, ID) {
 
 }
 
+export function createContentHeader() {
+
+    const contentHeaderContainer = createElementWithClass('div', 'content-header-container');
+    const contentHeader = createElementWithClass('header', 'content-header');
+    contentHeaderContainer.appendChild(contentHeader);
+    return contentHeaderContainer;
+
+}
