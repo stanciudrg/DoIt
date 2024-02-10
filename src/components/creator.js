@@ -170,3 +170,42 @@ export function createUserNavbar() {
 
 }
 
+export function createDevCategoryButton(name, ID) {
+
+    const li = document.createElement('li');
+
+    const button = createNamedButton(name, icons[ID], ID);
+    button.classList.add('todo-holder');
+    button.setAttribute('aria-label', name);
+    li.appendChild(button);
+
+    // The number of todos in the category
+    const todosCounter = createElementWithClass('span', 'todos-count');
+    button.appendChild(todosCounter)
+
+    return li;
+
+}
+
+export function createUserCategoryButton(name, ID) {
+
+    const li = document.createElement('li');
+
+    const button = createNamedButton(name, icons['category']);
+    button.classList.add('todo-holder');
+    button.dataset.id = ID;
+    button.setAttribute('aria-label', name);
+    li.appendChild(button);
+
+    // The number of todos in the category
+    const todosCounter = createElementWithClass('span', 'todos-count');
+    button.appendChild(todosCounter)
+
+    // On click, it creates a setting list that allows category renaming and deleting
+    const settingsButton = createSettingsButton('Edit category');
+    li.appendChild(settingsButton)
+
+    return li;
+
+}
+
