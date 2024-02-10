@@ -33,3 +33,14 @@ const DOMCache = {
     mobileVersion: window.matchMedia("(max-width: 750px), (max-height: 400px)"),
 
 }
+
+// Object used to store a reference to the existing developer and user categories ID's and the current DOM content being rendered.
+// Each time a category is created, a new property bearing its ID is added to categoriesContent object.
+// Each time a category is deleted, its corresponding property is deleted from the categoriesContent object properties.
+// Each time the user requests for the content of a category to be rendered, a todosList DOM element is created and assigned
+// to its corresponding property on the categoriesContent object, then it is inserted into the DOM.
+// If there was a previous category content being rendered, the todosList DOM is removed from the DOM tree,
+// released from memory, re-created on the new property, and re-attached on the DOM.
+// This system prevents memory leaks from detached DOM elements by keeping DOM element reference to a minimum and
+// by removing the old DOM element from the DOM tree and freeing it from memory each time a new content rendering request is made
+const categoriesContent = {};
