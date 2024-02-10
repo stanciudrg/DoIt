@@ -1,3 +1,5 @@
+import icons from './icons.js';
+
 export function createElementWithClass(type, className) {
 
     const element = document.createElement(type);
@@ -46,5 +48,16 @@ function createIconButton(ariaLabel, svg, ID) {
     button.setAttribute('aria-label', ariaLabel);
     if (ID) button.id = ID;
     return button;
+
+}
+
+export function createSettingsButton(ariaLabel) {
+
+    const container = createElementWithClass('div', 'settings-container');
+
+    const button = createIconButton(ariaLabel, icons['settings']);
+    button.classList.add('settings-button');
+    container.appendChild(button);
+    return container;
 
 }
