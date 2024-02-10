@@ -45,6 +45,36 @@ const DOMCache = {
 // by removing the old DOM element from the DOM tree and freeing it from memory each time a new content rendering request is made
 const categoriesContent = {};
 
+// The checkBounds function determines whether the element position needs to be changed 
+// as a result of it leaking out of the viewport, and changes its position using CSS classes;
+
+function checkBounds(element, breakpoint) {
+    if (hasClass(element, 'top-positioned')) removeClass(element, 'top-positioned');
+    if (hasClass(element, 'center-positioned')) removeClass(element, 'center-positioned');
+
+    if (isOutOfBounds('bottom', element, breakpoint)) addClass(element, 'top-positioned');
+
+    if (hasClass(element, 'top-positioned') && isOutOfBounds('top', element)) {
+        removeClass(element, 'top-positioned');
+        addClass(element, 'center-positioned');
+    }
+}
+
+function isOutOfBounds(position, element, breakpoint) {
+    // Get the element's position relative to the viewport
+    const elementBound = element.getBoundingClientRect();
+    // Get the top/y value of the element
+    const elementY = elementBound.y;
+    // Get the actual height of the HTML document
+    const clientHeight = document.querySelector('html').clientHeight;
+
+    const methods = {
+        'top': function () { return elementY < 0 },
+        'bottom': function () { return clientHeight - elementY < breakpoint },
+    }
+    return methods[position]();
+}
+
 function getParentOf(element) { return element.parentElement };
 function hasClass(element, className) { return element.classList.contains(className) };
 function addClass(element, className) { element.classList.add(className) };
