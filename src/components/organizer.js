@@ -9,3 +9,21 @@ import { scanTodo } from './controller.js';
 const devCategories = [DevCategory('All todos', 'all-todos'), DevCategory('Today', 'today'), DevCategory('Next 7 days', 'this-week')];
 // userCategory objects are manually created, edited, and removed on user input
 const userCategories = [];
+
+// Check whether localStorage is enabled by trying to access its methods
+const isLocalStorageEnabled = () => {
+
+    try {
+
+        const key = `__storage__test`;
+        window.localStorage.setItem(key, null);
+        window.localStorage.removeItem(key);
+        return true;
+
+    } catch (e) {
+
+        return false;
+
+    }
+
+};
