@@ -127,3 +127,25 @@ export function createHeader(title) {
 }
 
 export function createMenuButton() { return createIconButton('Hide menu', icons['menu'], 'menu-button') }
+
+export function createAddTodoButton() {
+
+    const li = document.createElement('li');
+    const button = createNamedButton('Add todo', icons['add'], 'add-todo');
+    button.setAttribute('aria-label', 'Add todo')
+    li.appendChild(button);
+
+    return li;
+
+}
+
+export function createSearchButton() {
+
+    const li = document.createElement('li');
+    const button = createNamedButton('Search', icons['search'], 'search');
+    button.setAttribute('aria-label', 'Search todos');
+    li.appendChild(button);
+    return li;
+
+}
+
