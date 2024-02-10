@@ -90,6 +90,9 @@ function isOutOfBounds(position, element, breakpoint) {
     return methods[position]();
 }
 
+function render(target, ...elements) { for (const element of elements) { if (!target.contains(element)) target.appendChild(element) } };
+function find(element, identifier) { if (element && identifier) return element.querySelector(identifier) };
+function findAll(element, identifier) { return element.querySelectorAll(identifier) };
 function getParentOf(element) { return element.parentElement };
 function hasClass(element, className) { return element.classList.contains(className) };
 function addClass(element, className) { element.classList.add(className) };
