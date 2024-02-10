@@ -252,6 +252,9 @@ export function editTodo(todo, property, newValue) {
 
 export function removeTodo(todo, categoryID) {
 
+    //If the category from which the Todo should be removed is userCategory, also run the 
+    //removeFromUserCategory function to set Todo's object categoryID and categoryName properties to null
+
     getUserCategory(categoryID) ? removeFromUserCategory(todo, categoryID) :
         getCategory(categoryID).removeTodo(todo);
 
@@ -307,7 +310,7 @@ const isLocalStorageEnabled = () => {
 
     }
 
-};
+}
 
 export function getAllCategories() { return devCategories.concat(userCategories) };
 export function getDevCategories() { return devCategories };
