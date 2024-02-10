@@ -149,3 +149,24 @@ export function createSearchButton() {
 
 }
 
+// Creates the part of the navigation that holds the number of user categories. 
+// The button to add a user category, the list of user categories, and a toggler to hide and 
+// show the user categories are also inserted into this element after creation
+export function createUserNavbar() {
+
+    const userNavbar = createElementWithID('div', 'user-nav');
+
+    const userNavbarHeader = createElementWithID('div', 'user-nav-header');
+    userNavbar.appendChild(userNavbarHeader);
+
+    const h2 = createElementWithID('h2', 'user-nav-title')
+    h2.textContent = 'Categories';
+    userNavbarHeader.appendChild(h2);
+
+    const categoriesCounter = createElementWithID('div', 'categories-counter');
+    userNavbarHeader.appendChild(categoriesCounter);
+
+    return userNavbar;
+
+}
+
