@@ -45,6 +45,26 @@ const DOMCache = {
 // by removing the old DOM element from the DOM tree and freeing it from memory each time a new content rendering request is made
 const categoriesContent = {};
 
+
+//
+//
+// Controller assist functions
+//
+//
+
+export function isSearchBarOpen() { return find(DOMCache.modal, '#search-container') };
+export function isVisible(ID) { return find(DOMCache.content, `[data-id="${ID}"]`) };
+export function isAdditionalInfoVisible(todoID) { return find(find(DOMCache.main, `[data-id="${todoID}"]`), '.todo-additional-info') };
+export function isTodoExpanderVisible(todoID) { return find(find(categoriesContent[getCurrentContentID()], `[data-id= "${todoID}"]`), '.expand-button') };
+export function getCurrentContentID() { return DOMCache.content.dataset.id; }
+
+//
+//
+// Helper functions
+//
+//
+
+
 // The checkBounds function determines whether the element position needs to be changed 
 // as a result of it leaking out of the viewport, and changes its position using CSS classes;
 
