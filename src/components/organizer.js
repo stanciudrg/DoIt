@@ -105,3 +105,11 @@ export function changeUserCategoryName(categoryID, newName) {
     }
 
 }
+
+export function organize(categoryID) {
+
+    const category = getCategory(categoryID);
+    category.filter();
+    category.sort();
+
+}
