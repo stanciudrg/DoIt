@@ -44,3 +44,41 @@ const DOMCache = {
 // This system prevents memory leaks from detached DOM elements by keeping DOM element reference to a minimum and
 // by removing the old DOM element from the DOM tree and freeing it from memory each time a new content rendering request is made
 const categoriesContent = {};
+
+function getParentOf(element) { return element.parentElement };
+function hasClass(element, className) { return element.classList.contains(className) };
+function addClass(element, className) { element.classList.add(className) };
+function removeClass(element, className) { element.classList.remove(className) };
+function toggleClass(element, className) { element.classList.toggle(className) };
+function updateInputValue(target, inputValue) { target.value = inputValue };
+function applyFocus(element) { element.focus() };
+
+function updateTextContent(target, text) {
+    if (text == 0) return target.textContent = '';
+    target.textContent = text;
+}
+
+function replace(newElement, element) {
+    const parent = element.parentElement;
+    parent.replaceChild(newElement, element);
+}
+
+function enableInput(element) {
+    element.style.pointerEvents = 'auto';
+    element.style.touchEvents = 'auto';
+}
+
+function disableInput(element) {
+    element.style.pointerEvents = 'none';
+    element.style.touchEvents = 'none';
+}
+
+function enableButton(button) {
+    button.disabled = false;
+    button.removeAttribute('tabindex');
+}
+
+function disableButton(button) {
+    button.disabled = true;
+    button.setAttribute('tabindex', '-1');
+}
