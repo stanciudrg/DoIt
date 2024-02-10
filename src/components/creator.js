@@ -582,3 +582,25 @@ export function createTodosSearcher() {
     return todosSearcher;
 
 }
+
+// Creates an anchor that sends the user to the todo's location when clicked, 
+// similar to how normal anchor elements send the user to a specific link;
+export function createAnchorTodoItem(ID, title) {
+
+    const anchorTodoItem = createElementWithClass('li', 'anchor-todo-item');
+    anchorTodoItem.dataset.id = ID;
+
+    const anchor = document.createElement('a');
+    anchor.setAttribute('href', '');
+    anchorTodoItem.appendChild(anchor);
+
+    const todoInfo = createElementWithClass('div', 'todo-info');
+    anchor.appendChild(todoInfo);
+
+    const todoTitle = createElementWithClass('h3', 'todo-title');
+    todoTitle.textContent = title;
+    todoInfo.appendChild(todoTitle);
+
+    return anchorTodoItem;
+
+}
