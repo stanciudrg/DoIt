@@ -62,6 +62,21 @@ export function createSettingsButton(ariaLabel) {
 
 }
 
+// Creates the buttons that are inserted into the settingsList DOM element after it is dynamically created on user input
+export function createSettingItem(name, className, ID) {
+
+    const li = document.createElement('li');
+
+    const button = createNamedButton(name);
+    if (ID) button.dataset.id = ID;
+    if (className) button.classList.add(className);
+    if (name == 'Delete') button.classList.add('delete');
+    li.appendChild(button);
+
+    return li;
+
+}
+
 // Creates an input container containing a label and its corresponding input.
 // Accepts additional ...attrs arguments if setAttribute needs to be called
 export function createInput(name, className, ID, type, ...attrs) {
@@ -93,3 +108,4 @@ export function createInput(name, className, ID, type, ...attrs) {
     return inputContainer;
 
 }
+
