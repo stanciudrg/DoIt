@@ -109,3 +109,21 @@ export function createInput(name, className, ID, type, ...attrs) {
 
 }
 
+
+// Creates the main header of the webpage
+export function createHeader(title) {
+
+    const header = document.createElement('header');
+
+    const headerTopSide = createElementWithID('div', 'header-top-side');
+    header.appendChild(headerTopSide);
+
+    const h1 = createElementWithID('h1', 'app-title');
+    h1.textContent = title;
+    headerTopSide.appendChild(h1);
+
+    return header;
+
+}
+
+export function createMenuButton() { return createIconButton('Hide menu', icons['menu'], 'menu-button') }
