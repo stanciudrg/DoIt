@@ -190,3 +190,12 @@ export function editTodo(todo, property, newValue) {
     }
 
 }
+
+export function removeTodo(todo, categoryID) {
+
+    getUserCategory(categoryID) ? removeFromUserCategory(todo, categoryID) :
+        getCategory(categoryID).removeTodo(todo);
+
+    if (isLocalStorageEnabled() && isTodoWiped(todo.get('id'))) { localStorage.removeItem(`todo-${todo.get('id')}`) }
+
+}
