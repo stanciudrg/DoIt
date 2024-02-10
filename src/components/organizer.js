@@ -34,3 +34,4 @@ export function getUserCategories() { return userCategories };
 export function getCategory(ID) { return devCategories.concat(userCategories).find(category => category.getID() == ID) };
 export function getUserCategory(ID) { return userCategories.find(category => category.getID() == ID) };
 export function getTodosOf(categoryID) { return getCategory(categoryID).getTodos() };
+export function hasTodo(categoryID, todoID) { return getTodosOf(categoryID).find(todo => todo.get('id') == todoID) }
