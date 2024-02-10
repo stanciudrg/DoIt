@@ -42,3 +42,16 @@ export function addCategory(category) {
     if (isLocalStorageEnabled()) { localStorage.setItem(`userCategory-${category.getID()}`, JSON.stringify(category)) };
 
 }
+
+export function deleteCategory(categoryID) {
+
+    const category = getCategory(categoryID);
+    // First, go through each Todo and call the RemoveFromUserCategory function that 
+    // will remove the Todo from its category and reset its categoryName and categoryID properties...
+    category.getTodos().forEach(todo => removeFromUserCategory(todo, categoryID));
+    // ...and then delete the userCategory
+    userCategories.splice(userCategories.indexOf(category), 1)
+
+    if (isLocalStorageEnabled()) { localStorage.removeItem(`userCategory-${categoryID}`) };
+
+}
