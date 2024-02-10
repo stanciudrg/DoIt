@@ -567,3 +567,18 @@ export function createClearButton(ariaLabel, className) {
     return clearButton;
 
 }
+
+// Creates the Search todo modal
+export function createTodosSearcher() {
+
+    const todosSearcher = createElementWithID('div', 'search-container');
+
+    const searchBar = createInput('Todo title', 'title', 'todos-searcher', 'search', { placeholder: "Search todos" });
+    todosSearcher.appendChild(searchBar)
+
+    const searchResultsList = createElementWithID('ul', 'search-results-list');
+    todosSearcher.appendChild(searchResultsList);
+
+    return todosSearcher;
+
+}
