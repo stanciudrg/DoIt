@@ -227,3 +227,35 @@ export function createContentHeader() {
     return contentHeaderContainer;
 
 }
+
+export function createContentSortSetting() {
+
+    const container = createElementWithClass('div', 'customize-settings-container');
+
+    const button = createIconButton('Sort todos', icons['sort']);
+    button.classList.add('sort-category-button');
+    container.appendChild(button);
+    return container;
+
+}
+
+export function createContentFilterSetting() {
+
+    const container = createElementWithClass('div', 'customize-settings-container');
+
+    const button = createIconButton('Filter todos', icons['filter']);
+    button.classList.add('filter-category-button');
+    container.appendChild(button);
+    return container;
+}
+
+
+export function createCustomizeSettingsList() {
+
+    const container = createElementWithClass('div', 'dropdown-list-container');
+    const title = createElementWithClass('h4', 'dropdown-list-title');
+    container.appendChild(title);
+    const ul = createElementWithClass('ul', 'dropdown-list');
+    container.appendChild(ul);
+    return container;
+}
