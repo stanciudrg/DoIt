@@ -51,6 +51,16 @@ function createIconButton(ariaLabel, svg, ID) {
 
 }
 
+// Used for toggling the visibility of user categories and for toggling the additional info
+// of todo items.
+export function createExpandButton(ariaLabel) {
+
+    const button = createIconButton(ariaLabel, icons['expander']);
+    button.classList.add('expand-button');
+    return button;
+
+}
+
 export function createSettingsButton(ariaLabel) {
 
     const container = createElementWithClass('div', 'settings-container');
