@@ -437,3 +437,33 @@ export function createFormModal(legendText, className) {
     return form;
 
 }
+
+// Retrieves user input for todo title and todo description
+export function createTextArea(name, className, ID, ...attrs) {
+
+    const inputContainer = createElementWithClass('div', 'input-container');
+    inputContainer.classList.add(className)
+    const [additionalAttributes] = attrs;
+
+    const label = document.createElement('label');
+    label.textContent = name;
+    label.setAttribute('for', ID);
+    inputContainer.appendChild(label);
+
+    const input = createElementWithID('textarea', ID);
+    input.setAttribute('name', name);
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('spellcheck', 'false');
+    input.setAttribute('autocapitalize', 'off');
+
+    for (const attribute in additionalAttributes) {
+
+        input.setAttribute(`${attribute}`, `${additionalAttributes[attribute]}`)
+
+    }
+
+    inputContainer.appendChild(input);
+
+    return inputContainer;
+
+}
