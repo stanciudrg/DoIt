@@ -467,3 +467,44 @@ export function createTextArea(name, className, ID, ...attrs) {
     return inputContainer;
 
 }
+
+// Creates a custom fieldset area that contains three checkboxes representing the three priority options (1, 2, and 3);
+export function createPrioritiesFieldset() {
+
+    const prioritiesFieldset = createElementWithClass('fieldset', 'priorities-fieldset');
+
+    const prioritiesLegend = createElementWithClass('legend', 'priorities-legend');
+    prioritiesLegend.textContent = 'Priority';
+    prioritiesFieldset.appendChild(prioritiesLegend);
+
+    const priorityOne = createCheckboxInput('priority-one', 'priority', '1', 'Priority 1');
+    prioritiesFieldset.appendChild(priorityOne);
+
+    const priorityTwo = createCheckboxInput('priority-two', 'priority', '2', 'Priority 2');
+    prioritiesFieldset.appendChild(priorityTwo);
+
+    const priorityThree = createCheckboxInput('priority-three', 'priority', '3', 'Priority 3');
+    prioritiesFieldset.appendChild(priorityThree);
+
+    return prioritiesFieldset;
+
+}
+
+function createCheckboxInput(ID, name, value, textContent) {
+
+    const inputContainer = createElementWithClass('div', `${name}-container`);
+
+    const input = createElementWithID('input', ID);
+    input.setAttribute('type', 'checkbox');
+    input.setAttribute('name', name);
+    input.setAttribute('value', value);
+    inputContainer.appendChild(input);
+
+    const label = document.createElement('label');
+    label.setAttribute('for', ID);
+    label.textContent = textContent;
+    inputContainer.appendChild(label);
+
+    return inputContainer;
+
+}
