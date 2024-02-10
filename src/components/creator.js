@@ -383,6 +383,16 @@ export function createTodoAdditionalFeature(feature, value) {
 
 }
 
+// Located at the end of the todos list of each content container.
+// To not be confused with the addTodoButton located in the main header.
+export function createAddButton(ariaLabel) {
+
+    const button = createIconButton(ariaLabel, icons['add']);
+    button.classList.add('add-button');
+    return button
+
+}
+
 export function createModal() {
 
     const modal = createElementWithID('div', 'modal');
