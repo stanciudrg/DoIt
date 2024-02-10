@@ -382,3 +382,22 @@ export function createTodoAdditionalFeature(feature, value) {
     return methods[feature]();
 
 }
+
+// Used when rendering the todo & category modals
+export function createFormModal(legendText, className) {
+
+    const form = createElementWithClass('form', className);
+
+    const fieldset = document.createElement('fieldset');
+    form.appendChild(fieldset);
+
+    const legend = document.createElement('legend');
+    legend.textContent = legendText;
+    fieldset.appendChild(legend);
+
+    const modalActions = createModalActions('submit');
+    form.appendChild(modalActions);
+
+    return form;
+
+}
