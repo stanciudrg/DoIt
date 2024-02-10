@@ -17,6 +17,21 @@ export function init() {
 
     if (isLocalStorageEnabled()) {
 
+        // If it's the first time the user visits the app, create an introductory Todo and UserCategory;
+        const isFamiliar = localStorage.getItem('isFamiliar');
+
+        if (!isFamiliar) {
+
+            const firstCategory = UserCategory('My first category');
+            localStorage.setItem(`userCategory-${firstCategory.getID()}`, JSON.stringify(firstCategory));
+
+            const firstTodo = Todo('Welcome! Click the arrow button bellow to find out more about this app.', "Do It is a vanilla JavaScript and CSS only app that saves your progress on the current browser using localStorage. For now, it allows you to create, edit, delete, sort, filter, and search for todos. You can also create and rename Categories as you wish. Each 60 seconds, Do It verifies the due date of your todos to determine whether they became 'overdue' as time went on, and applies visual changes for you to be easier to differentiate between 'due' and 'overdue' todos. This app is a work in progress, and more features will be added in the future.", '1');
+            localStorage.setItem(`todo-${firstTodo.get('id')}`, JSON.stringify(firstTodo));
+
+        };
+
+        localStorage.setItem('isFamiliar', 'true')
+
         devCategories.forEach(category => {
 
             // If localStorage already has the devCategories stored, retrieve and use them to replace the in-memory devCategories
