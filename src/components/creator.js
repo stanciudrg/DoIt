@@ -621,3 +621,26 @@ export function createDeleteModal() {
     return deleteModal;
 
 }
+
+// Custom toggle checkbox for selecting whether deleting a category should also delete its containing todos;
+export function createDeleteTodosCheckbox() {
+
+    const deleteTodosContainer = createElementWithClass('div', 'delete-todos-checkbox');
+    deleteTodosContainer.textContent = 'Also delete containing todos';
+
+    const deleteTodosLabel = document.createElement('label');
+    deleteTodosLabel.textContent = 'Delete containing todos';
+    deleteTodosLabel.setAttribute('for', 'delete-todos');
+    deleteTodosContainer.appendChild(deleteTodosLabel);
+
+    const deleteTodosInput = createElementWithID('input', 'delete-todos');
+    deleteTodosInput.setAttribute('type', 'checkbox');
+    deleteTodosInput.setAttribute('name', 'deleteContainingTodos');
+    deleteTodosLabel.appendChild(deleteTodosInput);
+
+    const span = document.createElement('span');
+    deleteTodosLabel.appendChild(span);
+
+    return deleteTodosContainer;
+
+}
