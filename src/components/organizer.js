@@ -164,3 +164,29 @@ export function getTodo(ID) { return devCategories[0].getTodos().find(todo => to
 // which keeps track of all todos. The removeTodo function is called by the Controller for each devCategory or userCategory,
 // there is no function that completely deletes the Todo from all categories, thus why this function is needed.
 function isTodoWiped(id) { return !devCategories[0].getTodos().find(item => item.get('id') == id) };
+
+export function addTodo(todo, categoryID) {
+
+    getCategory(categoryID).addTodo(todo);
+
+    if (isLocalStorageEnabled()) {
+
+        localStorage.setItem(`todo-${todo.get('id')}`, JSON.stringify(todo));
+
+    }
+
+}
+
+export function editTodo(todo, property, newValue) {
+
+    todo.set(property, newValue);
+
+    if (isLocalStorageEnabled()) {
+
+        const storageTodo = JSON.parse(localStorage.getItem(`todo-${todo.get('id')}`));
+        storageTodo[property] = newValue;
+        localStorage.setItem(`todo-${todo.get('id')}`, JSON.stringify(storageTodo));
+
+    }
+
+}
