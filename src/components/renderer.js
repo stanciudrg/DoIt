@@ -619,18 +619,6 @@ export function deleteTodoAdditionalInfo(todoID) {
 
 }
 
-// Adds a class to the completedStatusSpan that styles the Todo to reflect its current priority
-export function colorTodoCompletedStatusSpan(todoID, priority) {
-
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoCompletedStatusSpan = find(todoElement, 'span');
-
-    todoCompletedStatusSpan.className = '';
-    if (!priority) return
-    addClass(todoCompletedStatusSpan, `priority-${priority}`);
-
-}
-
 // Manually triggers a transitionend event when the todoAdditionalInfo container within a Todo DOM element
 // is visible and needs to be deleted because it no longer contains any additional information
 // (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user) 
@@ -660,6 +648,59 @@ export function updateTodoElementCompletedStatus(todoID, status) {
     }
 
     methods[status]();
+
+}
+
+// Adds a class to the completedStatusSpan that styles the Todo to reflect its current priority
+export function colorTodoCompletedStatusSpan(todoID, priority) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoCompletedStatusSpan = find(todoElement, 'span');
+
+    todoCompletedStatusSpan.className = '';
+    if (!priority) return
+    addClass(todoCompletedStatusSpan, `priority-${priority}`);
+
+}
+
+export function renderTodoAdditionalFeature(todoID, feature, value) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoAdditionalInfo = find(todoElement, '.todo-additional-info');
+    const newFeature = Creator.createTodoAdditionalFeature(feature, value);
+
+    const methods = {
+
+        'miniDueDate': function () {
+
+            const todoInfo = find(todoElement, '.todo-info');
+            const todoSettingsContainer = find(todoElement, '.settings-container');
+            todoInfo.insertBefore(newFeature, todoSettingsContainer);
+
+        },
+
+        'description': function () { render(todoAdditionalInfo, newFeature) },
+        'priority': function () {
+
+            // Ensures that the priorityContainer is always the first element within its container
+            const todoDueDate = find(todoAdditionalInfo, '.todo-due-date') || find(todoAdditionalInfo, '.todo-category') || null;
+            todoAdditionalInfo.insertBefore(newFeature, todoDueDate);
+
+        },
+        'dueDate': function () {
+
+            // Ensures that the dueDateContainer is either the first, or the second element within its container
+            const todoCategory = find(todoAdditionalInfo, '.todo-category') || null;
+            todoAdditionalInfo.insertBefore(newFeature, todoCategory);
+
+        },
+
+        'categoryID': function () { render(todoAdditionalInfo, newFeature) },
+        'categoryName': function () { this['categoryID']() },
+
+    }
+
+    methods[feature]();
 
 }
 
