@@ -165,6 +165,12 @@ function hideNavbar() {
 
 }
 
+function toggleNavbar(e) {
+
+    e.stopImmediatePropagation();
+    hasClass(DOMCache.header, 'hidden') ? showNavbar() : hideNavbar();
+
+}
 
 //
 //
