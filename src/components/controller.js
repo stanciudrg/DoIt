@@ -67,6 +67,17 @@ export function scanTodo(todo, fn) {
 
 }
 
+export function scanAndAddTodo(title, description, priority, dueDate, categoryID, categoryName) {
+
+    // If todo has a date set by the user, take it, transform it into a human readable format (eg. 'today', 'wednesday'),
+    // and use it as an argument for the todo.miniDueDate property;
+    const miniDueDate = dueDate ? formatDate(dueDate) : '';
+    const todo = Todo(title, description, priority, dueDate, miniDueDate, categoryID, categoryName);
+    // Run the newly created todo through the scanTodo function for it to be added where needed by the addTodo function
+    scanTodo(todo, addTodo);
+
+}
+
 function addTodo(todo, categoryID) {
 
     Organizer.addTodo(todo, categoryID);
