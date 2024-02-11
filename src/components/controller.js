@@ -55,12 +55,20 @@ export function deleteCategory(categoryID) {
 
 }
 
+export function deleteAllTodosOfCategory(categoryID) {
+
+    // Go through all the todos of the userCategory and run them through the scanAndDeleteTodo function
+    // to remove them from all categories from which they are part of, wiping them from memory
+    Organizer.getUserCategory(categoryID).getTodos().forEach(todo => { scanAndDeleteTodo(todo.get('id')) });
+
+}
+
+
 //
 //
 // Content management: displaying new content, deleting old content
 //
 //
-
 
 export function handleDisplayContentRequest(categoryID) {
 
