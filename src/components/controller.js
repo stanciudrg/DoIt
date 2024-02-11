@@ -181,6 +181,23 @@ function removeTodoExpandFeature(todo) {
 
 }
 
+export function toggleTodoCompletedStatus(todoID) {
+
+    const todo = Organizer.getTodo(todoID);
+    Organizer.toggleCompletedStatus(todo);
+
+    if (!Renderer.isVisible(todoID)) return
+
+    todo.get('completedStatus') ?
+        Renderer.updateTodoElementCompletedStatus(todoID, 'completed') :
+        Renderer.updateTodoElementCompletedStatus(todoID, 'uncompleted');
+
+    // If the current filter method is 'completed' or 'uncompleted', 
+    // update the location of the Todo based on its new completed status value
+    (getCurrentFilterMethod() == 'completed' || getCurrentFilterMethod() == 'uncompleted') && manipulateTodoLocation(todoID);
+
+}
+
 
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
