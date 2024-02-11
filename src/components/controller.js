@@ -158,6 +158,29 @@ export function handleTodoExpandRequest(todoID) {
 
 }
 
+function toggleTodoExpandFeature(todo) {
+
+    if (!Renderer.isVisible(todo.get('id'))) return;
+    if (todo.hasAdditionalInfo() && !Renderer.isTodoExpanderVisible(todo.get('id'))) return Renderer.renderTodoElementExpander(todo.get('id'));
+    if (!todo.hasAdditionalInfo() && Renderer.isTodoExpanderVisible(todo.get('id'))) removeTodoExpandFeature(todo);
+
+}
+
+function removeTodoExpandFeature(todo) {
+
+    if (!Renderer.isVisible(todo.get('id'))) return;
+    Renderer.deleteTodoElementExpander(todo.get('id'));
+
+    if (!Renderer.isAdditionalInfoVisible(todo.get('id'))) return;
+    // If the Todo has its additionalInfo rendered, also delete 
+    // it along with the expand button...
+    Renderer.deleteTodoAdditionalInfo(todo.get('id'));
+    // ...but make sure that the todo shrink animation that is usually 
+    // triggered by the user when clicking the expand button still works
+    Renderer.dispatchTransitionEndEvent(todo.get('id'));
+
+}
+
 
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
