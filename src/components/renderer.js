@@ -928,6 +928,18 @@ export function highlightTodoElement(todoID) {
 //
 //
 
+function sendTodoModalRequest(e) {
+
+    // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
+    // a complex modal request and provide the dataset.id of the 'content' container as an argument
+    if (hasClass(e.target, 'add-button')) return Controller.handleTodoModalRequest((getParentOf(e.target).dataset.id));
+    // Otherwise call the renderTodoModal with the 'all-todos' argument, which is a devCategory that holds all todos,
+    // and has no special logic, thus can be considered as 'default', and using it as an argument can be considered
+    // as asking for the default behavior of a function
+    renderTodoModal('all-todos');
+
+}
+
 // The todo modal will have different values already set when being open based
 // on its callLocation and the locationAttributes that are passed along with it
 export function renderTodoModal(callLocation, locationAttributes) {
