@@ -140,6 +140,24 @@ function deleteTodo(todo, categoryID) {
 
 }
 
+export function handleTodoExpandRequest(todoID) {
+
+    const todo = Organizer.getTodo(todoID);
+
+    if (Renderer.isVisible(todoID) && todo.hasAdditionalInfo()) {
+
+        Renderer.renderTodoAdditionalInfo(todoID);
+        todo.get('description') && requestRenderFor('description');
+        todo.get('priority') && requestRenderFor('priority');
+        todo.get('dueDate') && requestRenderFor('dueDate');
+        todo.get('categoryID') && requestRenderFor('categoryName');
+
+        function requestRenderFor(feature) { Renderer.renderTodoAdditionalFeature(todoID, feature, todo.get(feature)) };
+
+    }
+
+}
+
 
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
