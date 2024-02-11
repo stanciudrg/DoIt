@@ -116,6 +116,15 @@ function triggerTodoRendering(todo) {
 
 }
 
+export function scanAndDeleteTodo(todoID) {
+
+    // Run the todo through the scanTodo function for it to be removed from 
+    // all locations using the deleteTodo function
+    const todo = Organizer.getTodo(todoID);
+    scanTodo(todo, deleteTodo);
+
+}
+
 function deleteTodo(todo, categoryID) {
 
     Organizer.removeTodo(todo, categoryID);
