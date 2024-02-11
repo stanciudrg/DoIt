@@ -1,7 +1,7 @@
 # Do It
 
-Do It is a vanilla JavaScript and CSS only app that saves your progress on the current browser using localStorage. 
-For now, it allows you to do the following:
+Do It is a vanilla JavaScript and CSS only app that saves your progress on the current browser using localStorage.
+For now, it can do the following:
 
 - Create, edit, and delete Todos
 - Search for Todos

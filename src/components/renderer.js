@@ -340,6 +340,21 @@ function renderRenameContentTitleInput() {
 
 export function renameContentTitle(categoryName) { updateTextContent(DOMCache.contentTitle, categoryName) };
 
+function renderContentSettings(e) {
+
+    e.stopImmediatePropagation()
+    const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
+
+    // Removes the event listener that leads to this function being run to prevent conflicts with the
+    // function that will be called inside the renderSettings() function whenever the user will click back
+    // on the settingsButton that triggers this entire event chain
+    contentSettingsButton.removeEventListener('click', renderContentSettings);
+    renderSettings(DOMCache.content, contentSettingsButton, 'Rename', renderRenameContentTitleInput, 'Delete', Controller.handleDeleteRequest, 'category');
+    // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
+    contentSettingsButton.addEventListener('click', renderContentSettings);
+
+}
+
 //
 //
 // Controller assist functions
