@@ -329,6 +329,39 @@ export function deleteUserCategoryButton(categoryID) {
 //
 //
 
+// Renders the settings button when the current category that has it's content rendered is editable (it's a userCategory)
+export function renderContentSettingsButton() {
+
+    const contentSettingsButton = Creator.createSettingsButton('Edit category');
+    contentSettingsButton.addEventListener('click', renderContentSettings);
+    render(DOMCache.contentSettings, contentSettingsButton);
+
+}
+
+// Deletes the settings button when the current category that has it's content rendered is non-editable (it's a devCategory);
+export function deleteContentSettingsButton() {
+
+    const editContentTitleButton = find(DOMCache.contentSettings, '.settings-container');
+    editContentTitleButton.removeEventListener('click', renderContentSettings);
+    editContentTitleButton.remove();
+
+}
+
+function renderContentSettings(e) {
+
+    e.stopImmediatePropagation()
+    const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
+
+    // Removes the event listener that leads to this function being run to prevent conflicts with the
+    // function that will be called inside the renderSettings() function whenever the user will click back
+    // on the settingsButton that triggers this entire event chain
+    contentSettingsButton.removeEventListener('click', renderContentSettings);
+    // * renderSettings(DOMCache.content, contentSettingsButton, 'Rename', renderRenameContentTitleInput, 'Delete', Controller.handleDeleteRequest, 'category');
+    // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
+    contentSettingsButton.addEventListener('click', renderContentSettings);
+
+}
+
 function renderRenameContentTitleInput() {
 
     const contentTitle = find(DOMCache.contentHeader, '.content-title');
@@ -340,20 +373,7 @@ function renderRenameContentTitleInput() {
 
 export function renameContentTitle(categoryName) { updateTextContent(DOMCache.contentTitle, categoryName) };
 
-function renderContentSettings(e) {
 
-    e.stopImmediatePropagation()
-    const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
-
-    // Removes the event listener that leads to this function being run to prevent conflicts with the
-    // function that will be called inside the renderSettings() function whenever the user will click back
-    // on the settingsButton that triggers this entire event chain
-    contentSettingsButton.removeEventListener('click', renderContentSettings);
-    renderSettings(DOMCache.content, contentSettingsButton, 'Rename', renderRenameContentTitleInput, 'Delete', Controller.handleDeleteRequest, 'category');
-    // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
-    contentSettingsButton.addEventListener('click', renderContentSettings);
-
-}
 
 //
 //
