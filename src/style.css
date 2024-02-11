@@ -1,0 +1,55 @@
+/* Font style declarations */
+
+@font-face {
+    font-family: 'WorkSans';
+    src: url('./fonts/WorkSans-Regular.woff');
+    font-weight: 400;
+    font-style: normal;
+    unicode-range: U+000-5FF;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'WorkSans';
+    src: url('./fonts/WorkSans-Italic.woff');
+    font-weight: 400;
+    font-style: italic;
+    unicode-range: U+000-5FF;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'WorkSans';
+    src: url('./fonts/WorkSans-Medium.woff');
+    font-weight: 500;
+    font-style: normal;
+    unicode-range: U+000-5FF;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'WorkSans';
+    src: url('./fonts/WorkSans-MediumItalic.woff');
+    font-weight: 500;
+    font-style: italic;
+    unicode-range: U+000-5FF;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'WorkSans';
+    src: url('./fonts/WorkSans-SemiBold.woff');
+    font-weight: 600;
+    font-style: normal;
+    unicode-range: U+000-5FF;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'WorkSans';
+    src: url('./fonts/WorkSans-SemiBoldItalic.woff');
+    font-weight: 600;
+    font-style: italic;
+    unicode-range: U+000-5FF;
+    font-display: swap;
+}

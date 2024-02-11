@@ -39,7 +39,7 @@ module.exports = {
                 test: /\.svg$/i,
                 loader: 'svg-inline-loader',
                 exclude: [
-                    path.resolve(__dirname, 'src/img'),
+                    path.resolve(__dirname, 'src/img/checkmark.svg'),
                 ],
             },
             {
