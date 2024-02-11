@@ -61,6 +61,19 @@ export function deleteCategory(categoryID) {
 //
 //
 
+
+export function handleDisplayContentRequest(categoryID) {
+
+    // If the current content that is being rendered has the same dataset.id as the categoryID, stop
+    // (this happens when users clicks, for example, the 'All todos' devCategory button while its content is already being rendered)
+    if (Renderer.getCurrentContentID() == categoryID) return;
+    // If there is any content being rendered, remove it from the DOM...
+    Renderer.getCurrentContentID() && deleteContent(Renderer.getCurrentContentID());
+    // ... and display the new content
+    displayNewContent(categoryID);
+
+}
+
 function displayNewContent(categoryID) {
 
     // First, reapply the current sortingMethod and filterMethod functions on the 'todos' array of 
