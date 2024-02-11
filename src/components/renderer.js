@@ -272,6 +272,16 @@ function renderUserCategorySettings(categoryID) {
 
 }
 
+function renderRenameCategoryInput(categoryID) {
+
+    const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+    const userCategoryButtonName = find(userCategoryButton, '.button-name');
+    const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
+
+    renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
+
+}
+
 
 //
 //
