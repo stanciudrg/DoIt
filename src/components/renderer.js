@@ -518,6 +518,22 @@ export function markContentCustomizeSetting(type, state) {
 
 //
 //
+// Todo management: rendering, deleting, editing, renaming, toggling classes
+//
+//
+
+export function renderTodoElement(todoID, index, todoTitle) {
+
+    const todoItem = Creator.createTodoItem(todoID, index, todoTitle);
+    // Insert the todoItem at the passed index to ensure that Todo DOM elements
+    // and Todo objects are organized in the same order based on their category sorting or filtering methods
+    categoriesContent[getCurrentContentID()].insertBefore(todoItem, find(categoriesContent[getCurrentContentID()], `[data-index="${index}"]`))
+
+}
+
+
+//
+//
 // Controller assist functions
 //
 //
