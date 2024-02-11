@@ -531,6 +531,15 @@ export function renderTodoElement(todoID, index, todoTitle) {
 
 }
 
+// Function run by the Controller after organizing a category that is currently being rendered.
+// Refreshes the index of Todo DOM elements to mirror the index property of Todo objects
+export function updateTodoIndex(todoID, index) {
+
+    find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`).dataset.index = index;
+
+}
+
+
 
 //
 //
