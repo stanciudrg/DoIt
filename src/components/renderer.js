@@ -516,6 +516,40 @@ export function markContentCustomizeSetting(type, state) {
 
 }
 
+function handleTodoElementsClickEvents(e) {
+
+    const todoItem = e.target.closest('.todo-item');
+
+    if (!todoItem) return;
+    // There is a separate 'change' event that is handling the completedStatusInput,
+    // which contains a checkbox and a span
+    if (e.target.type == 'checkbox' || e.target.tagName == 'SPAN') return;
+
+    if (hasClass(e.target, 'settings-button')) {
+
+        e.stopImmediatePropagation();
+        return renderTodoSettings(todoItem.dataset.id);
+
+    }
+
+    if (hasClass(e.target, 'expand-button')) {
+
+        if (hasClass(todoItem, 'expanded')) return deleteTodoAdditionalInfo(todoItem.dataset.id);
+        return Controller.handleTodoExpandRequest(todoItem.dataset.id);
+
+    }
+
+    Controller.handleTodoModalRequest(todoItem.dataset.id);
+
+}
+
+function handleTodoElementsChangeEvents(e) {
+
+    const todoItem = e.target.closest('.todo-item');
+    e.target.type == 'checkbox' && Controller.toggleTodoCompletedStatus(todoItem.dataset.id)
+
+}
+
 //
 //
 // Todo management: rendering, deleting, editing, renaming, toggling classes
