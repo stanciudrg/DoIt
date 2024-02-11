@@ -1612,7 +1612,123 @@ function renderCategoryModal() {
 
     }
 
-};
+}
+
+//
+//
+// Delete category & todo form
+//
+//
+
+
+// Type can be 'todo' or 'category', callLocationID can be todoID or categoryID,
+// callLocationName can be todoTitle or categoryName, and hasTodos specifies
+// whether the 'category' type contains any todos
+export function renderDeleteModal(type, callLocationID, callLocationName, hasTodos) {
+
+    const deleteModal = Creator.createDeleteModal();
+    const deleteModalPara = find(deleteModal, '.delete-modal-paragraph');
+    // Turn the callLocationName into an array...
+    const itemName = Array.from(callLocationName);
+
+    // ... and if it has more than 50 characters, delete all characters after index 49,
+    // and push three dots at the end of the array '...' to let the user know that the name
+    // is longer than the paragraph can hold without overflowing
+    if (itemName.length > 49) {
+
+        itemName.splice(49);
+        for (let i = 0; i < 3; i++) { itemName.push('.') };
+
+    }
+
+    deleteModalPara.innerHTML = `Are you sure you want to permanently delete <strong>${itemName.join('')}</strong> ? `
+
+    const closeButton = find(deleteModal, '.close-modal');
+    closeButton.addEventListener('click', closeModal);
+
+    const deleteButton = find(deleteModal, '.confirm-delete-button');
+    deleteButton.addEventListener('click', sendDeleteConfirmation);
+
+    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
+    function closeByClickOutside(e) { if (e.target == DOMCache.modal) closeModal() };
+
+    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
+    function closeByKeyboard(e) { if (e.key == 'Escape') closeModal() };
+
+    render(DOMCache.modal, deleteModal);
+    addClass(DOMCache.modal, 'show');
+
+    // Trap TAB focus within deleteModal
+    const trap = focusTrap.createFocusTrap(deleteModal, {
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        returnFocusOnDeactivate: () => true,
+    });
+    trap.activate();
+
+    applyFocus(deleteButton);
+
+    const methods = {
+
+        // The todo type needs a delete function only...
+        todo: {
+
+            delete: function () { Controller.scanAndDeleteTodo(callLocationID) },
+
+        },
+
+        // While the category type also needs an init function that checks whether
+        // the hasTodos argument is true
+        category: {
+
+            init: function () {
+
+                if (!hasTodos) return;
+                // If the category contains todos, add a custom checkbox that allows the user
+                // to specify whether they want to delete the containing todos
+                const deleteTodosInputContainer = Creator.createDeleteTodosCheckbox();
+                deleteModal.insertBefore(deleteTodosInputContainer, find(deleteModal, ('.modal-actions')));
+
+            },
+
+            delete: function () {
+
+                // If the 'Also delete containing todos' checkbox is checked, ask the Controller to deleteAllTodosOfCategory
+                if (hasTodos) find(deleteModal, '#delete-todos').checked && Controller.deleteAllTodosOfCategory(callLocationID);
+                Controller.deleteCategory(callLocationID);
+
+            },
+
+        }
+
+    }
+
+    if (type == 'category') methods[type].init();
+
+    function sendDeleteConfirmation() {
+
+        closeModal();
+        methods[type].delete();
+
+    }
+
+    function closeModal() {
+
+        trap.deactivate();
+
+        // Remove event listeners to prevent memory leaks and other unwanted behavior
+        closeButton.removeEventListener('click', closeModal);
+        deleteButton.removeEventListener('click', sendDeleteConfirmation);
+
+        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
+        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
+
+        removeClass(DOMCache.modal, 'show');
+        deleteModal.remove();
+
+    }
+
+}
 
 //
 //
