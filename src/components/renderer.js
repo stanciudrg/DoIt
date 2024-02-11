@@ -821,6 +821,32 @@ export function markTodoAsFiltered(state, todoID) {
 
 }
 
+// Highlights the Todo DOM element after the user selected it from the search results list
+export function highlightTodoElement(todoID) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    // If the element is filtered out, make it focusable until removeHighlight is called
+    if (hasClass(todoElement, 'filteredOut')) todoElement.setAttribute('tabindex', '0');
+    todoElement.addEventListener('blur', removeHighlight);
+
+    addClass(todoElement, 'highlighted');
+    applyFocus(todoElement);
+
+    window.addEventListener('click', removeHighlight);
+    window.addEventListener('touchstart', removeHighlight);
+
+    function removeHighlight() {
+
+        removeClass(todoElement, 'highlighted');
+        if (hasClass(todoElement, 'filteredOut')) todoElement.setAttribute('tabindex', '-1');
+        todoElement.removeEventListener('blur', removeHighlight);
+        window.removeEventListener('click', removeHighlight);
+        window.removeEventListener('touchstart', removeHighlight);
+
+    }
+
+}
+
 
 //
 //
