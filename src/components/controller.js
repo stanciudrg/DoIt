@@ -4,6 +4,12 @@ import { UserCategory } from './category.js';
 import { Todo } from './todo.js';
 import { isEqual, isFuture, intlFormatDistance, format, differenceInDays, parseISO, isThisWeek, isThisMonth } from 'date-fns';
 
+//
+//
+// Category management: creating, renaming, deleting
+// 
+//
+
 export function createCategory(name) {
 
     const category = UserCategory(name);
@@ -46,6 +52,49 @@ export function deleteCategory(categoryID) {
         // * toggleTodoExpandFeature(todo);
 
     })
+
+}
+
+//
+//
+// Content management: displaying new content, deleting old content
+//
+//
+
+function displayNewContent(categoryID) {
+
+    // First, reapply the current sortingMethod and filterMethod functions on the 'todos' array of 
+    // the requested Category
+    Organizer.organize(categoryID);
+
+    // Apply a 'selected' class to the header button that was clicked
+    Renderer.selectNewCategoryButton(categoryID);
+    // Rename the title of the 'content' container with the name of the requested Category
+    Renderer.renameContentTitle(Organizer.getCategory(categoryID).getName());
+    // If the requested Category is a UserCategory, also render a settings button to allow it to be renamed and deleted (since it is editable)
+    Organizer.getUserCategory(categoryID) && Renderer.renderContentSettingsButton();
+    // Create a new list container for the todos
+    Renderer.renderTodosList(categoryID);
+    // Check if the currentSorting and currentFilter methods of the requested Category have been changed from their default values.
+    // If they were, add a visual clue to let the user know that the todos list is sorted and/or filtered.
+    getCurrentSortingMethod() !== 'creation-date' ? Renderer.markContentCustomizeSetting('sort', true) : Renderer.markContentCustomizeSetting('sort', false);
+    getCurrentFilterMethod() !== 'no-filter' ? Renderer.markContentCustomizeSetting('filter', true) : Renderer.markContentCustomizeSetting('filter', false);
+
+    // For each todo of the new Category that is being requested to be rendered...
+    Organizer.getTodosOf(categoryID).forEach(todo => {
+        // Render the  todo element
+        triggerTodoRendering(todo);
+        // Check if the todo has been already marked as being completed in a different Category,
+        // and update it accordingly
+        todo.get('completedStatus') ?
+            Renderer.updateTodoElementCompletedStatus(todo.get('id'), 'completed') :
+            Renderer.updateTodoElementCompletedStatus(todo.get('id'), 'uncompleted');
+
+        // Check if the todo has been marked as overdue by the checkDueDates function,
+        // and update it accordingly
+        if (todo.get('overdueStatus')) Renderer.markTodoAsOverdue(todo.get('id'));
+
+    });
 
 }
 
@@ -116,30 +165,6 @@ function triggerTodoRendering(todo) {
 
 }
 
-export function scanAndDeleteTodo(todoID) {
-
-    // Run the todo through the scanTodo function for it to be removed from 
-    // all locations using the deleteTodo function
-    const todo = Organizer.getTodo(todoID);
-    scanTodo(todo, deleteTodo);
-
-}
-
-function deleteTodo(todo, categoryID) {
-
-    Organizer.removeTodo(todo, categoryID);
-    Renderer.updateCategoryTodosCount(categoryID, Organizer.getTodosOf(categoryID).length);
-    if (Renderer.getCurrentContentID() !== categoryID) return;
-
-    // If the content is visible, reorganize the category, delete the rendered Todo element,
-    // and update the index of all remaining rendered todos to reflect the indexes of the todos 
-    // held by the reorganized category
-    Organizer.organize(categoryID);
-    Renderer.deleteTodoElement(todo.get('id'));
-    Organizer.getTodosOf(categoryID).forEach(todo => Renderer.updateTodoIndex(todo.get('id'), todo.get('index')))
-
-}
-
 export function handleTodoExpandRequest(todoID) {
 
     const todo = Organizer.getTodo(todoID);
@@ -198,6 +223,29 @@ export function toggleTodoCompletedStatus(todoID) {
 
 }
 
+export function scanAndDeleteTodo(todoID) {
+
+    // Run the todo through the scanTodo function for it to be removed from 
+    // all locations using the deleteTodo function
+    const todo = Organizer.getTodo(todoID);
+    scanTodo(todo, deleteTodo);
+
+}
+
+function deleteTodo(todo, categoryID) {
+
+    Organizer.removeTodo(todo, categoryID);
+    Renderer.updateCategoryTodosCount(categoryID, Organizer.getTodosOf(categoryID).length);
+    if (Renderer.getCurrentContentID() !== categoryID) return;
+
+    // If the content is visible, reorganize the category, delete the rendered Todo element,
+    // and update the index of all remaining rendered todos to reflect the indexes of the todos 
+    // held by the reorganized category
+    Organizer.organize(categoryID);
+    Renderer.deleteTodoElement(todo.get('id'));
+    Organizer.getTodosOf(categoryID).forEach(todo => Renderer.updateTodoIndex(todo.get('id'), todo.get('index')))
+
+}
 
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
