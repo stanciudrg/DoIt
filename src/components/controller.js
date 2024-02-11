@@ -320,6 +320,15 @@ export function handleTodoModalRequest(callLocation) {
 
 }
 
+// Asks the Renderer to create the categories dropdown list and then fills it with all existing UserCategories.
+// Is being called when the user clicks the custom input for selecting the todo's category
+export function handleCategoriesDropdownRequest() {
+
+    Renderer.renderCategoriesDropdownList()
+    Organizer.getUserCategories().forEach(category => Renderer.renderCategorySelectItem(category.getID(), category.getName()))
+
+}
+
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
 function getCurrentFilterMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentFilterMethod() }
