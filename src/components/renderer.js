@@ -243,6 +243,26 @@ function sendDisplayContentRequest() {
 
 }
 
+export function renderDevCategoryButton(categoryName, categoryID) {
+
+    const devCategoryButton = Creator.createDevCategoryButton(categoryName, categoryID);
+    find(devCategoryButton, 'button').addEventListener('click', sendDisplayContentRequest);
+
+    render(DOMCache.devNavbarList, devCategoryButton);
+    // Create an empty property with the same name as the categoryID on the categoriesContent object.
+    categoriesContent[categoryID] = '';
+
+}
+
+export function renderUserCategoryButton(categoryName, categoryID) {
+
+    const userCategoryButton = Creator.createUserCategoryButton(categoryName, categoryID);
+
+    render(DOMCache.userNavbarList, userCategoryButton);
+    categoriesContent[categoryID] = '';
+
+}
+
 
 //
 //
