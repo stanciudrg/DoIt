@@ -250,6 +250,17 @@ function triggerTodoRendering(todo) {
 
 }
 
+function scanForVisualChanges(todo, property, newValue, oldValue) {
+
+    // If there was no value before, render the new value
+    if (newValue && !oldValue) return Renderer.renderTodoAdditionalFeature(todo.get('id'), property, newValue);
+    // If there was a value before, update it to reflect the new value
+    if (newValue && oldValue) return Renderer.updateTodoFeature(todo.get('id'), property, newValue);
+    // If there was a value before, and the new value is empty, remove the old value;
+    if (!newValue && oldValue) return Renderer.deleteTodoFeature(todo.get('id'), property);
+
+}
+
 function scanAndMove(devCategory, todo) {
 
     // scanAndMove deals with moving to or removing the todos from the two devCategories that have their
