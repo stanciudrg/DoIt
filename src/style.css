@@ -1136,3 +1136,526 @@ footer {
     align-items: center;
     padding: 1rem;
 }
+
+/* Modals (Add todo, Edit todo, Add category, Search todos, Delete todo, Delete category)
+Largely responsible for collecting user input */
+
+/* The modal into which the following elements are being rendered:
+ - Add and edit todo form
+ - Add category form
+ - Search todos container
+ - Delete todo and delete category containers
+ Hidden by default */
+#modal {
+    z-index: 5;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
+    justify-content: center;
+    border: 0;
+}
+
+#modal.show {
+    display: flex;
+    animation-name: open-modal;
+    animation-fill-mode: forwards;
+    animation-duration: 300ms;
+    animation-timing-function: var(--transition-timing-function);
+}
+
+/* Grey overlay that is being shown behind the modal and covers the entire viewport */
+#modal::before {
+    content: "";
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--font-color);
+}
+
+#modal.show::before {
+    /* Ensures that the grey overlay covers the entire viewport even when the modal
+    has not completely entered the viewport. This happens when transitioning from the default 
+    hidden state to the visible state (from a negative transform: translateY() property) */
+    height: calc(100% + 100px);
+    animation-name: show-overlay;
+    animation-fill-mode: forwards;
+    animation-duration: 600ms;
+    animation-timing-function: var(--transition-timing-function);
+}
+
+/* An additional form overlay that is being added over the #modal whenever the user
+opens the custom category select input dropdown or the custom date picker dropdown, to ensure that
+clicking outside to close the dropdowns is not closing the modal as well */
+.form-overlay {
+    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+}
+
+.form-overlay.visible {
+    display: block;
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    gap: 1rem;
+    border: 0;
+}
+
+/* Contains the autogrowing title and description textareas, and has a fixed height
+to prevent the fixed positioned form element from leaking outside the viewport */
+.text-areas-container {
+    max-height: 325px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    gap: 1rem;
+}
+
+.input-container textarea {
+    display: block;
+    /* Properties which combined with JS turn the textareas into autogrowing elements */
+    overflow: hidden;
+    resize: none;
+    white-space: break-spaces;
+    padding-right: 8px;
+}
+
+.input-container.title textarea {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.input-container textarea:focus {
+    outline: 0;
+}
+
+/* A fieldset that contains three custom priority checkboxes (priority 1, priority 2, and priority 3) */
+.priorities-fieldset {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid rgba(29, 29, 31, 0.4);
+    border-radius: var(--medium-border-radius);
+}
+
+.priority-container:first-of-type {
+    color: rgb(177, 49, 49);
+    border-right: 1px solid rgba(29, 29, 31, 0.4);
+    border-top-left-radius: var(--medium-border-radius);
+    border-bottom-left-radius: var(--medium-border-radius)
+}
+
+.priority-container:nth-of-type(2) {
+    color: rgb(193, 112, 5);
+    border-right: 1px solid rgba(29, 29, 31, 0.4);
+}
+
+.priority-container:last-of-type {
+    color: rgb(96, 61, 142);
+    border-top-right-radius: var(--medium-border-radius);
+    border-bottom-right-radius: var(--medium-border-radius);
+}
+
+/* Custom checkbox */
+.priority-container label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px;
+    border-radius: inherit;
+    cursor: pointer;
+}
+
+.priority-container input {
+    position: absolute;
+    opacity: 0;
+}
+
+.priority-container input:checked+label {
+    background-color: var(--dark-hover-color);
+}
+
+/* The due date and category custom inputs contain a 'Clear' button that allows
+for the user to clear the selected due date or selected category */
+.input-container.due-date,
+.input-container.category {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    border: 1px solid rgba(29, 29, 31, 0.4);
+    border-radius: var(--medium-border-radius);
+}
+
+.clear-date,
+.clear-category {
+    fill: var(--transparent-black);
+    border-radius: 0;
+    border-top-right-radius: var(--medium-border-radius);
+    border-bottom-right-radius: var(--medium-border-radius);
+    padding: 0 2px;
+}
+
+@media(hover:hover) {
+
+    .clear-date:hover,
+    .clear-category:hover {
+        background-color: transparent;
+        fill: var(--danger-color);
+    }
+
+}
+
+.clear-date:focus-visible,
+.clear-category:focus-visible {
+    fill: var(--danger-color);
+}
+
+.clear-date:focus-visible:hover,
+.clear-category:focus-visible:hover {
+    background-color: var(--dark-hover-color);
+}
+
+/* The container of the custom date picker imported from a JavaScript library (see Renderer.js component documentation for more info) */
+.flatpickr-wrapper {
+    width: 100%;
+}
+
+.input-container.due-date input,
+.categories-dropdown-button {
+    border-radius: 0;
+    border-top-left-radius: var(--medium-border-radius);
+    border-bottom-left-radius: var(--medium-border-radius);
+}
+
+/* Change the positioning of the fixed height date picker whenever its content is leaking outside
+the viewport. The !important statements are needed to override the default styling of the date picker */
+.flatpickr-calendar.static {
+    top: calc(100% + 6px) !important;
+}
+
+.flatpickr-calendar.static.top-positioned {
+    top: -304px !important;
+}
+
+.flatpickr-calendar.static.center-positioned {
+    top: calc(85% - 165px) !important;
+    left: 150px !important;
+}
+
+.input-container.category {
+    position: relative;
+}
+
+/* The button that acts as a custom 'select' input.
+When clicked, it renders a dropdown list that contains all user categories and allows
+for the user to select one of the categories. */
+.categories-dropdown-button {
+    /* Prevents the name of the category from overflowing the button */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 6px;
+}
+
+.categories-dropdown-button:hover {
+    background-color: transparent;
+}
+
+/* Remove the default styling of the :disabled state of the category select button,
+since the button is being manually disabled by JS to limit the interaction with other elements
+while the categories dropdown list is open, but styling the button differently when this happens
+is unnecessary in this scenario */
+.categories-dropdown-button:disabled {
+    opacity: 1;
+    color: inherit;
+}
+
+/* When no category is selected, the category select button has its textContent set to 'Category'.
+Changing the color of the 'Category' textContent into transparent black copies what a placeholder
+would look like in a similar scenario */
+.categories-dropdown-button.empty {
+    color: var(--transparent-black);
+}
+
+/* The dropdown that contains the dynamic title that can be either 'Pick a category' or 'No categories created',
+and the dropdown list that is only rendered if it contains any categories */
+.categories-dropdown {
+    z-index: 6;
+    position: absolute;
+    top: 37px;
+    left: 0;
+    display: none;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--primary-color);
+    border-radius: var(--medium-border-radius);
+}
+
+.categories-dropdown.visible {
+    display: initial;
+    animation-name: open-dropdown;
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+    animation-fill-mode: forwards;
+}
+
+/* Change the positioning of the categories-dropdown whenever 
+its content is leaking outside the viewport. */
+.categories-dropdown.top-positioned {
+    top: -239px;
+}
+
+.categories-dropdown.center-positioned {
+    top: calc(85% - 165px) !important;
+    left: 150px !important;
+}
+
+.categories-dropdown-title {
+    font-weight: 400;
+    color: var(--transparent-black);
+    padding: 8px;
+}
+
+/* The categories dropdown title is allowed to be focused in case there are no user categories,
+to focus the text that informs the user that no user categories are created, but it is otherwise
+un-focusable */
+.categories-dropdown-title:focus {
+    outline: 0;
+    color: var(--font-color);
+}
+
+/* If there are more than 5 categories that need to be rendered, turn into a scrollable container
+and maintain the current height */
+.categories-dropdown-list {
+    max-height: calc(39.2px * 5);
+    overflow-y: auto;
+}
+
+.categories-dropdown-list button {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 6px 24px 6px 6px;
+    gap: 0.25rem;
+    border-radius: 0;
+}
+
+/* Blue dot that differentiates the selected category from the rest */
+.categories-dropdown-list button.selected:after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--accent-color);
+    border-radius: 100%;
+}
+
+.categories-dropdown-list button:focus {
+    appearance: none;
+    background-color: var(--hover-color);
+    outline: 0;
+}
+
+.categories-dropdown-list button svg {
+    width: 22px;
+}
+
+/* The only input of the Add category form, that is used to retrieve the name of the new category */
+.input-container #category-name {
+    border-radius: var(--medium-border-radius);
+}
+
+/* Contains the 'Cancel' button and the 'Submit'/'Edit'/'Delete' button*/
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.modal-actions button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    padding: 0.75rem 0;
+}
+
+.modal-actions button:active {
+    transform: translateY(2px);
+}
+
+/* Change the cursor type and opacity when the button is disabled to better reflect its state */
+.modal-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.modal-actions .close-modal {
+    background-color: var(--hover-color);
+}
+
+.modal-actions .close-modal:hover {
+    background-color: var(--dark-hover-color);
+}
+
+.modal-actions .submit-modal {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+}
+
+.modal-actions .confirm-delete-button {
+    background-color: var(--danger-color);
+    color: var(--primary-color);
+}
+
+/* Holds a dynamic text that changes depending on the type of content 
+the user wants to delete and its name */
+.delete-modal-paragraph {
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Custom checkbox designed to appear as a toggler similar to the ones present on iOS device,
+it is only added if the content type is category and if it contains any todos, since its purpose
+is to confirm whether the user wants to also delete the containing todos of the category */
+.delete-todos-checkbox {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.delete-todos-checkbox label {
+    font-size: 0;
+    color: transparent;
+    position: relative;
+    width: 44px;
+    height: 22px;
+    cursor: pointer;
+}
+
+.delete-todos-checkbox span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(29, 29, 31, 0.3);
+    border-radius: 50px;
+    cursor: pointer;
+    transition-property: background-color;
+    transition-duration: var(--transition-duration);
+    transition-timing-function: var(--transition-timing-function);
+}
+
+.delete-todos-checkbox span:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition-property: transform;
+    transition-duration: var(--transition-duration);
+    transition-timing-function: var(--transition-timing-function);
+}
+
+.delete-todos-checkbox input:checked+span {
+    background-color: var(--danger-color);
+}
+
+.delete-todos-checkbox input:checked+span::before {
+    transform: translateX(22px);
+}
+
+/* Contains the search container input and a dynamically rendered results list */
+#search-container {
+    max-width: 600px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#search-container input {
+    padding: 1rem;
+    border-radius: var(--big-border-radius);
+    background-color: var(--primary-color);
+}
+
+/* Disable default focus styling */
+#search-container input:focus {
+    outline: 0;
+}
+
+/* Unordered list that turns into a scrollable container if its height goes past 60vh */
+#search-results-list {
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 1rem;
+    gap: 0.5rem;
+    border-top: 1px solid rgba(29, 29, 31, 0.2);
+    border-bottom-right-radius: var(--big-border-radius);
+}
+
+/* Do not render the results list if there are no results to be shown */
+#search-results-list:empty {
+    display: none;
+}
+
+/*  The anchor todo item is an actual anchor element (<a>),
+and is a more simplistic version of the todo item, containing only the title and whether
+it is completed or not */
+.anchor-todo-item {
+    border: 1px solid rgba(29, 29, 31, 0.3);
+    transition-property: background-color, color;
+    transition-duration: var(--transition-duration);
+    transition-timing-function: var(--transition-timing-function);
+}
+
+.anchor-todo-item:hover {
+    background-color: var(--hover-color);
+}
+
+.anchor-todo-item a {
+    touch-action: none;
+    pointer-events: none;
+    appearance: none;
+    color: var(--font-color);
+    text-decoration: none;
+}
+
+.anchor-todo-item:hover a {
+    color: var(--hover-font-color);
+}
+
+.anchor-todo-item .todo-info {
+    padding: 0.5rem;
+}
+
+.anchor-todo-item .todo-title {
+    font-size: 1rem;
+    font-weight: 400;
+}
