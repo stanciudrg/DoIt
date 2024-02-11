@@ -45,7 +45,29 @@ export function deleteCategory(categoryID) {
         Renderer.isAdditionalInfoVisible(todo.get('id')) && Renderer.deleteTodoFeature(todo.get('id'), 'categoryID');
         // * toggleTodoExpandFeature(todo);
 
-    });
+    })
+
+}
+
+function triggerTodoRendering(todo) {
+
+    // First, render the initial Todo DOM element that contains only the title
+    Renderer.renderTodoElement(todo.get('id'), todo.get('index'), todo.get('title'));
+
+    // If the todo has other additional properties, besides the title...
+    if (todo.hasAdditionalInfo()) {
+
+        // ...render an expand button that allows the user to request the rendering of additional info
+        Renderer.renderTodoElementExpander(todo.get('id'));
+
+        // If the todo has a priority property, ask the Renderer to color the completedStatusInput to reflect the current priority
+        todo.get('priority') && Renderer.colorTodoCompletedStatusSpan(todo.get('id'), todo.get('priority'));
+        // If the todo has a dueDate, render a miniDueDate element on it;
+        todo.get('dueDate') && Renderer.renderTodoAdditionalFeature(todo.get('id'), 'miniDueDate', formatDate(todo.get('dueDate')));
+
+    };
+
+    todo.get('filteredOut') && Renderer.markTodoAsFiltered('out', todo.get('id'));
 
 }
 
