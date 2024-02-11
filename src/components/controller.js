@@ -250,6 +250,32 @@ function triggerTodoRendering(todo) {
 
 }
 
+function scanAndMove(devCategory, todo) {
+
+    // scanAndMove deals with moving to or removing the todos from the two devCategories that have their
+    // logic based on dueDate: 'today' and 'next 7 days'.
+    const parsedDueDate = parseISO(todo.get('dueDate'));
+    // If the dueDate was changed, move the Todo based on its new dueDate
+    // If the dueDate was removed, remove the Todo from where it was previously located
+    todo.get('dueDate') ? move() : remove();
+
+    function move() {
+
+        // If the devCategory does not already have the Todo, and the Todo's new dueDate is compatible with the devCategory,
+        // add the Todo to the devCategory.
+        // Otherwise, if the devCategory already has the Todo, and the Todo's new dueDate is no longer compatible with the devCategory,
+        // remove the Todo from the devCategory
+        !Organizer.hasTodo(devCategory, todo.get('id'))
+            ? checkDateInterval(devCategory, parsedDueDate) && addTodo(todo, devCategory)
+            : !checkDateInterval(devCategory, parsedDueDate) && deleteTodo(todo, devCategory);
+
+    }
+
+    // If devCategory has the todo, remove it
+    function remove() { Organizer.hasTodo(devCategory, todo.get('id')) && deleteTodo(todo, devCategory) }
+
+}
+
 export function handleTodoExpandRequest(todoID) {
 
     const todo = Organizer.getTodo(todoID);
