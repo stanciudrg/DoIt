@@ -153,6 +153,30 @@ export function handleFilterSettingsRequest() {
 
 }
 
+export function sortTodos(type, categoryID) {
+
+    // Set the new sorting method
+    Organizer.setSortingMethod(categoryID, type);
+    if (Renderer.getCurrentContentID() !== categoryID) return
+    // Refresh the current content by running deleteContent and then displayNewContent (which reorganizes the category
+    // each time it runs)
+    deleteContent(categoryID);
+    displayNewContent(categoryID);
+
+}
+
+export function filterTodos(type, categoryID) {
+
+    // Set the new filter method
+    Organizer.setFilterMethod(categoryID, type);
+    if (Renderer.getCurrentContentID() !== categoryID) return
+    // Refresh the current content by running deleteContent and then displayNewContent (which reorganizes the category
+    // each time it runs)
+    deleteContent(categoryID);
+    displayNewContent(categoryID);
+
+}
+
 //
 //
 // Todo management: creating, editing, toggling states, deleting
