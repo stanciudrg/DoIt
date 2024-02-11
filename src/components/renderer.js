@@ -910,6 +910,395 @@ export function highlightTodoElement(todoID) {
 
 }
 
+//
+//
+//
+// Modal management for adding todos, adding categories, and searching todos:
+// rendering, deleting, handling events, getting input and sending to Controller
+//
+//
+//
+
+//
+//
+// Add todo form
+//
+//
+
+// The todo modal will have different values already set when being open based
+// on its callLocation and the locationAttributes that are passed along with it
+export function renderTodoModal(callLocation, locationAttributes) {
+
+    const form = Creator.createFormModal('Todo details', 'todo-form');
+    const formFieldset = find(form, 'fieldset');
+
+    const closeButton = find(form, '.close-modal');
+    closeButton.addEventListener('click', closeModal);
+
+    const submitButton = find(form, '.submit-modal');
+    // Disable the submitButton by default, only enable it when a Todo title is provided
+    disableButton(submitButton);
+    submitButton.addEventListener('click', submitFormModal);
+
+    // formOverlay used by other inputs that have their own dropdown content to temporarily disable
+    // input behind their dropdown
+    const formOverlay = Creator.createElementWithClass('div', 'form-overlay');
+    render(form, formOverlay);
+
+    const textAreasContainer = Creator.createElementWithClass('div', 'text-areas-container');
+    render(formFieldset, textAreasContainer);
+
+    const titleInputContainer = Creator.createTextArea('title', 'title', 'todo-title', { minlength: '1', maxlength: '500', placeholder: 'Todo title', rows: '1' });
+    const titleInput = find(titleInputContainer, 'textarea');
+    titleInput.addEventListener('input', checkInput);
+    titleInput.addEventListener('keydown', changeEnterKeyBehavior);
+    render(textAreasContainer, titleInputContainer);
+
+    const descriptionInputContainer = Creator.createTextArea('description', 'description', 'todo-description', { maxlength: '500', placeholder: 'Description', rows: '1', cols: '1' });
+    const descriptionInput = find(descriptionInputContainer, 'textarea');
+    descriptionInput.addEventListener('input', checkInput);
+    descriptionInput.addEventListener('keydown', changeEnterKeyBehavior);
+    descriptionInput.addEventListener('click', scrollIntoView);
+    render(textAreasContainer, descriptionInputContainer);
+
+    const prioritiesFieldset = Creator.createPrioritiesFieldset();
+    render(formFieldset, prioritiesFieldset);
+
+    const priorityCheckboxes = findAll(prioritiesFieldset, 'input');
+    for (const checkbox of priorityCheckboxes) { checkbox.addEventListener('change', preventMultipleCheckboxes) };
+
+    const dueDateInputContainer = Creator.createInput('dueDate', 'due-date', 'todo-due-date', 'text', { placeholder: "Due date" });
+    render(formFieldset, dueDateInputContainer);
+
+    const dueDateInput = find(dueDateInputContainer, 'input');
+    dueDateInput.addEventListener('change', replaceInput);
+
+    // Custom datePicker imported from the flatpickr JavaScript library. Check flatpickr
+    // Javascript library documentation for more information regarding the settings used
+    // for this app
+    const datePicker = new flatpickr(dueDateInput, {
+        minDate: format(new Date(), 'yyyy-MM-dd'),
+        maxDate: '',
+        defaultDate: '',
+        disableMobile: true,
+        static: true,
+        onOpen: function () { showCalendar() },
+    });
+
+    // Button used to clear the date value
+    const clearDueDateButton = Creator.createClearButton('Clear selected due date', 'clear-date');
+    clearDueDateButton.addEventListener('click', clearDateInput);
+    render(dueDateInputContainer, clearDueDateButton);
+
+    // Custom input for selecting the category of the Todo
+    const categoryInputContainer = Creator.createCategoryInput();
+    render(formFieldset, categoryInputContainer);
+
+    const categorySelectButton = find(categoryInputContainer, 'button');
+    categorySelectButton.addEventListener('click', Controller.handleCategoriesDropdownRequest)
+    addClass(categorySelectButton, 'empty');
+
+    const clearCategoryButton = Creator.createClearButton('Clear selected category', 'clear-category');
+    clearCategoryButton.addEventListener('click', clearCategory);
+    render(categoryInputContainer, clearCategoryButton);
+
+    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
+    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
+
+    render(DOMCache.modal, form);
+    addClass(DOMCache.modal, 'show');
+    // Do not disable scrolling if the app is in mobile version and has its header open, since
+    // the scrolling is already disabled in that case by another function
+    if (!(hasClass(DOMCache.header, 'mobile') && hasClass(DOMCache.header, 'visible'))) disableScrolling();
+
+    // Trap TAB focus within the form
+    const trap = focusTrap.createFocusTrap(form, {
+        initialFocus: () => DOMCache.modal,
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        returnFocusOnDeactivate: () => true,
+        preventScroll: () => true,
+        setReturnFocus: () => { if (callLocation == 'edit-todo') return find(find(categoriesContent[getCurrentContentID()], `[data-id="${locationAttributes[6]}"]`), '.settings-button') }
+    });
+    trap.activate();
+
+
+    const locationDefaults = {
+
+        'all-todos': function () { return applyFocus(titleInput); },
+
+        // If the callLocation is the 'today' devCategory, set the value of dueDate input to today
+        'today': function () {
+
+            datePicker.set('maxDate', format(new Date(), 'yyyy-MM-dd'));
+            selectDate(format(new Date(), 'yyyy-MM-dd'), true);
+            applyFocus(titleInput);
+
+        },
+
+        // If the callLocation is the 'this-week' devCategory, set the value of dueDate input to today
+        // and set the maxDate to be 7 days from the current date
+        'this-week': function () {
+
+            datePicker.set('maxDate', format(addDays(new Date(), 7), 'yyyy-MM-dd'));
+            selectDate(format(new Date(), 'yyyy-MM-dd'), true);
+            applyFocus(titleInput);
+
+        },
+
+        // If the callLocation is a 'user-category', set the value of the custom category input to
+        // the userCategory from which the todoModal was opened
+        'user-category': function () {
+
+            const [categoryID, categoryName] = locationAttributes;
+            selectCategory(categoryID, categoryName);
+            applyFocus(titleInput);
+
+        },
+
+        // If the callLocation is 'edit-todo', the todoModal was called by clicking the Todo DOM element or selecting
+        // the editTodo setting, in which case fill the inputs with the already existing property values of the 
+        // Todo object
+
+        'edit-todo': function () {
+
+            const [title, description, priority, dueDate, categoryID, categoryName] = locationAttributes;
+            submitButton.textContent = 'Edit';
+
+            if (title) {
+
+                titleInput.value = title;
+                titleInput.dispatchEvent(new Event('input'));
+
+            }
+
+            if (description) {
+
+                descriptionInput.value = description;
+                descriptionInput.dispatchEvent(new Event('input'));
+
+            }
+
+            priority && find(prioritiesFieldset, `input[value='${priority}']`).setAttribute('checked', 'true');
+            categoryID && selectCategory(categoryID, categoryName);
+            dueDate && selectDate(dueDate);
+
+        }
+
+    };
+
+    locationDefaults[callLocation]();
+
+    // Modify the default 'Enter' key behavior of Todo title and Todo description text areas
+    function changeEnterKeyBehavior(e) {
+
+        if (e.key == "Enter" && e.shiftKey) return;
+
+        if (e.key == "Enter") {
+
+            e.preventDefault();
+            if (submitButton.disabled) return;
+            submitButton.dispatchEvent(new Event('click'));
+
+        }
+    }
+
+    function selectCategory(categoryID, categoryName) {
+
+        // Simulates an input by setting the dataset of the category input button to the value of the categoryID
+        // and by setting the textContent of the category input button to the value of the categoryName
+        categorySelectButton.dataset.id = categoryID;
+        updateTextContent(categorySelectButton, categoryName);
+        categorySelectButton.setAttribute('aria-label', `Todo category: ${categoryName}. Click this button to change the category of this todo`);
+        removeClass(categorySelectButton, 'empty');
+
+    }
+
+    // Manually sets the date of the dueDateInput following a custom format
+    function selectDate(dueDate) { dueDateInput.value = `${Controller.formatDate(dueDate)} / ${dueDate}` };
+
+    function closeByClickOutside(e) { if (e.target == DOMCache.modal) { closeModal(); } };
+
+    function closeByKeyboard(e) {
+
+        if (e.key == "Escape") {
+
+            // If a formOverlay is visible, it means that the input that set it to visible
+            // is currently managing the 'Escape' key, therefore stop.
+            // This prevents the issue where hitting the 'Escape' key to close, for example, the date picker,
+            // also closes the modal, which is not desirable for accessibility reasons
+            if (hasClass(formOverlay, 'visible')) return;
+            closeModal();
+
+        }
+
+    }
+
+    function checkInput() {
+
+        // Transforms textareas into autogrowing textareas by keeping their height
+        // the same value as their scrollHeight. Also prevents the textAreasContainer
+        // from changing its scroll position each time an input event is fired
+        // on the textareas
+        const oldScrollPosition = textAreasContainer.scrollTop;
+        this.style.height = 'auto';
+        this.style.height = `${this.scrollHeight}px`;
+        textAreasContainer.scrollTo(0, oldScrollPosition);
+
+        if (this == titleInput) {
+
+            // Only enable the submitButton if the titleInput has at least one character
+            this.value.match(/([a-zA-Z0-9)]){1,}/g)
+                ? enableButton(submitButton)
+                : disableButton(submitButton);
+
+        }
+
+    }
+
+    // By default, the descriptionInput is not always scrolled into view when it is not fully visible and it is being
+    // clicked on mobile devices. This function solves the bug in the majority of cases
+    function scrollIntoView() {
+
+        if (DOMCache.mobileVersion.matches) {
+
+            this.blur();
+            if (this == descriptionInput) textAreasContainer.scrollTo(0, textAreasContainer.scrollHeight);
+            this.focus({ preventScroll: true });
+
+        }
+
+    }
+
+    // Prevents selecting more than one of the three priority checkboxes
+    function preventMultipleCheckboxes() {
+
+        if (this.checked) {
+
+            for (const checkbox of priorityCheckboxes) { checkbox.checked = false; }
+            this.checked = true;
+
+        }
+
+    }
+
+    // Automatically replace the dueDate value provided by flatpickr with a custom, formatted version
+    function replaceInput() {
+
+        if (!dueDateInput.value) return;
+        dueDateInput.value = `${Controller.formatDate(dueDateInput.value)} / ${dueDateInput.value}`;
+
+    }
+
+    function clearDateInput() { datePicker.clear() };
+
+    function showCalendar() {
+
+        const calendar = find(form, '.flatpickr-calendar');
+
+        // Run the calendar through the checkBounds function to determine whether its position needs to be changed
+        // after being rendered (in case its leaking out of the viewport)
+        checkBounds(calendar, 325);
+
+        addClass(dueDateInput, 'focused');
+        dueDateInput.addEventListener('change', hideDueDateOverlay);
+
+        // Make the formOverlay visible to prevent the main modal from also being closed when the user
+        // tries to close the calendar either by pressing 'Escape' or by clicking outside the calendar
+        addClass(formOverlay, 'visible');
+        formOverlay.addEventListener('click', hideDueDateOverlay);
+
+        document.addEventListener('keyup', hideByKbd);
+        function hideByKbd(e) { if (e.key == 'Escape' || e.key == 'Tab') { hideDueDateOverlay(e) } };
+
+        function hideDueDateOverlay(e) {
+
+            // If calendar is still open, stop
+            if (hasClass(e.target, 'active')) return;
+
+            // Otherwise remove the formOverlay and eventListeners to prevent memory leaks and other unwanted behavior
+            removeClass(dueDateInput, 'focused');
+            dueDateInput.removeEventListener('change', hideDueDateOverlay);
+
+            removeClass(formOverlay, 'visible');
+            formOverlay.removeEventListener('click', hideDueDateOverlay);
+
+            document.removeEventListener('keyup', hideByKbd);
+
+        }
+
+    };
+
+    // Clears the current category input value when clicking the clearCategory button
+    function clearCategory() {
+
+        categorySelectButton.dataset.id = '';
+        updateTextContent(categorySelectButton, 'Category');
+        addClass(categorySelectButton, 'empty');
+
+    }
+
+    function submitFormModal(e) {
+
+        // Prevents the default form submission behavior
+        e.preventDefault();
+
+        // Gets the formData
+        const formData = new FormData(form);
+        // Formats the dueDate
+        const dueDate = formData.get('dueDate') ? formData.get('dueDate').split('/')[1].trim() : formData.get('dueDate');
+        // Manually gets the categoryID and categoryName since they are custom inputs that are not recognized by FormData
+        const categoryID = categorySelectButton.dataset.id;
+        const categoryName = !categoryID ? '' : categorySelectButton.textContent;
+
+        closeModal();
+
+        // If the todoModal was rendered for editing purposes, ask the Controller to handle the 
+        // edit request by providing the Todo ID (locationAttributes[6]) along with the remaining information
+        if (callLocation == 'edit-todo') return Controller.handleEditTodoRequest(locationAttributes[6], formData.get('title').trim(), formData.get('description').trim(), formData.get('priority'), dueDate, categoryID, categoryName)
+
+        // Otherwise ask the Controller to create, scan, and add the Todo where needed
+        Controller.scanAndAddTodo(formData.get('title').trim(), formData.get('description').trim(), formData.get('priority'), dueDate, categoryID, categoryName);
+
+    }
+
+    function closeModal() {
+
+        trap.deactivate();
+
+        // Remove event listeners to prevent memory leaks and other unwanted behavior
+        closeButton.removeEventListener('click', closeModal);
+        submitButton.removeEventListener('click', submitFormModal);
+
+        titleInput.removeEventListener('input', checkInput);
+        titleInput.removeEventListener('keydown', changeEnterKeyBehavior);
+        descriptionInput.removeEventListener('input', checkInput);
+        descriptionInput.removeEventListener('keydown', changeEnterKeyBehavior);
+        descriptionInput.removeEventListener('click', scrollIntoView);
+
+        for (const checkbox of priorityCheckboxes) { checkbox.removeEventListener('change', preventMultipleCheckboxes) };
+
+        dueDateInput.removeEventListener('change', replaceInput);
+        clearDueDateButton.removeEventListener('click', clearDateInput);
+        datePicker.destroy();
+
+        categorySelectButton.removeEventListener('click', Controller.handleCategoriesDropdownRequest);
+        clearCategoryButton.removeEventListener('click', clearCategory);
+
+        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
+        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
+
+        // If the app is not in mobile mode with its header open, enable back scrolling
+        if (!(hasClass(DOMCache.header, 'mobile') && hasClass(DOMCache.header, 'visible'))) enableScrolling();
+        removeClass(DOMCache.modal, 'show');
+        removeClass(DOMCache.body, 'overlay-over');
+        // Remove the form from the DOM
+        form.remove();
+
+    }
+
+}
+
 
 //
 //
