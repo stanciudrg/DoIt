@@ -4,6 +4,48 @@ import { UserCategory } from './category.js';
 import { Todo } from './todo.js';
 import { isEqual, isFuture, intlFormatDistance, format, differenceInDays, parseISO, isThisWeek, isThisMonth } from 'date-fns';
 
+
+
+
+function checkDueDates() {
+
+    // Go through each todo...
+    Organizer.getTodosOf('all-todos').forEach(todo => {
+
+        // If it does not have a dueDate, stop
+        if (!todo.get('dueDate')) return
+
+        // If it does, run scanAndMove to check whether the todo should be 
+        // added or removed from 'Today' and 'Next 7 days' devCategories
+        scanAndMove('today', todo);
+        scanAndMove('this-week', todo);
+
+        // Check if the miniDueDate property should be formatted differently, in case time has passed (eg. from 'yesterday' to '2 days ago'),
+        // and reflect the changes on the Todo DOM element, if visible
+        const oldMiniDueDate = todo.get('miniDueDate');
+        const newMiniDueDate = formatDate(todo.get('dueDate')) || oldMiniDueDate;
+
+        if (oldMiniDueDate !== newMiniDueDate) {
+
+            Organizer.editTodo(todo, 'miniDueDate', newMiniDueDate);
+            Renderer.isVisible(todo.get('id')) && Renderer.updateTodoFeature(todo.get('id'), 'miniDueDate', todo.get('miniDueDate'))
+
+        };
+
+        // Check if the todo is overdue using checkDateInterval function.
+        // If it is, mark the todo as overdue. 
+        // If it has already been marked as overdue, stop
+        if (todo.get('overdueStatus') == false && checkDateInterval('overdue', parseISO(todo.get('dueDate')))) {
+
+            Organizer.editTodo(todo, 'overdueStatus', true);
+            Renderer.isVisible(todo.get('id')) && Renderer.markTodoAsOverdue(todo.get('id'));
+
+        }
+
+    })
+
+}
+
 //
 //
 // Category management: creating, renaming, deleting
