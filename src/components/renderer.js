@@ -1496,6 +1496,33 @@ function renderSearchModal() {
 
 }
 
+export function renderAnchorTodoElement(ID, title) {
+
+    const resultsList = find(DOMCache.modal, '#search-results-list');
+    const anchorTodoElement = Creator.createAnchorTodoItem(ID, title);
+
+    render(resultsList, anchorTodoElement);
+
+}
+
+export function deleteAllAnchorTodoElements() {
+
+    const resultsList = find(DOMCache.modal, '#search-results-list');
+    for (const result of findAll(resultsList, '.anchor-todo-item')) { result.remove() };
+
+}
+
+// If the results list contains a Todo that is already completed, also design
+// the anchorTodoElement to appears as being already completed
+export function markAnchorTodoElementAsCompleted(todoID) {
+
+    const resultsList = find(DOMCache.modal, '#search-results-list');
+    const anchorTodoElement = find(resultsList, `[data-id= "${todoID}"]`);
+
+    addClass(anchorTodoElement, 'completed');
+
+}
+
 //
 //
 // Controller assist functions
