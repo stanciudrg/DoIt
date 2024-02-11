@@ -116,6 +116,22 @@ function triggerTodoRendering(todo) {
 
 }
 
+function deleteTodo(todo, categoryID) {
+
+    Organizer.removeTodo(todo, categoryID);
+    Renderer.updateCategoryTodosCount(categoryID, Organizer.getTodosOf(categoryID).length);
+    if (Renderer.getCurrentContentID() !== categoryID) return;
+
+    // If the content is visible, reorganize the category, delete the rendered Todo element,
+    // and update the index of all remaining rendered todos to reflect the indexes of the todos 
+    // held by the reorganized category
+    Organizer.organize(categoryID);
+    Renderer.deleteTodoElement(todo.get('id'));
+    Organizer.getTodosOf(categoryID).forEach(todo => Renderer.updateTodoIndex(todo.get('id'), todo.get('index')))
+
+}
+
+
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
 function getCurrentFilterMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentFilterMethod() }
