@@ -66,7 +66,9 @@ export function deleteAllTodosOfCategory(categoryID) {
 
 //
 //
-// Content management: displaying new content, deleting old content
+// Content management: displaying new content, deleting old content, and 
+// sorting and filtering content
+// 
 //
 //
 
@@ -129,6 +131,25 @@ function deleteContent(categoryID) {
     Organizer.getUserCategory(categoryID) && Renderer.deleteContentSettingsButton();
     // Delete the todos list that contains all todo elements
     Renderer.deleteTodosList(categoryID);
+
+}
+
+// Asks the renderer to create a settings dropdown list containing the specified sorting methods
+export function handleSortSettingsRequest() {
+
+    const currentCategory = Organizer.getCategory(Renderer.getCurrentContentID());
+
+    // If the current content category is 'Today', do not render the dueDate sorting method, since all 
+    // todos have the same date (the current date);
+    if (currentCategory.getID() == 'today') return Renderer.renderContentCustomizer('sort', currentCategory.getCurrentSortingMethod(), 'creation-date', 'name', 'priority')
+    Renderer.renderContentCustomizer('sort', currentCategory.getCurrentSortingMethod(), 'creation-date', 'name', 'priority', 'due-date');
+
+}
+
+// Asks the renderer to create a settings dropdown list containing the specified filter methods
+export function handleFilterSettingsRequest() {
+
+    Renderer.renderContentCustomizer('filter', Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentFilterMethod(), 'no-filter', 'priority-one', 'priority-two', 'priority-three', 'completed', 'uncompleted');
 
 }
 
