@@ -206,6 +206,36 @@ export function updateUserCategoriesCount(categoriesCount) {
 
 }
 
+function toggleUserCategoriesList() {
+
+    hasClass(DOMCache.expandCategoriesButton, 'expanded')
+        ? DOMCache.expandCategoriesButton.setAttribute('aria-label', 'Hide user categories')
+        : DOMCache.expandCategoriesButton.setAttribute('aria-label', 'Show user categories');
+
+    toggleClass(DOMCache.expandCategoriesButton, 'expanded');
+
+    if (hasClass(DOMCache.userNavbarList, 'hidden')) {
+
+        DOMCache.userNavbarList.style.removeProperty('display');
+        removeClass(DOMCache.userNavbarList, 'hidden');
+        return;
+
+    }
+
+    // Ensures that the animation works by waiting for it to finish before changing
+    // other properties that do not transition their state
+    DOMCache.userNavbarList.addEventListener('animationend', remove);
+    addClass(DOMCache.userNavbarList, 'hidden');
+
+    function remove() {
+
+        if (hasClass(DOMCache.userNavbarList, 'hidden')) DOMCache.userNavbarList.style.display = 'none';
+        DOMCache.userNavbarList.removeEventListener('animationend', remove);
+
+    }
+
+}
+
 
 //
 //
