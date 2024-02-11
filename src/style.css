@@ -73,3 +73,16 @@
     --transition-duration: 200ms;
     --transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Mini CSS reset */
+
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    /* Disables the colored highlight that is supposed to appear over a link while it's being 
+    tapped but also appears over button elements on mobile devices */
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    padding: 0;
+}
