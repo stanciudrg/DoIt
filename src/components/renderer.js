@@ -239,7 +239,7 @@ function toggleUserCategoriesList() {
 function sendDisplayContentRequest() {
 
     const categoryID = this.id || this.dataset.id;
-    // Controller.handleDisplayContentRequest(categoryID);
+    // * Controller.handleDisplayContentRequest(categoryID);
 
 }
 
@@ -260,6 +260,15 @@ export function renderUserCategoryButton(categoryName, categoryID) {
 
     render(DOMCache.userNavbarList, userCategoryButton);
     categoriesContent[categoryID] = '';
+
+}
+
+function renderUserCategorySettings(categoryID) {
+
+    const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+    const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
+
+    // * renderSettings(userCategoryButton, userCategorySettingsButton, 'Rename', renderRenameCategoryInput, 'Delete', Controller.handleDeleteRequest, 'category');
 
 }
 
