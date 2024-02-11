@@ -745,6 +745,29 @@ export function updateTodoFeature(todoID, feature, value) {
 
 }
 
+export function deleteTodoFeature(todoID, feature) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    // let variable whose value is dynamically changed by methods objects, and is
+    // later used to delete its value from the DOM
+    let featureToDelete;
+
+    const methods = {
+
+        'miniDueDate': function () { featureToDelete = find(todoElement, '.todo-mini-due-date') },
+        'description': function () { featureToDelete = find(todoElement, '.todo-description') },
+        'priority': function () { featureToDelete = todoElement.querySelector("[class^='todo-priority']") },
+        'dueDate': function () { featureToDelete = find(todoElement, '.todo-due-date') },
+        'categoryID': function () { featureToDelete = find(todoElement, '.todo-category') },
+        'categoryName': function () { this['categoryID']() },
+
+    }
+
+    methods[feature]();
+    featureToDelete.remove();
+
+}
+
 //
 //
 // Controller assist functions
