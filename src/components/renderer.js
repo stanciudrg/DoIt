@@ -1525,6 +1525,97 @@ export function markAnchorTodoElementAsCompleted(todoID) {
 
 //
 //
+// Add category form
+//
+//
+
+function renderCategoryModal() {
+
+    const form = Creator.createFormModal('Category details', 'category-form');
+    const formFieldset = find(form, 'fieldset');
+
+    const closeButton = find(form, '.close-modal');
+    closeButton.addEventListener('click', closeModal);
+
+    const submitButton = find(form, '.submit-modal');
+    // Disable the submit button by default, only enable it when user enters at least one character
+    // in the categoryName input field
+    disableButton(submitButton)
+    submitButton.addEventListener('click', submitFormModal);
+
+    const categoryNameContainer = Creator.createInput('name', 'name', 'category-name', 'text', {
+        minlength: '2', placeholder: 'Category name'
+    });
+    render(formFieldset, categoryNameContainer);
+
+    const categoryNameInput = find(categoryNameContainer, '#category-name');
+    categoryNameInput.addEventListener('input', checkInput);
+
+    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
+    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
+
+    render(DOMCache.modal, form);
+    addClass(DOMCache.modal, 'show');
+    disableScrolling;
+    applyFocus(categoryNameInput);
+
+    // Trap TAB focusing within the form
+    const trap = focusTrap.createFocusTrap(form, {
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        returnFocusOnDeactivate: () => true,
+        setReturnFocus: () => this,
+    });
+    trap.activate();
+
+    function closeByClickOutside(e) { if (e.target == DOMCache.modal) { closeModal(); } }
+    function closeByKeyboard(e) { if (e.key == 'Escape') { closeModal(); } }
+
+    function checkInput() {
+
+        // Only enable the submitButton if the titleInput has at least one character
+        this.value.match(/([a-zA-Z0-9)]){1,}/g)
+            ? enableButton(submitButton)
+            : disableButton(submitButton);
+
+    }
+
+    function closeModal() {
+
+        trap.deactivate();
+
+        // Remove event listeners to prevent memory leaks and other unwanted behavior
+        closeButton.removeEventListener('click', closeModal);
+        submitButton.removeEventListener('click', submitFormModal);
+
+        categoryNameInput.removeEventListener('input', checkInput);
+
+        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
+        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
+
+        removeClass(DOMCache.modal, 'show');
+        enableScrolling;
+        // Remove the form from the DOM
+        form.remove();
+
+    }
+
+    function submitFormModal(e) {
+
+        // Prevent default form submission, gather the formData, get the categoryName, trim the value, and
+        // ask the Controller to create a new category
+        e.preventDefault();
+        closeModal();
+
+        const formData = new FormData(form);
+        Controller.createCategory(formData.get('name').trim());
+
+    }
+
+};
+
+//
+//
 // Controller assist functions
 //
 //
