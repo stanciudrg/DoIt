@@ -86,3 +86,308 @@
     margin: 0;
     padding: 0;
 }
+
+/* General declarations */
+
+body,
+button,
+textarea,
+input {
+    color: var(--font-color);
+}
+
+h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+svg {
+    width: 26px;
+    /*Prevents sending click events to the event listeners attached to button element ancestors.*/
+    pointer-events: none;
+    touch-action: none;
+}
+
+button {
+    /* Disable default button styling */
+    appearance: none;
+    text-align: left;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    transition-property: background-color, color;
+    transition-duration: var(--transition-duration);
+    transition-timing-function: var(--transition-timing-function);
+}
+
+/* Class added whenever the button is a .settings-button and a respective .settings-list is visible.
+Keeps the button in a simulated 'focus' state as long as the .settings-list it generated is visible, to create
+the appearance of a 'hover' effect on mobile devices */
+button.focused {
+    background-color: var(--hover-color);
+    color: var(--hover-font-color);
+}
+
+/* Only apply hover effects if the device has hover capabilities */
+@media (hover: hover) {
+
+    button:hover {
+        background-color: var(--hover-color);
+        color: var(--hover-font-color);
+    }
+
+}
+
+/* Class for buttons that contain a name either directly or within a child span element (see bellow) */
+.named-button {
+    border-radius: var(--medium-border-radius);
+}
+
+/* Named buttons that contain more information than their name, that is split in multiple span
+elements. These types of buttons are the category navigational buttons (devCategories and userCategories as in JS)  */
+.named-button .button-name {
+    padding: 4px 6px;
+    width: 100%;
+}
+
+.named-button .icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Class for buttons that contain a SVG only */
+.icon-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--tiny-border-radius);
+}
+
+/* The containers that hold the .settings-button (button) and the .settings-list (ul) separated
+from each other to prevent accessibility errors when trying to nest a ul element within a button element */
+.settings-container,
+.customize-settings-container {
+    position: relative;
+}
+
+/* Icon only button holding a SVG made of three vertical dots.
+Used for all buttons that represent the action of opening a settings list, apart from the filter and sort setting buttons
+that have their own icons */
+.settings-button {
+    padding: 2px;
+}
+
+.settings-button svg {
+    width: 22px;
+}
+
+/* Ul elements containing the available settings for a a specific feature.
+They simulate a context menu and are positioned relative to their container while
+floating over the rest of the webpage */
+.settings-list,
+.dropdown-list-container {
+    z-index: 2;
+    position: absolute;
+    top: 28px;
+    right: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    list-style-type: none;
+    font-size: 0.9rem;
+    background-color: var(--primary-color);
+    border-radius: var(--medium-border-radius);
+}
+
+.settings-list,
+.dropdown-list-container,
+.categories-dropdown {
+    box-shadow: 0 0 10px 0 rgba(29, 29, 31, 0.2);
+    outline: 2px solid rgba(29, 29, 31, 0.04);
+}
+
+/* Class added by JS whenever the .settings-list is being rendered outside of the viewport*/
+.settings-list.top-positioned {
+    top: -68px;
+}
+
+/* The setting items within a settings list. Dynamically created by JS based on their call location */
+.settings-list .named-button,
+.dropdown-list .named-button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+    border-radius: 0;
+}
+
+/* The main todo item that is being rendered inside the todos list,
+and the anchor todo item that is being rendered inside the search results list
+whenever the user searches for a todo. The anchor todo item is an actual anchor element (<a>),
+and is a more simplistic version of the todo item, containing only the title and whether
+it is completed or not */
+.todo-item,
+.anchor-todo-item {
+    border-radius: var(--medium-border-radius);
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+}
+
+.todo-item .todo-title,
+.anchor-todo-item .todo-title {
+    grid-column: 2 / 3;
+    /* Prevents text overflowing by dynamically shortening the text and adding an ellipsis.
+    This is necessary since the maxlength of the title input is 500 characters and the todo item
+    changes its size according to the viewport */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+/* Adds a line-through the todo title whenever the 'completed' checkbox on the todo item is checked */
+.anchor-todo-item.completed .todo-title,
+.todo-item.completed .todo-title {
+    text-decoration: line-through;
+}
+
+/* Keeps the color of the 'Delete' setting within any settings list to var(--danger-color) */
+.settings-list .named-button.delete,
+.settings-list .named-button.delete:hover {
+    color: var(--danger-color);
+}
+
+/* Hides the input element to create a custom checkbox for changing the status of the todo item
+and for selecting whether deleting a category should also delete its containing todos */
+.todo-completed-status input,
+.delete-todos-checkbox input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    cursor: pointer;
+    opacity: 0;
+}
+
+/* The three types of content that are being rendered into the #modal container.
+The form element is used for the Add and Edit Todo and Add Category modals,
+the #search-container is a div and is used for the Search modal, and the .delete-modal
+is used for the Delete Todo and Delete Category modals */
+form,
+#search-container,
+.delete-modal {
+    position: absolute;
+    top: 15vh;
+    background-color: var(--primary-color);
+    box-shadow: 0px 0px 50px 0px rgba(29, 29, 31, 0.3);
+    border-radius: var(--big-border-radius);
+}
+
+form,
+.delete-modal {
+    display: grid;
+    max-width: 350px;
+    width: 100%;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.input-container textarea,
+.input-container input {
+    width: 100%;
+    border: 0;
+}
+
+.input-container input {
+    padding: 6px;
+}
+
+input {
+    appearance: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--transparent-black);
+    opacity: 1;
+}
+
+.priority-container label,
+.input-container.due-date input,
+.input-container.category {
+    transition-property: background-color;
+    transition-duration: var(--transition-duration);
+    transition-timing-function: var(--transition-timing-function);
+}
+
+/* Adds the 'focus' styling back to the label and span elements as a result of
+hiding their respective input elements from view when creating custom inputs */
+.priority-container input:focus-visible+label,
+.delete-todos-checkbox input:focus-visible+span {
+    outline: 4px auto Highlight;
+    outline: 4px auto -webkit-focus-ring-color;
+    border-radius: 0;
+}
+
+/* Changes the default 'focus' styling */
+.clear-date:focus-visible,
+.clear-category:focus-visible,
+.categories-dropdown-button.focused,
+.categories-dropdown-button.focused:hover,
+.categories-dropdown-button:focus,
+.categories-dropdown-button:focus:hover,
+#todo-due-date:focus,
+#todo-due-date.focused {
+    background-color: var(--dark-hover-color);
+    outline: none;
+}
+
+/* Custom scrollbars for webkit browsers */
+nav::-webkit-scrollbar,
+.text-areas-container::-webkit-scrollbar,
+.categories-dropdown-list::-webkit-scrollbar,
+#search-results-list::-webkit-scrollbar {
+    width: 7px;
+    background: var(--dark-hover-color);
+}
+
+nav::-webkit-scrollbar-thumb,
+.text-areas-container::-webkit-scrollbar-thumb,
+.categories-dropdown-list::-webkit-scrollbar-thumb,
+#search-results-list::-webkit-scrollbar-thumb {
+    background: rgba(29, 29, 31, 0.2);
+}
+
+nav::-webkit-scrollbar-thumb:hover,
+.text-areas-container::-webkit-scrollbar-thumb:hover,
+.categories-dropdown-list::-webkit-scrollbar-thumb:hover,
+#search-results-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(29, 29, 31, 0.3);
+}
+
+/* Hide fieldset legend for sighted users but allow the element to still be recognized by screen readers */
+form>fieldset>legend,
+#search-container label,
+fieldset .input-container label,
+.content-header label,
+.priorities-legend,
+#user-nav-list button .input-container label {
+    position: absolute;
+    left: -9999px;
+    overflow: hidden;
+}
+
+/* -------------------------------- */
