@@ -338,6 +338,8 @@ function renderRenameContentTitleInput() {
 
 }
 
+export function renameContentTitle(categoryName) { updateTextContent(DOMCache.contentTitle, categoryName) };
+
 //
 //
 // Controller assist functions
