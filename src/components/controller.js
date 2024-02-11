@@ -347,6 +347,20 @@ export function searchTodos(coordinates) {
 
 }
 
+export function handleShowTodoLocationRequest(todoID) {
+
+    const todo = Organizer.getTodo(todoID);
+
+    // If the Todo can not be found in the current rendered category,
+    // change the content to 'All todos' devCategory, then highlight the Todo element
+    !Renderer.isVisible(todoID) && handleDisplayContentRequest('all-todos');
+    Renderer.highlightTodoElement(todoID);
+    // If the Todo element has additionalInfo, and it is not yet visible,
+    // and the todo is not filtered out (user input is disabled), also expand its additionalInfo
+    if (todo.hasAdditionalInfo() && !todo.get('filteredOut') && !Renderer.isAdditionalInfoVisible(todoID)) handleTodoExpandRequest(todoID);
+
+}
+
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
 function getCurrentFilterMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentFilterMethod() }
