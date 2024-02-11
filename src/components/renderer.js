@@ -14,6 +14,11 @@ const DOMCache = {
     menuButton: Creator.createMenuButton(),
     nav: document.createElement('nav'),
     devNavbar: Creator.createElementWithID('div', 'dev-nav'),
+    // !! devNavbarList holds devCategoryButtons that have an ID ('all-todos, 'today', 'this-week'). userNavbarList (defined below) holds userCategoryButtons that do not
+    // have an ID but they have a dataset.id attribute, since the categoryID property
+    // of userCategory objects is a uuid number that is not always compatible with selectors
+    // and creates the need of additional code to be written in order to fix the compatibility
+    // issue
     devNavbarList: Creator.createElementWithID('ul', 'dev-nav-list'),
     addTodoButton: Creator.createAddTodoButton(),
     searchButton: Creator.createSearchButton(),
@@ -183,6 +188,24 @@ export function selectNewCategoryButton(categoryID) {
 }
 
 export function unselectOldCategoryButton() { removeClass(find(DOMCache.nav, '.selected'), 'selected') }
+
+export function updateCategoryTodosCount(categoryID, todosCount) {
+
+    // Is either a devCategory button that has an ID, or a userCategory button that has a 
+    // dataset.id. Looks for a devCategory first since they are only three ('All todos', 
+    // 'Today', 'Next 7 days');
+    const category = find(DOMCache.devNavbarList, `[id="${categoryID}"]`) || find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+    const todosCounter = find(category, '.todos-count');
+    updateTextContent(todosCounter, todosCount);
+
+}
+
+export function updateUserCategoriesCount(categoriesCount) {
+
+    updateTextContent(find(DOMCache.userNavbar, '#categories-counter'), categoriesCount);
+
+}
+
 
 //
 //
