@@ -54,6 +54,40 @@ const DOMCache = {
 // by removing the old DOM element from the DOM tree and freeing it from memory each time a new content rendering request is made
 const categoriesContent = {};
 
+export function init() {
+
+    // DOM insertion
+    render(DOMCache.body, DOMCache.modal, DOMCache.header, DOMCache.main, DOMCache.footer, DOMCache.headerOverlay);
+    render(find(DOMCache.header, '#header-top-side'), DOMCache.menuButton)
+    render(DOMCache.header, DOMCache.nav);
+    render(DOMCache.nav, DOMCache.devNavbar, DOMCache.userNavbar);
+    render(DOMCache.devNavbar, DOMCache.devNavbarList);
+    render(DOMCache.devNavbarList, DOMCache.addTodoButton, DOMCache.searchButton);
+    render(find(DOMCache.userNavbar, '#user-nav-header'), DOMCache.addCategoryButton, DOMCache.expandCategoriesButton);
+    render(DOMCache.userNavbar, DOMCache.userNavbarList);
+    render(DOMCache.main, DOMCache.contentHeader, DOMCache.content);
+    render(find(DOMCache.contentHeader, 'header'), DOMCache.contentTitle, DOMCache.contentSettings);
+    render(DOMCache.contentSettings, DOMCache.sortSetting, DOMCache.filterSetting);
+    render(DOMCache.content, DOMCache.contentAddButton);
+
+    // Event listener attaching
+    DOMCache.menuButton.addEventListener('click', toggleNavbar);
+    find(DOMCache.addTodoButton, 'button').addEventListener('click', sendTodoModalRequest);
+    find(DOMCache.searchButton, 'button').addEventListener('click', renderSearchModal);
+    DOMCache.addCategoryButton.addEventListener('click', renderCategoryModal);
+    DOMCache.expandCategoriesButton.addEventListener('click', toggleUserCategoriesList);
+    DOMCache.userNavbarList.addEventListener('click', handleUserCategoryClickEvents);
+    DOMCache.sortSetting.addEventListener('click', sendSortSettingsRequest);
+    DOMCache.filterSetting.addEventListener('click', sendFilterSettingsRequest);
+    DOMCache.contentAddButton.addEventListener('click', sendTodoModalRequest);
+
+    DOMCache.mobileVersion.addEventListener('change', checkIfMobile);
+    // Manually fires a change event to detect whether the app should initialize in mobile version
+    DOMCache.mobileVersion.dispatchEvent(new Event('change'));
+    // Enables the CSS :active selector on iOS devices
+    document.addEventListener("touchstart", function () { }, false);
+
+}
 
 //
 //
