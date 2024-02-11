@@ -373,7 +373,19 @@ function renderRenameContentTitleInput() {
 
 export function renameContentTitle(categoryName) { updateTextContent(DOMCache.contentTitle, categoryName) };
 
+function sendSortSettingsRequest(e) {
 
+    e.stopImmediatePropagation();
+    // * Controller.handleSortSettingsRequest();
+
+}
+
+function sendFilterSettingsRequest(e) {
+
+    e.stopImmediatePropagation();
+    // * Controller.handleFilterSettingsRequest();
+
+}
 
 //
 //
