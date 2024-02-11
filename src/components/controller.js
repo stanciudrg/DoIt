@@ -250,6 +250,36 @@ function triggerTodoRendering(todo) {
 
 }
 
+export function handleEditTodoRequest(todoID, newTitle, newDescription, newPriority, newDueDate, newCategoryID) {
+
+    const todo = Organizer.getTodo(todoID);
+
+    editTodo(todo, 'title', newTitle);
+    editTodo(todo, 'description', newDescription);
+    editTodo(todo, 'priority', newPriority);
+    editTodo(todo, 'dueDate', newDueDate);
+    editTodo(todo, 'categoryID', newCategoryID);
+
+    toggleTodoExpandFeature(todo);
+
+}
+
+function editTodo(todo, property, newValue) {
+
+    const oldValue = todo.get(property);
+
+    // If no changes were made, stop
+    if (newValue == oldValue) return;
+    // If the change is about the Todo's category, call editMethods without  editing the todo with
+    // the Organizer.editTodo() function, as the object editing logic is being handled by the
+    // editMethods object for the 'category' property
+    if (property == 'categoryID') return editMethods[property](todo, newValue, oldValue);
+
+    Organizer.editTodo(todo, property, newValue);
+    editMethods[property](todo, todo.get(property), oldValue);
+
+}
+
 function scanForVisualChanges(todo, property, newValue, oldValue) {
 
     // If there was no value before, render the new value
@@ -258,6 +288,104 @@ function scanForVisualChanges(todo, property, newValue, oldValue) {
     if (newValue && oldValue) return Renderer.updateTodoFeature(todo.get('id'), property, newValue);
     // If there was a value before, and the new value is empty, remove the old value;
     if (!newValue && oldValue) return Renderer.deleteTodoFeature(todo.get('id'), property);
+
+}
+
+const editMethods = {
+
+    'title': function (todo, newTitle) {
+
+        if (!Renderer.isVisible(todo.get('id'))) return;
+
+        Renderer.updateTodoFeature(todo.get('id'), 'title', newTitle);
+        // If the the current rendered category is being sorted by the name of its todos,
+        // move the Todo DOM element to its new location based on its new name, if applicable
+        getCurrentSortingMethod() == 'name' && manipulateTodoLocation(todo.get('id'));
+
+    },
+
+    'description': function (todo, newDescription, oldDescription) {
+
+        Renderer.isAdditionalInfoVisible(todo.get('id')) && scanForVisualChanges(todo, 'description', newDescription, oldDescription,);
+
+    },
+
+    'priority': function (todo, newPriority, oldPriority) {
+
+        if (!Renderer.isVisible(todo.get('id'))) return
+
+        Renderer.colorTodoCompletedStatusSpan(todo.get('id'), newPriority);
+        Renderer.isAdditionalInfoVisible(todo.get('id')) && scanForVisualChanges(todo, 'priority', newPriority, oldPriority);
+        // If the the current rendered category is being sorted or filtered by the priority of its todos,
+        // move the Todo DOM element to its new location based on its new priority, if applicable
+        (getCurrentSortingMethod() == 'priority' || /priority.*/.test(getCurrentFilterMethod())) && manipulateTodoLocation(todo.get('id'));
+
+    },
+
+    'dueDate': function (todo, newDueDate, oldDueDate) {
+
+        // If the todo was marked as overdue, and then its dueDate was changed by the user, mark it as due, 
+        // since the dueDate input does not allow for the date to be set in the past
+        const oldOverdueStatus = todo.get('overdueStatus');
+        oldOverdueStatus && Organizer.editTodo(todo, 'overdueStatus', false);
+        Organizer.editTodo(todo, 'miniDueDate', formatDate(newDueDate));
+
+        // Scan and add or remove the todo from 'today' and 'this-week' devCategories based on their new dueDate property
+        scanAndMove('today', todo);
+        scanAndMove('this-week', todo);
+
+        if (!Renderer.isVisible(todo.get('id'))) return;
+
+        oldOverdueStatus && Renderer.markTodoAsDue(todo.get('id'));
+        scanForVisualChanges(todo, 'miniDueDate', todo.get('miniDueDate'), formatDate(oldDueDate));
+        Renderer.isAdditionalInfoVisible(todo.get('id')) && scanForVisualChanges(todo, 'dueDate', newDueDate, oldDueDate);
+        // If the the current rendered category is being sorted or filtered by the dueDate of its todos,
+        // move the Todo DOM element to its new location based on its new dueDate, if applicable
+        getCurrentSortingMethod() == 'due-date' && manipulateTodoLocation(todo.get('id'));
+
+    },
+
+    'categoryID': function (todo, newCategoryID, oldCategoryID) {
+
+        // If the newCategoryID can not be found, stop
+        if (newCategoryID && !Organizer.getUserCategory(newCategoryID)) return;
+
+        const oldCategoryName = todo.get('categoryName');
+        // If there is a newCategoryID, find the Category that has the ID and get its name
+        const newCategoryName = newCategoryID ? Organizer.getUserCategory(newCategoryID).getName() : '';
+
+        // If there is a new category selected by the user, and the Todo does not already have a category,
+        // add it to the newCategory. Otherwise, if the todo already has a category, change it to the new one
+        if (newCategoryID) { !oldCategoryID ? add() : change() };
+        // If there is no newCategory selected, remove the already existing category
+        if (!newCategoryID && oldCategoryID) { remove() };
+
+        function add() {
+
+            todo.set('categoryID', newCategoryID);
+            todo.set('categoryName', newCategoryName);
+            addTodo(todo, newCategoryID);
+
+        }
+
+        function remove() {
+
+            todo.set('categoryID', '');
+            todo.set('categoryName', '');
+            deleteTodo(todo, oldCategoryID);
+
+        }
+
+        function change() {
+
+            remove();
+            add();
+
+        }
+
+        Renderer.isAdditionalInfoVisible(todo.get('id')) && scanForVisualChanges(todo, 'categoryID', newCategoryName, oldCategoryName);
+
+    },
 
 }
 
