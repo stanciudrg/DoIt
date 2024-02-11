@@ -98,6 +98,19 @@ function displayNewContent(categoryID) {
 
 }
 
+function deleteContent(categoryID) {
+
+    // If the requested category to be deleted does not have the same ID as the dataset.id of the current content, stop
+    if (categoryID !== Renderer.getCurrentContentID()) return;
+    // Remove the 'selected' class from the header button that represents the content to be deleted
+    Renderer.unselectOldCategoryButton();
+    // If category is UserCategory, also delete the settings button from the 'content' container
+    Organizer.getUserCategory(categoryID) && Renderer.deleteContentSettingsButton();
+    // Delete the todos list that contains all todo elements
+    Renderer.deleteTodosList(categoryID);
+
+}
+
 // Scans the todo and calls the passed function with specific arguments based on conditional statements
 export function scanTodo(todo, fn) {
 
