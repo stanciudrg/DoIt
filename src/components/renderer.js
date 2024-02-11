@@ -704,6 +704,47 @@ export function renderTodoAdditionalFeature(todoID, feature, value) {
 
 }
 
+export function updateTodoFeature(todoID, feature, value) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    // let variable whose value is dynamically changed by methods objects, and is
+    // later used to update the textContent of its value;
+    let featureToUpdate;
+
+    const methods = {
+
+        'title': function () { featureToUpdate = find(todoElement, '.todo-title') },
+        'miniDueDate': function () { featureToUpdate = find(todoElement, '.todo-mini-due-date'); },
+        'description': function () { featureToUpdate = find(todoElement, '.todo-description-paragraph') },
+
+        'priority': function () {
+
+            const todoPriority = todoElement.querySelector("[class^='todo-priority']");
+            todoPriority.className = '';
+            addClass(todoPriority, `todo-priority-${value}`);
+
+            featureToUpdate = find(todoPriority, '.info-holder-value');
+
+        },
+
+        'dueDate': function () {
+
+            const todoDueDate = find(todoElement, '.todo-due-date');
+            // is the todo overdue?
+            featureToUpdate = find(todoDueDate, '.info-holder-value');
+
+        },
+
+        'categoryID': function () { featureToUpdate = find(find(todoElement, '.todo-category'), '.info-holder-value') },
+        'categoryName': function () { this['categoryID']() },
+
+    }
+
+    methods[feature]();
+    updateTextContent(featureToUpdate, value);
+
+}
+
 //
 //
 // Controller assist functions
