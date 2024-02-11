@@ -373,6 +373,121 @@ function renderRenameContentTitleInput() {
 
 export function renameContentTitle(categoryName) { updateTextContent(DOMCache.contentTitle, categoryName) };
 
+// Type can be either 'sort' or 'filter',
+// Current setting is the current sortingMethod or currentFilter method
+// ...settingNames are the available sorting or filter methods for the current category that is being rendered
+export function renderContentCustomizer(type, currentSetting, ...settingNames) {
+
+    // By default, clicking a similar button (settings opener) prevents this instance of hideByClickOutside function from firing, which is responsible
+    // for hiding the current settings list. This results in two settings lists being visible in the same time, which is not desired in 
+    // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
+    // is attached) solves this issue.
+    document.dispatchEvent(new Event('click'));
+
+    // Get either the sort-category-button or the filter-category-button
+    const location = find(DOMCache.contentSettings, `.${type}-category-button`);
+    addClass(location, 'focused')
+
+    const types = {
+
+        'sort': {
+
+            removeEventListener: function () { location.removeEventListener('click', sendSortSettingsRequest) },
+            addEventListener: function () { location.addEventListener('click', sendSortSettingsRequest) },
+            applySetting: function (settingType) { Controller.sortTodos(settingType, getCurrentContentID()) },
+
+        },
+
+        'filter': {
+
+            removeEventListener: function () { location.removeEventListener('click', sendFilterSettingsRequest) },
+            addEventListener: function () { location.addEventListener('click', sendFilterSettingsRequest) },
+            applySetting: function (settingType) { Controller.filterTodos(settingType, getCurrentContentID()) },
+
+        }
+
+    }
+
+    // Removes the event listener that leads to this function being run to prevent conflicts with the
+    // new behavior defined within this function, which states that clicking the settingsButton
+    // deletes the filter or sorting methods list instead of rendering it
+
+    types[type].removeEventListener();
+    location.addEventListener('click', deleteSettings);
+
+    const dropdownListContainer = Creator.createCustomizeSettingsList();
+    const dropdownListTitle = find(dropdownListContainer, '.dropdown-list-title');
+    const dropdownList = find(dropdownListContainer, '.dropdown-list');
+    dropdownList.addEventListener('click', handleSettingItemsClickEvents);
+
+    type == 'sort'
+        ? updateTextContent(dropdownListTitle, `${Controller.capitalizeFirstLetter(type)} by`)
+        : updateTextContent(dropdownListTitle, `${Controller.capitalizeFirstLetter(type)}`)
+
+    // Render the dropdownListContainer in the parent of the button that triggers the event to prevent accessibility
+    // errors when nesting div elements into button elements
+    render(getParentOf(location), dropdownListContainer);
+
+    function handleSettingItemsClickEvents(e) {
+
+        if (hasClass(e.target, 'named-button')) {
+
+            applySetting(e.target.dataset.id);
+            deleteSettings(e);
+
+        }
+
+    }
+
+    // Render a sorting or filter method button into the settingsList for each settingName
+    for (const settingName of settingNames) {
+
+        const settingItem = Creator.createSettingItem(Controller.capitalizeFirstLetter(settingName.split('-').join(' ')), `${type}-todos`, settingName);
+        if (find(settingItem, 'button').dataset.id == currentSetting) addClass(find(settingItem, 'button'), 'selected');
+        render(dropdownList, settingItem);
+
+    }
+
+    document.addEventListener('click', deleteByClickOutside);
+    function deleteByClickOutside(e) { if (getParentOf(e.target) !== dropdownList) deleteSettings(e) };
+
+    document.addEventListener('keyup', deleteByKeyboard);
+    function deleteByKeyboard(e) { if (e.key == 'Escape') { deleteSettings(e) } };
+
+    // Trap TAB focus within settingsList
+    const trap = focusTrap.createFocusTrap(dropdownList, {
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+    });
+    trap.activate();
+
+
+    function deleteSettings(e) {
+
+        e.stopImmediatePropagation();
+        trap.deactivate();
+
+        // Remove event listeners to prevent memory leaks and other unwanted behavior
+        location.removeEventListener('click', deleteSettings);
+        dropdownList.removeEventListener('click', handleSettingItemsClickEvents)
+
+        document.removeEventListener('click', deleteByClickOutside);
+        document.removeEventListener('keyup', deleteByKeyboard);
+
+        // Re-attach  the event listener that leads to this function being run
+        types[type].addEventListener();
+
+        // Remove the settingsList from the DOM;
+        dropdownListContainer.remove();
+        removeClass(location, 'focused')
+
+
+    }
+
+    function applySetting(settingType) { types[type].applySetting(settingType) };
+
+}
+
 function sendSortSettingsRequest(e) {
 
     e.stopImmediatePropagation();
