@@ -172,6 +172,18 @@ function toggleNavbar(e) {
 
 }
 
+export function selectNewCategoryButton(categoryID) {
+
+    // Is either a devCategory button that has an ID, or a userCategory button that has a 
+    // dataset.id. Looks for a devCategory first since they are only three ('All todos', 
+    // 'Today', 'Next 7 days');
+    const newButton = find(DOMCache.devNavbarList, `[id="${categoryID}"]`) || find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+    addClass(getParentOf(newButton), 'selected');
+
+}
+
+export function unselectOldCategoryButton() { removeClass(find(DOMCache.nav, '.selected'), 'selected') }
+
 //
 //
 // Controller assist functions
