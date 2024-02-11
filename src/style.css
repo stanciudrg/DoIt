@@ -1659,3 +1659,218 @@ it is completed or not */
     font-size: 1rem;
     font-weight: 400;
 }
+
+/* Keyframes */
+
+@keyframes toggle-on {
+    0% {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1
+    }
+}
+
+@keyframes toggle-off {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+@keyframes shrink-todo {
+    from {
+        grid-template-rows: auto 1fr auto;
+    }
+
+    to {
+        grid-template-rows: auto 0fr auto;
+    }
+}
+
+@keyframes expand-todo {
+    from {
+        grid-template-rows: auto 0fr auto;
+    }
+
+    to {
+        grid-template-rows: auto 1fr auto;
+    }
+}
+
+@keyframes open-modal {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes show-overlay {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.1;
+    }
+}
+
+@keyframes open-dropdown {
+    0% {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Media queries */
+
+@media (max-height: 1000px) {
+
+    .todo-form,
+    #search-container {
+        top: 10vh;
+    }
+
+}
+
+@media (max-width: 1000px) {
+
+    /* Change the arrangement of the elements that represent the additional info of the todo
+    from horizontal to vertical */
+    .todo-item .todo-additional-info {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    .todo-additional-info .todo-category {
+        grid-row: 3 / 4;
+        grid-column: 1 / 3;
+    }
+
+    .todo-additional-info .todo-priority-1,
+    .todo-additional-info .todo-priority-2,
+    .todo-additional-info .todo-priority-3,
+    .todo-additional-info .todo-due-date,
+    .todo-additional-info .todo-category {
+        margin-top: 0;
+    }
+
+}
+
+@media (max-width: 750px),
+(max-height: 400px) {
+
+    /* Stop the body from considering the header as an element that takes space when
+    reaching the mobile version of the app, since at that point, the header is automatically
+    hidden from the viewport, and only appears above the rest of the document when being shown */
+    body,
+    body.header-hidden {
+        grid-template-columns: 0 auto;
+    }
+
+    body>header {
+        height: 100%;
+        border-radius: 0;
+    }
+
+    /* Move the header to the left, make it transparent, disable all its effects (box-shadow),
+     but do not completely remove it from the viewport, since it's Menu Button must
+    still be visible in order for the user to bring the header back. */
+    body>header.hidden {
+        transform: translateX(-213px);
+        /* Since the header is not completely removed when being hidden, 
+        ensure that the user is not ble to access its elements */
+        pointer-events: none;
+    }
+
+    body>header.mobile.hidden {
+        background-color: transparent;
+        box-shadow: none;
+        overflow: hidden;
+    }
+
+    #menu-button {
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+        pointer-events: auto;
+    }
+
+    /* Compensate for the partial removal of the main header from the webpage */
+    main .content-header-container {
+        padding: 0 1rem;
+    }
+
+    main .content-header {
+        padding-top: 0.85rem;
+    }
+
+    main .content-title,
+    main .input-container {
+        margin-left: 3rem;
+    }
+
+    main .content {
+        padding: 0 1rem;
+    }
+
+}
+
+@media (max-height: 700px) {
+
+    #modal {
+        align-items: center;
+    }
+
+    .todo-form {
+        top: auto;
+    }
+
+}
+
+@media (max-height: 580px) {
+
+    /* Turn the already scrollable .text-areas-container into an even smaller container
+    to ensure that the entire form is not overflowing outside the viewport */
+    .text-areas-container {
+        max-height: 225px;
+    }
+
+}
+
+@media (max-height: 490px) {
+
+    /* Turn the already scrollable .text-areas-container into an even smaller container
+    to ensure that the entire form is not overflowing outside the viewport */
+    .text-areas-container {
+        max-height: 125px;
+    }
+
+    .category-form,
+    .delete-modal {
+        top: 10vh;
+    }
+
+}
