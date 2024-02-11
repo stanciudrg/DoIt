@@ -49,6 +49,24 @@ export function deleteCategory(categoryID) {
 
 }
 
+// Scans the todo and calls the provided function with specific arguments based on conditional statements
+export function scanTodo(todo, fn) {
+
+    const parsedDueDate = parseISO(todo.get('dueDate'));
+
+    // If todo has a dueDate and that dueDate is the current date, run the function with the 'today' argument
+    if (todo.get('dueDate') && checkDateInterval('today', parsedDueDate)) fn(todo, 'today');
+    // If todo has a dueDate and that dueDate is in the following 7 days, run the function with the 'this-week' argument
+    if (todo.get('dueDate') && checkDateInterval('this-week', parsedDueDate)) fn(todo, 'this-week');
+    // If todo has a categoryID, run the function by providing the ID of the category;
+    if (todo.get('categoryID')) fn(todo, todo.get('categoryID'));
+
+    // Always run the function by providing the 'all-todos' argument, since the 'All todos' devCategory
+    // has no special logic and contains all todos regardless of their properties
+    fn(todo, 'all-todos');
+
+}
+
 function triggerTodoRendering(todo) {
 
     // First, render the initial Todo DOM element that contains only the title
