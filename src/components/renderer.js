@@ -516,6 +516,41 @@ export function markContentCustomizeSetting(type, state) {
 
 }
 
+export function renderTodosList(categoryID) {
+
+    // Set the dataset.ID of the 'content' container to match the current ID of the category that provides the todosList
+    DOMCache.content.dataset.id = categoryID;
+
+    // Access the property with the same name as the categoryID on the categoriesContent object,
+    // and create a reference to the todosList that will be further used by numerous other Renderer functions
+    categoriesContent[categoryID] = Creator.createElementWithClass('ul', 'todos-list');
+    categoriesContent[categoryID].addEventListener('click', handleTodoElementsClickEvents);
+    categoriesContent[categoryID].addEventListener('change', handleTodoElementsChangeEvents);
+
+    // Also insert the value of the property into the DOM
+    DOMCache.content.insertBefore(categoriesContent[categoryID], DOMCache.contentAddButton);
+
+}
+
+export function deleteTodosList(categoryID) {
+
+    // Remove event listeners to prevent conflicts and avoid memory leaks
+    categoriesContent[categoryID].removeEventListener('click', handleTodoElementsClickEvents);
+    categoriesContent[categoryID].removeEventListener('change', handleTodoElementsChangeEvents);
+
+    // Remove the todos list from the DOM and from the memory
+    find(DOMCache.content, '.todos-list').remove();
+    categoriesContent[categoryID].remove();
+    categoriesContent[categoryID] = '';
+
+}
+
+//
+//
+// Todo management: rendering, deleting, editing, renaming, toggling classes
+//
+//
+
 function handleTodoElementsClickEvents(e) {
 
     const todoItem = e.target.closest('.todo-item');
@@ -549,12 +584,6 @@ function handleTodoElementsChangeEvents(e) {
     e.target.type == 'checkbox' && Controller.toggleTodoCompletedStatus(todoItem.dataset.id)
 
 }
-
-//
-//
-// Todo management: rendering, deleting, editing, renaming, toggling classes
-//
-//
 
 export function renderTodoElement(todoID, index, todoTitle) {
 
