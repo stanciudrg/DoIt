@@ -329,6 +329,24 @@ export function handleCategoriesDropdownRequest() {
 
 }
 
+export function searchTodos(coordinates) {
+
+    if (!Renderer.isSearchBarOpen()) return;
+
+    // Get the results array
+    const results = Organizer.search(coordinates);
+    // Refresh the rendered results
+    Renderer.deleteAllAnchorTodoElements();
+
+    results.forEach((todo) => {
+
+        Renderer.renderAnchorTodoElement(todo.item.get('id'), todo.item.get('title'));
+        todo.item.get('completedStatus') && Renderer.markAnchorTodoElementAsCompleted(todo.item.get('id'));
+
+    })
+
+}
+
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
 function getCurrentFilterMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentFilterMethod() }
