@@ -1,4 +1,5 @@
 import * as Creator from './creator.js';
+import * as focusTrap from 'focus-trap';
 
 // Keeps a reference of initial, static DOM elements that are rendered on init()
 // Allows for quicker DOM traversal and editing, reduces the number of DOM lookups
@@ -44,6 +45,125 @@ const DOMCache = {
 // This system prevents memory leaks from detached DOM elements by keeping DOM element reference to a minimum and
 // by removing the old DOM element from the DOM tree and freeing it from memory each time a new content rendering request is made
 const categoriesContent = {};
+
+
+//
+//
+// Nav buttons management: creating, rendering, deleting, renaming, toggling classes
+//
+//
+
+
+function showNavbar() {
+
+    DOMCache.menuButton.setAttribute('aria-label', 'Hide menu')
+    DOMCache.nav.style.visibility = 'visible';
+
+    if (hasClass(DOMCache.header, 'hidden')) {
+
+        removeClass(DOMCache.header, 'hidden');
+        removeClass(DOMCache.body, 'header-hidden');
+        removeClass(DOMCache.menuButton, 'selected');
+
+    }
+
+    addClass(DOMCache.header, 'visible');
+    if (!hasClass(DOMCache.header, 'mobile')) return;
+
+    // If mobile, disable scrolling and add a grey overlay behind header that prevents user input
+    disableScrolling();
+    DOMCache.headerOverlay.style.display = 'initial';
+    addClass(DOMCache.headerOverlay, 'visible');
+
+    // Remove the eventListener that triggered this function until
+    // the header is closed to prevent conflicts in case the user
+    // clicks the menuButton again
+    DOMCache.menuButton.removeEventListener('click', toggleNavbar);
+    DOMCache.header.addEventListener('click', mobileHeaderActions);
+    DOMCache.headerOverlay.addEventListener('click', closeNavbar);
+    // Add a new eventListener on the mobileVersion media query to close the navbar
+    // in case the window exits mobile mode
+    DOMCache.mobileVersion.addEventListener('change', closeNavbar);
+
+    // Traps TAB focusing within the header
+    const trap = focusTrap.createFocusTrap(DOMCache.header, {
+        initialFocus: () => false,
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        returnFocusOnDeactivate: () => true,
+    });
+    trap.activate();
+
+    function mobileHeaderActions(e) {
+
+        const userCategoryButton = e.target.closest('.todo-holder');
+
+        // If the user is currently editing a user category button, and clicks the name input,
+        // do not close the header
+        if (find(userCategoryButton, '.input-container')) return;
+        if (userCategoryButton) closeNavbar();
+        // The click behavior of menuButton is now reversed to close the navbar instead of opening it
+        if (e.target == DOMCache.menuButton) closeNavbar();
+        if (e.target.closest('#search')) closeNavbar();
+
+    }
+
+    function closeNavbar() {
+
+        // Deactivate the focus trap
+        trap.deactivate();
+        // Attach the eventListener that triggers this function back on the menuButton
+        DOMCache.menuButton.addEventListener('click', toggleNavbar);
+        // Remove events to prevent memory leaks and other unwanted behavior
+        DOMCache.header.removeEventListener('click', mobileHeaderActions);
+        DOMCache.headerOverlay.removeEventListener('click', closeNavbar);
+        DOMCache.mobileVersion.removeEventListener('change', closeNavbar);
+
+        // Closing the navbar will also enable scrolling, unless
+        // the navbar was closed due to the searchbar being opened, which is also supposed
+        // to keep the scrolling disabled, since it is a modal.
+        if (!find(DOMCache.modal, '#search-container')) enableScrolling();
+        if (DOMCache.mobileVersion.matches) hideNavbar();
+
+        // Ensures that the transition works by waiting for it to finish before changing
+        // other properties that do not transition their state
+        DOMCache.headerOverlay.addEventListener('transitionend', remove);
+        removeClass(DOMCache.headerOverlay, 'visible');
+
+        function remove() {
+
+            if (!hasClass(DOMCache.headerOverlay, 'visible')) DOMCache.headerOverlay.style.display = 'none';
+            DOMCache.headerOverlay.removeEventListener('transitionend', remove);
+
+        }
+
+    }
+
+}
+
+function hideNavbar() {
+
+    DOMCache.menuButton.setAttribute('aria-label', 'Show menu');
+    if (hasClass(DOMCache.header, 'hidden')) DOMCache.nav.style.visibility = 'hidden';
+
+    // Ensures that the transition works by waiting for it to finish before changing
+    // other properties that do not transition their state
+    DOMCache.header.addEventListener('transitionend', remove);
+
+    if (hasClass(DOMCache.header, 'visible')) removeClass(DOMCache.header, 'visible');
+    addClass(DOMCache.header, 'hidden');
+    addClass(DOMCache.body, 'header-hidden');
+    addClass(DOMCache.nav, 'header-hidden');
+    addClass(DOMCache.menuButton, 'selected');
+
+    function remove() {
+
+        if (hasClass(DOMCache.header, 'hidden')) DOMCache.nav.style.visibility = 'hidden';
+        DOMCache.header.removeEventListener('transitionend', remove);
+
+    }
+
+}
 
 
 //
