@@ -567,6 +567,26 @@ function renderTodoSettings(todoID) {
 }
 
 
+// Adds a button on the Todo DOM element that allows the user to render additional information
+// about the Todo.
+export function renderTodoElementExpander(todoID) {
+
+    const todoItem = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoExpander = Creator.createExpandButton('Show todo additional info');
+    render(todoItem, todoExpander);
+
+}
+
+// Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
+// that can be rendered
+export function deleteTodoElementExpander(todoID) {
+
+    const todoItem = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoExpander = find(todoItem, '.expand-button');
+    todoExpander.remove();
+
+}
+
 //
 //
 // Controller assist functions
