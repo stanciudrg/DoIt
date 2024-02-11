@@ -292,17 +292,17 @@ function renderUserCategorySettings(categoryID) {
     const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
     const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
 
-    // * renderSettings(userCategoryButton, userCategorySettingsButton, 'Rename', renderRenameCategoryInput, 'Delete', Controller.handleDeleteRequest, 'category');
+    // * renderSettings(userCategoryButton, userCategorySettingsButton, 'Rename', renderUserCategoryRenameInput, 'Delete', Controller.handleDeleteRequest, 'category');
 
 }
 
-function renderRenameCategoryInput(categoryID) {
+function renderUserCategoryRenameInput(categoryID) {
 
     const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
     const userCategoryButtonName = find(userCategoryButton, '.button-name');
     const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
 
-    // renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
+    // * renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
 
 }
 
@@ -323,6 +323,20 @@ export function deleteUserCategoryButton(categoryID) {
 
 }
 
+//
+//
+// Content management: rendering, editing and deleting
+//
+//
+
+function renderRenameContentTitleInput() {
+
+    const contentTitle = find(DOMCache.contentHeader, '.content-title');
+    const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
+
+    // * renderRenameInput(DOMCache.content, contentTitle, contentSettingsButton, Controller.renameCategory);
+
+}
 
 //
 //
