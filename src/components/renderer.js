@@ -550,6 +550,13 @@ export function moveTodoElement(todoID, index) {
 
 }
 
+export function deleteTodoElement(todoID) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    todoElement.remove();
+
+}
+
 
 //
 //
