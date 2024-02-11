@@ -282,6 +282,171 @@ export function getCurrentContentID() { return DOMCache.content.dataset.id; }
 //
 //
 
+// The location parameter is the containing element of the settings button, and can be one of the following:
+// 1. A userCategory button
+// 2. The 'content' container itself
+// 3. A todo item
+// At this point, only these three locations have a settings button
+// The callLocation is the button that triggers the event that leads to this function
+// editSettingName is the name of the first setting, which is either 'Edit' in case of Todos or 'Rename' in case of categories.
+// editFunction is the function that is run when the user clicks the editSettingButton
+// deleteSettingsName is the name of the second setting, which is 'Delete' in all cases
+// deleteFunction is the function that is run when the user clicks the deleteSettingButton
+// deleteType specifies whether the user is trying to delete a category or a todo
+function renderSettings(location, callLocation, editSettingName, editFunction, deleteSettingName, deleteFunction, deleteType) {
+
+    // By default, clicking another settings button prevents this instance of hideByClickOutside function from firing, which is responsible
+    // for hiding the current settings list. This leads to two settings lists being rendered in the same time, which is not desired in 
+    // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
+    // is attached) solves this issue.
+    document.dispatchEvent(new Event('click'));
+
+    addClass(callLocation, 'focused');
+    // If the user clicks back on the button that lead to this function, delete the rendered settings
+    callLocation.addEventListener('click', deleteSettings);
+
+    const settingsList = Creator.createElementWithClass('ul', 'settings-list');
+    // Render the settingsList in the parent of the button that triggers the event to prevent accessibility
+    // errors when nesting ul elements into button elements
+    render(getParentOf(callLocation), settingsList);
+
+    // If the settingsList is being rendered outside the current viewport, change its positioning
+    if (isOutOfBounds('bottom', settingsList, 100)) addClass(settingsList, 'top-positioned');
+
+    const editButton = Creator.createSettingItem(editSettingName);
+    editButton.addEventListener('click', edit);
+    render(settingsList, editButton);
+
+    const deleteButton = Creator.createSettingItem(deleteSettingName);
+    deleteButton.addEventListener('click', remove);
+    render(settingsList, deleteButton);
+
+    document.addEventListener('click', deleteByClickOutside);
+    function deleteByClickOutside(e) { if (getParentOf(e.target) !== settingsList) deleteSettings(e) };
+
+    document.addEventListener('keyup', deleteByKeyboard);
+    function deleteByKeyboard(e) { if (e.key == 'Escape') { deleteSettings(e) } };
+
+    // Trap TAB focusing within the settingsList
+    const trap = focusTrap.createFocusTrap(settingsList, {
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+    });
+    trap.activate();
+
+    function deleteSettings(e) {
+
+        e.stopImmediatePropagation();
+        trap.deactivate();
+
+        // Remove events to prevent memory leaks and other unwanted behavior
+        callLocation.removeEventListener('click', deleteSettings);
+
+        editButton.removeEventListener('click', edit);
+        deleteButton.removeEventListener('click', remove);
+
+        document.removeEventListener('keyup', deleteByKeyboard);
+        document.removeEventListener('click', deleteByClickOutside);
+
+        // Remove the settingsList from the DOM
+        settingsList.remove();
+        removeClass(callLocation, 'focused');
+
+    }
+
+    function edit(e) {
+
+        e.stopImmediatePropagation();
+        deleteSettings(e);
+        // Run the passed editFunction using the UUIDV of the element, which is either a category button or a todo element
+        editFunction(location.dataset.id);
+
+    }
+
+    function remove(e) {
+
+        e.stopImmediatePropagation();
+        deleteSettings(e);
+        // Run the passed deleteFunction using the UUIDV of the element (which can be either a category button or a todo element)
+        deleteFunction(deleteType, location.dataset.id);
+
+    }
+
+}
+
+// Location is the element that will contain the renameInput,
+// nameContainer is the element that holds the current name and will be replaced with the renameInput,
+// callLocation is the button that lead to this function, and action is the function
+// that should be run after the new name is submitted
+function renderRenameInput(location, nameContainer, callLocation, action) {
+
+    // Create a text input field using Creator
+    const renameField = Creator.createInput('New category name', 'name', 'category-edit-field', 'text');
+
+    const renameInput = find(renameField, 'input');
+    renameInput.addEventListener('focus', focusOnInput);
+    renameInput.addEventListener('mousedown', preventPropagation);
+
+    document.addEventListener('mousedown', clickAction);
+    document.addEventListener('keydown', keyboardActions);
+
+    replace(renameField, nameContainer);
+    updateInputValue(renameInput, nameContainer.textContent);
+    applyFocus(renameInput);
+
+    // Trap TAB focusing within the renameField
+    const trap = focusTrap.createFocusTrap(renameField, {
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        setReturnFocus: () => callLocation,
+    });
+    trap.activate();
+
+    function applyChanges() {
+
+        discardChanges();
+        action(location.dataset.id, renameInput.value.trim());
+
+    }
+
+    function discardChanges() {
+
+        trap.deactivate()
+        // Remove events to prevent memory leaks and other unwanted behavior
+        removeEvents();
+        enableInput(DOMCache.body);
+        replace(nameContainer, renameField);
+
+    }
+
+    function removeEvents() {
+
+        renameInput.removeEventListener('focus', focusOnInput);
+        renameInput.removeEventListener('mousedown', preventPropagation);
+        document.removeEventListener('mousedown', clickAction);
+        document.removeEventListener('keydown', keyboardActions);
+
+    }
+
+    function preventPropagation(e) { e.stopImmediatePropagation() };
+    // Discard changes if user tries to submit an empty field
+    function clickAction() { renameInput.value.trim().length == 0 ? discardChanges() : applyChanges() };
+
+    function keyboardActions(e) {
+        // Discard changes if user tries to submit an empty field
+        if (e.key == 'Enter') return renameInput.value.trim().length == 0 ? discardChanges() : applyChanges();
+        if (e.key == 'Escape') return discardChanges();
+
+    }
+
+    function focusOnInput() {
+
+        disableInput(DOMCache.body);
+        enableInput(renameInput);
+
+    }
+
+}
 
 // The checkBounds function determines whether the element position needs to be changed 
 // as a result of it leaking out of the viewport, and changes its position using CSS classes;
