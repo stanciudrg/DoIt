@@ -577,6 +577,38 @@ export function renderTodoElementExpander(todoID) {
 
 }
 
+// Inserts a container at the end of the Todo DOM element that contains additional information (eg. priority, dueDate, category);
+export function renderTodoAdditionalInfo(todoID) {
+
+    const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
+    const todoElementExpander = find(todoElement, '.expand-button');
+    todoElementExpander.setAttribute('aria-label', 'Hide todo additional info')
+    const todoAdditionalInfo = Creator.createElementWithClass('div', 'todo-additional-info');
+
+    todoElement.insertBefore(todoAdditionalInfo, todoElementExpander);
+    addClass(todoElement, 'expanded');
+
+}
+
+export function deleteTodoAdditionalInfo(todoID) {
+
+    const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
+    const todoElementExpander = find(todoElement, '.expand-button');
+    if (todoElementExpander) todoElementExpander.setAttribute('aria-label', 'Show todo additional info');
+    // Ensures that the animation works by waiting for it to finish before changing
+    // other properties that do not transition their state
+    todoElement.addEventListener('animationend', deleteAdditionalInfo);
+    removeClass(todoElement, 'expanded');
+
+    function deleteAdditionalInfo() {
+
+        if (!hasClass(todoElement, 'expanded')) find(todoElement, '.todo-additional-info').remove()
+        todoElement.removeEventListener('animationend', deleteAdditionalInfo);
+
+    };
+
+}
+
 // Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
 // that can be rendered
 export function deleteTodoElementExpander(todoID) {
