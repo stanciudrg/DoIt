@@ -332,6 +332,27 @@ function deleteTodo(todo, categoryID) {
 
 }
 
+function manipulateTodoLocation(todoID) {
+
+    const todo = Organizer.getTodo(todoID);
+    // Get the latest index;
+    const oldIndex = todo.get('index');
+
+    // Reorganize the current category that is rendered
+    Organizer.organize(Renderer.getCurrentContentID());
+
+    // If the new todo index is bigger than the old todo index, move the Todo DOM element down.
+    // Otherwise, move the Todo DOM element up
+    todo.get('index') > oldIndex
+        ? Renderer.moveTodoElement(todo.get('id'), todo.get('index') + 1)
+        : Renderer.moveTodoElement(todo.get('id'), todo.get('index'));
+
+    todo.get('filteredOut') ? Renderer.markTodoAsFiltered('out', todoID) : Renderer.markTodoAsFiltered('in', todoID);
+    // Update the index of all rendered todos to reflect the indexes of the todos held by the reorganized category
+    Organizer.getTodosOf(Renderer.getCurrentContentID()).forEach((todo) => Renderer.updateTodoIndex(todo.get('id'), todo.get('index')));
+
+}
+
 //
 //
 // Modal management: add todo, edit todo, add category, confirm deletion of todo, 
