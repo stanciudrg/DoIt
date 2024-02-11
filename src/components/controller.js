@@ -4,48 +4,6 @@ import { UserCategory } from './category.js';
 import { Todo } from './todo.js';
 import { isEqual, isFuture, intlFormatDistance, format, differenceInDays, parseISO, isThisWeek, isThisMonth } from 'date-fns';
 
-
-
-
-function checkDueDates() {
-
-    // Go through each todo...
-    Organizer.getTodosOf('all-todos').forEach(todo => {
-
-        // If it does not have a dueDate, stop
-        if (!todo.get('dueDate')) return
-
-        // If it does, run scanAndMove to check whether the todo should be 
-        // added or removed from 'Today' and 'Next 7 days' devCategories
-        scanAndMove('today', todo);
-        scanAndMove('this-week', todo);
-
-        // Check if the miniDueDate property should be formatted differently, in case time has passed (eg. from 'yesterday' to '2 days ago'),
-        // and reflect the changes on the Todo DOM element, if visible
-        const oldMiniDueDate = todo.get('miniDueDate');
-        const newMiniDueDate = formatDate(todo.get('dueDate')) || oldMiniDueDate;
-
-        if (oldMiniDueDate !== newMiniDueDate) {
-
-            Organizer.editTodo(todo, 'miniDueDate', newMiniDueDate);
-            Renderer.isVisible(todo.get('id')) && Renderer.updateTodoFeature(todo.get('id'), 'miniDueDate', todo.get('miniDueDate'))
-
-        };
-
-        // Check if the todo is overdue using checkDateInterval function.
-        // If it is, mark the todo as overdue. 
-        // If it has already been marked as overdue, stop
-        if (todo.get('overdueStatus') == false && checkDateInterval('overdue', parseISO(todo.get('dueDate')))) {
-
-            Organizer.editTodo(todo, 'overdueStatus', true);
-            Renderer.isVisible(todo.get('id')) && Renderer.markTodoAsOverdue(todo.get('id'));
-
-        }
-
-    })
-
-}
-
 //
 //
 // Category management: creating, renaming, deleting
@@ -631,6 +589,36 @@ export function handleShowTodoLocationRequest(todoID) {
     // If the Todo element has additionalInfo, and it is not yet visible,
     // and the todo is not filtered out (user input is disabled), also expand its additionalInfo
     if (todo.hasAdditionalInfo() && !todo.get('filteredOut') && !Renderer.isAdditionalInfoVisible(todoID)) handleTodoExpandRequest(todoID);
+
+}
+
+// Asks the Renderer to render a deleteTodo or deleteCategory modal
+// and passes the todo or category info
+export function handleDeleteRequest(type, ID) {
+
+    const methods = {
+        // If the user is trying to delete a todo, provide the todoTitle property
+        'todo': function () {
+
+            const todo = Organizer.getTodo(ID);
+            Renderer.renderDeleteModal(type, ID, todo.get('title'));
+
+        },
+        // If the user is trying to delete a category, provide the categoryName property,
+        // and whether or not it contains any todos. If the category has todos, an additional
+        // checkbox will be rendered that allows the user to specify whether the containing todos
+        // should also be deleted
+        'category': function () {
+
+            const category = Organizer.getUserCategory(ID);
+            const hasTodos = category.getTodos().length > 0;
+            Renderer.renderDeleteModal(type, ID, category.getName(), hasTodos);
+
+        },
+
+    }
+
+    methods[type]();
 
 }
 

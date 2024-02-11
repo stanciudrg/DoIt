@@ -1,3 +1,4 @@
+import * as Controller from './controller.js';
 import * as Creator from './creator.js';
 import * as focusTrap from 'focus-trap';
 import { format, addDays } from 'date-fns';
@@ -275,7 +276,7 @@ function toggleUserCategoriesList() {
 function sendDisplayContentRequest() {
 
     const categoryID = this.id || this.dataset.id;
-    // * Controller.handleDisplayContentRequest(categoryID);
+    Controller.handleDisplayContentRequest(categoryID);
 
 }
 
@@ -328,7 +329,7 @@ function renderUserCategorySettings(categoryID) {
     const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
     const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
 
-    // * renderSettings(userCategoryButton, userCategorySettingsButton, 'Rename', renderUserCategoryRenameInput, 'Delete', Controller.handleDeleteRequest, 'category');
+    renderSettings(userCategoryButton, userCategorySettingsButton, 'Rename', renderUserCategoryRenameInput, 'Delete', Controller.handleDeleteRequest, 'category');
 
 }
 
@@ -338,7 +339,7 @@ function renderUserCategoryRenameInput(categoryID) {
     const userCategoryButtonName = find(userCategoryButton, '.button-name');
     const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
 
-    // * renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
+    renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
 
 }
 
@@ -392,7 +393,7 @@ function renderContentSettings(e) {
     // function that will be called inside the renderSettings() function whenever the user will click back
     // on the settingsButton that triggers this entire event chain
     contentSettingsButton.removeEventListener('click', renderContentSettings);
-    // * renderSettings(DOMCache.content, contentSettingsButton, 'Rename', renderRenameContentTitleInput, 'Delete', Controller.handleDeleteRequest, 'category');
+    renderSettings(DOMCache.content, contentSettingsButton, 'Rename', renderRenameContentTitleInput, 'Delete', Controller.handleDeleteRequest, 'category');
     // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
     contentSettingsButton.addEventListener('click', renderContentSettings);
 
@@ -403,7 +404,7 @@ function renderRenameContentTitleInput() {
     const contentTitle = find(DOMCache.contentHeader, '.content-title');
     const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
 
-    // * renderRenameInput(DOMCache.content, contentTitle, contentSettingsButton, Controller.renameCategory);
+    renderRenameInput(DOMCache.content, contentTitle, contentSettingsButton, Controller.renameCategory);
 
 }
 
@@ -527,14 +528,14 @@ export function renderContentCustomizer(type, currentSetting, ...settingNames) {
 function sendSortSettingsRequest(e) {
 
     e.stopImmediatePropagation();
-    // * Controller.handleSortSettingsRequest();
+    Controller.handleSortSettingsRequest();
 
 }
 
 function sendFilterSettingsRequest(e) {
 
     e.stopImmediatePropagation();
-    // * Controller.handleFilterSettingsRequest();
+    ontroller.handleFilterSettingsRequest();
 
 }
 
@@ -661,7 +662,7 @@ function renderTodoSettings(todoID) {
     const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
     const todoSettingsButton = find(todoElement, '.settings-button');
 
-    // * renderSettings(todoElement, todoSettingsButton, 'Edit', Controller.handleTodoModalRequest, 'Delete', Controller.handleDeleteRequest, 'todo')
+    renderSettings(todoElement, todoSettingsButton, 'Edit', Controller.handleTodoModalRequest, 'Delete', Controller.handleDeleteRequest, 'todo')
 
 }
 
@@ -965,7 +966,7 @@ function sendTodoModalRequest(e) {
 
     // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
     // a complex modal request and provide the dataset.id of the 'content' container as an argument
-    // * if (hasClass(e.target, 'add-button')) return Controller.handleTodoModalRequest((getParentOf(e.target).dataset.id));
+    if (hasClass(e.target, 'add-button')) return Controller.handleTodoModalRequest((getParentOf(e.target).dataset.id));
     // Otherwise call the renderTodoModal with the 'all-todos' argument, which is a devCategory that holds all todos,
     // and has no special logic, thus can be considered as 'default', and using it as an argument can be considered
     // as asking for the default behavior of a function
