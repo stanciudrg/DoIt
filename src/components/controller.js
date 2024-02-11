@@ -49,7 +49,7 @@ export function deleteCategory(categoryID) {
 
 }
 
-// Scans the todo and calls the provided function with specific arguments based on conditional statements
+// Scans the todo and calls the passed function with specific arguments based on conditional statements
 export function scanTodo(todo, fn) {
 
     const parsedDueDate = parseISO(todo.get('dueDate'));
@@ -64,6 +64,22 @@ export function scanTodo(todo, fn) {
     // Always run the function by providing the 'all-todos' argument, since the 'All todos' devCategory
     // has no special logic and contains all todos regardless of their properties
     fn(todo, 'all-todos');
+
+}
+
+function addTodo(todo, categoryID) {
+
+    Organizer.addTodo(todo, categoryID);
+    Renderer.updateCategoryTodosCount(categoryID, Organizer.getTodosOf(categoryID).length);
+
+    // If the category where the todo is being added is not rendered, stop...
+    if (Renderer.getCurrentContentID() !== categoryID) return
+
+    // ...otherwise, reorganize the category, render the newly created Todo,
+    // and update the dataset.index property of all rendered Todo DOM elements
+    Organizer.organize(categoryID);
+    triggerTodoRendering(todo);
+    Organizer.getTodosOf(categoryID).forEach(todo => Renderer.updateTodoIndex(todo.get('id'), todo.get('index')));
 
 }
 
