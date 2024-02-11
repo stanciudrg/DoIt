@@ -236,6 +236,13 @@ function toggleUserCategoriesList() {
 
 }
 
+function sendDisplayContentRequest() {
+
+    const categoryID = this.id || this.dataset.id;
+    // Controller.handleDisplayContentRequest(categoryID);
+
+}
+
 
 //
 //
