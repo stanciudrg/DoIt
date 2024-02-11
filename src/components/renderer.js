@@ -263,6 +263,30 @@ export function renderUserCategoryButton(categoryName, categoryID) {
 
 }
 
+function handleUserCategoryClickEvents(e) {
+
+    const li = e.target.closest('li');
+    const userCategoryButton = find(li, '.todo-holder');
+
+    if (!li) return;
+    if (find(userCategoryButton, '.input-container')) return;
+
+    if (hasClass(e.target, 'settings-button')) {
+
+        e.stopImmediatePropagation();
+        return renderUserCategorySettings(userCategoryButton.dataset.id);
+
+    }
+
+    // bind is used because devCategory buttons have the sendDisplayContentRequest
+    // function attached directly on themselves, therefore providing a 'this' value.
+    // userCategory button click events, on the other hand, are handled by their ancestor,
+    // thus the userCategory buttons are manually provided as 'this'
+    sendDisplayContentRequest.bind(userCategoryButton)();
+
+}
+
+
 function renderUserCategorySettings(categoryID) {
 
     const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
