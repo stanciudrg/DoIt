@@ -502,6 +502,20 @@ function sendFilterSettingsRequest(e) {
 
 }
 
+// Notifies the user whether the current content is being sorted or filtered
+export function markContentCustomizeSetting(type, state) {
+
+    const methods = {
+
+        'sort': function () { state ? addClass(DOMCache.sortSetting, `sortingOn`) : removeClass(DOMCache.sortSetting, `sortingOn`) },
+        'filter': function () { state ? addClass(DOMCache.filterSetting, `filterOn`) : removeClass(DOMCache.filterSetting, `filterOn`) }
+
+    }
+
+    methods[type]();
+
+}
+
 //
 //
 // Controller assist functions
