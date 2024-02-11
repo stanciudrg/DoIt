@@ -3,7 +3,6 @@ import * as Creator from './creator.js';
 import * as focusTrap from 'focus-trap';
 import { format, addDays } from 'date-fns';
 import flatpickr from 'flatpickr';
-import '../../node_modules/flatpickr/dist/flatpickr.css';
 
 // Keeps a reference of initial, static DOM elements that are rendered on init()
 // Allows for quicker DOM traversal and editing, reduces the number of DOM lookups
@@ -1948,9 +1947,17 @@ function renderRenameInput(location, nameContainer, callLocation, action) {
 
 }
 
+function checkIfMobile() {
+    if (hasClass(DOMCache.header, 'mobile')) removeClass(DOMCache.header, 'mobile');
+
+    if (DOMCache.mobileVersion.matches) {
+        addClass(DOMCache.header, 'mobile');
+        hideNavbar();
+    }
+};
+
 // The checkBounds function determines whether the element position needs to be changed 
 // as a result of it leaking out of the viewport, and changes its position using CSS classes;
-
 function disableScrolling() {
     const html = document.querySelector('html');
     // Add right padding to the HTML element of the DOM that is equal to the width of the scrollbar,
