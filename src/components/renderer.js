@@ -619,6 +619,18 @@ export function deleteTodoAdditionalInfo(todoID) {
 
 }
 
+// Adds a class to the completedStatusSpan that styles the Todo to reflect its current priority
+export function colorTodoCompletedStatusSpan(todoID, priority) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoCompletedStatusSpan = find(todoElement, 'span');
+
+    todoCompletedStatusSpan.className = '';
+    if (!priority) return
+    addClass(todoCompletedStatusSpan, `priority-${priority}`);
+
+}
+
 // Manually triggers a transitionend event when the todoAdditionalInfo container within a Todo DOM element
 // is visible and needs to be deleted because it no longer contains any additional information
 // (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user) 
