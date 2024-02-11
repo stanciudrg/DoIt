@@ -609,6 +609,11 @@ export function deleteTodoAdditionalInfo(todoID) {
 
 }
 
+// Manually triggers a transitionend event when the todoAdditionalInfo container within a Todo DOM element
+// is visible and needs to be deleted because it no longer contains any additional information
+// (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user) 
+export function dispatchTransitionEndEvent(todoID) { find(DOMCache.main, `[data-id="${todoID}"]`).dispatchEvent(new Event('transitionend')) };
+
 // Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
 // that can be rendered
 export function deleteTodoElementExpander(todoID) {
