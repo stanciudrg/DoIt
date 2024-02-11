@@ -409,3 +409,307 @@ body {
     transition: grid-template-columns 600ms;
     transition-timing-function: var(--transition-timing-function);
 }
+
+/* Main header */
+
+/* Compensate for the loss of width for the first grid-template-column due to the fact
+that the header has been hidden and thus has shrink its size */
+body.header-hidden {
+    grid-template-columns: 59px auto;
+}
+
+/* Class added in the mobile version of the app. Invisible by default, is made visible
+when the header is being open to add a grey background above the body. */
+body .header-overlay {
+    z-index: 2;
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--font-color);
+    opacity: 0;
+    touch-action: none;
+    transition: 400ms;
+}
+
+body .header-overlay.visible {
+    opacity: 0.2;
+}
+
+body>header {
+    z-index: 3;
+    grid-column: 1 / 2;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 275px;
+    height: 95%;
+    flex-direction: column;
+    display: flex;
+    overflow-x: hidden;
+    background-color: var(--primary-color);
+    margin: auto;
+    gap: 0.5rem;
+    box-shadow: 0 0 20px 0px rgba(29, 29, 31, 0.1);
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    transition: box-shadow, height, transform;
+    transition-timing-function: var(--transition-timing-function);
+    transition-duration: 600ms;
+}
+
+/* Partially hide the header */
+body>header.hidden {
+    transform: translateX(-217px);
+}
+
+/* The top side of the main header, contains the app title and the menu toggler */
+#header-top-side {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+#header-top-side .icon-button {
+    padding: 4px;
+}
+
+/* Mirrors the SVG to always indicate the direction towards which the header
+will grow or shrink  */
+#header-top-side .icon-button.selected {
+    transform: scaleX(-1);
+}
+
+@media(hover:hover) {
+
+    #header-top-side .icon-button:hover {
+        color: var(--primary-color);
+        background-color: var(--accent-color);
+    }
+
+}
+
+#header-top-side h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0.5rem 0.75rem;
+}
+
+nav {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-right: 0.75rem;
+    padding-bottom: 0.75rem;
+    transition: opacity 200ms;
+    transition-timing-function: var(--transition-timing-function);
+}
+
+body>header.hidden nav {
+    opacity: 0;
+}
+
+/* Container that holds default categories and the 'Add todo' and 'Search' buttons */
+#dev-nav {
+    padding-bottom: 2rem;
+}
+
+/* Container that holds the following:
+ - a title,
+ - the current number of user categories,
+ - a button to add a new category
+ - a button to toggle the visibility of user categories  */
+#user-nav {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#user-nav-header {
+    display: grid;
+    grid-template-columns: 1fr repeat(3, auto);
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#user-nav-title {
+    grid-column: 1 / 2;
+    margin-left: 1rem;
+}
+
+#categories-counter {
+    grid-column: 2 / 3;
+    display: flex;
+    width: 26px;
+    height: 26px;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+#user-nav .add-button {
+    grid-column: 3 / 4;
+}
+
+#user-nav .expand-button {
+    grid-column: 4 / 5;
+    transform: rotate(180deg);
+}
+
+#user-nav .expand-button.expanded {
+    transform: rotateX(0);
+}
+
+/* The list items that contain the navigational buttons for changing the currently displayed category content.
+#dev-nav-list contains developer generated categories ('All todos', 'Today', and 'Next 7 days').
+#user-nav-list contains user generated categories, which are structured differently and are dynamic */
+#dev-nav-list,
+#user-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#dev-nav-list>li,
+#user-nav-list>li {
+    cursor: pointer;
+    border-top-right-radius: var(--medium-border-radius);
+    border-bottom-right-radius: var(--medium-border-radius);
+    transition-property: background-color, color;
+    transition-duration: var(--transition-duration);
+    transition-timing-function: var(--transition-timing-function);
+}
+
+#dev-nav-list>li:hover,
+#user-nav-list>li:hover {
+    background-color: var(--hover-color);
+}
+
+/* Class added to make the current category button stand out from the rest of the buttons */
+#dev-nav-list>li.selected,
+#user-nav-list>li.selected {
+    background-color: var(--accent-color);
+    color: var(--primary-color)
+}
+
+#dev-nav-list>li.selected:hover,
+#user-nav-list>li.selected:hover {
+    background-color: var(--accent-color);
+}
+
+#dev-nav-list>li>button,
+#user-nav-list>li>button {
+    display: grid;
+    width: 100%;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    color: inherit;
+    gap: 0.75rem;
+    border: 0;
+    cursor: pointer;
+    /* Disable the transition effect declared on all buttons to allow the transition effects
+    added on the li item to take over */
+    transition: none;
+    transition-duration: none;
+    transition-timing-function: none;
+    background-color: inherit;
+}
+
+#dev-nav-list>li>button {
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+}
+
+#user-nav-list>li>button {
+    padding: 0.5rem 0 0.5rem 1rem;
+}
+
+#dev-nav-list>li>button:hover,
+#user-nav-list>li>button:hover {
+    background-color: inherit;
+    color: inherit;
+}
+
+/* Targets all .named-buttons from #dev-nav-list and #user-nav-list */
+nav .named-button .icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+nav .named-button .button-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Input that is being rendered in place of .button-name and allows the user to change the name of the
+user category */
+#user-nav-list>li>button .input-container input {
+    width: 100%;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: var(--tiny-border-radius);
+    outline: 1px solid var(--transparent-black)
+}
+
+/* Animation added specifically for #user-nav-list, which can be hidden by the user */
+#user-nav-list {
+    animation-name: toggle-on;
+    animation-duration: 300ms;
+}
+
+#user-nav-list.hidden {
+    animation-name: toggle-off;
+    animation-duration: 300ms;
+}
+
+/* The #user-nav-list list item is designed differently since it contains a dynamic category that can
+be deleted and renamed, thus an additional buttons needs to be added to allow such features (.settings-button) */
+#user-nav-list>li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#user-nav-list>li .settings-button {
+    margin-right: 0.5rem;
+    margin-left: 0.25rem;
+}
+
+#user-nav-list>li.selected .settings-button {
+    color: var(--primary-color);
+}
+
+#user-nav-list>li .settings-button.focused {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+}
+
+#user-nav-list>li.selected .settings-button.focused {
+    background-color: var(--primary-color);
+    color: var(--accent-color);
+}
+
+@media (hover:hover) {
+
+    #user-nav-list>li .settings-button:hover {
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+    }
+
+    #user-nav-list>li.selected .settings-button:hover {
+        background-color: var(--primary-color);
+        color: var(--accent-color);
+    }
+
+}
