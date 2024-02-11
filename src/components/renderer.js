@@ -780,6 +780,48 @@ export function markTodoAsDue(todoID) {
 
 }
 
+export function markTodoAsFiltered(state, todoID) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoCompletedStatusToggler = find(todoElement, 'input');
+    const todoSettingsButton = find(todoElement, '.settings-button');
+    const todoAdditionalInfo = find(todoElement, '.todo-additional-info');
+    const todoExpander = find(todoElement, '.expand-button');
+
+    const methods = {
+
+        // Turns the Todo DOM element into an un-focusable, un-clickable element.
+        // If its additionalInfo is being rendered, it deletes it
+        'out': function () {
+
+            todoElement.setAttribute('tabindex', '-1');
+            todoCompletedStatusToggler.setAttribute('tabindex', '-1');
+            todoSettingsButton.setAttribute('tabindex', '-1');
+            todoAdditionalInfo && deleteTodoAdditionalInfo(todoID);
+            todoExpander && todoExpander.setAttribute('tabindex', '-1');
+            addClass(todoElement, 'filteredOut');
+
+
+        },
+
+        'in': function () {
+
+            // Reverts the Todo DOM element to its default values
+            todoElement.setAttribute('tabindex', '0');
+            todoCompletedStatusToggler.removeAttribute('tabindex');
+            todoSettingsButton.removeAttribute('tabindex');
+            if (todoExpander) todoExpander.removeAttribute('tabindex');
+            removeClass(todoElement, 'filteredOut')
+
+        }
+
+    }
+
+    methods[state]();
+
+}
+
+
 //
 //
 // Controller assist functions
