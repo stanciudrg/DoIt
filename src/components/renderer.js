@@ -557,6 +557,15 @@ export function deleteTodoElement(todoID) {
 
 }
 
+function renderTodoSettings(todoID) {
+
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoSettingsButton = find(todoElement, '.settings-button');
+
+    // * renderSettings(todoElement, todoSettingsButton, 'Edit', Controller.handleTodoModalRequest, 'Delete', Controller.handleDeleteRequest, 'todo')
+
+}
+
 
 //
 //
