@@ -95,7 +95,6 @@ export function init() {
 //
 //
 
-
 function showNavbar() {
 
     DOMCache.menuButton.setAttribute('aria-label', 'Hide menu')
