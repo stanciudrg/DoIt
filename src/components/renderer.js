@@ -539,6 +539,16 @@ export function updateTodoIndex(todoID, index) {
 
 }
 
+export function moveTodoElement(todoID, index) {
+
+    // Moves a Todo DOM element at a specified index. Used by the Controller
+    // whenever editing a Todo property changes its order relative to its siblings in case
+    // a sorting or filter method is being used by the category
+    const currentContent = categoriesContent[getCurrentContentID()];
+    const todoElement = find(currentContent, `[data-id="${todoID}"]`);
+    currentContent.insertBefore(todoElement, find(currentContent, `[data-index="${index}"]`))
+
+}
 
 
 //
