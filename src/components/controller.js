@@ -132,6 +132,12 @@ function deleteContent(categoryID) {
 
 }
 
+//
+//
+// Todo management: creating, editing, toggling states, deleting
+//
+//
+
 // Scans the todo and calls the passed function with specific arguments based on conditional statements
 export function scanTodo(todo, fn) {
 
@@ -278,6 +284,39 @@ function deleteTodo(todo, categoryID) {
     Organizer.organize(categoryID);
     Renderer.deleteTodoElement(todo.get('id'));
     Organizer.getTodosOf(categoryID).forEach(todo => Renderer.updateTodoIndex(todo.get('id'), todo.get('index')))
+
+}
+
+//
+//
+// Modal management: add todo, edit todo, add category, confirm deletion of todo, 
+// confirm deletion of category, and confirm deletion of category + all containing todos
+//
+//
+
+// The handleTodoModalRequest is called by the Renderer in the following circumstances:
+// 1. When the user wants to add a todo, either by clicking the header's 'Add todo' button or the add button located
+// at the end of a todo list
+// 2. When the user wants to edit an existing todo.
+// The functions tries to find either a todo or a category with the callLocation argument,
+// then does the following:
+// 1. If it finds a todo, it means that the callLocation was a todoID, and the user clicked an existing todo
+// to edit it
+// 2. If it finds a category, it means that the callLocation was the 'Add button' located at the end
+// of a todo list, which is being contained in a 'content' container that has its dataset.id set to its categoryID
+// 2a. If the category is UserCategory, specify that in the renderTodoModal function and provide its ID and name as additional arguments
+// 2b. If it is not, it means that the callLocation is either 'All todos', 'Today', or 'Next 7 days, in which case call the renderTodoModal
+// by passing on the callLocation argument;
+export function handleTodoModalRequest(callLocation) {
+
+    const todo = Organizer.getTodo(callLocation);
+    const category = Organizer.getCategory(callLocation);
+
+    if (todo) return Renderer.renderTodoModal('edit-todo', [todo.get('title'), todo.get('description'), todo.get('priority'), todo.get('dueDate'), todo.get('categoryID'), todo.get('categoryName'), todo.get('id')]);
+
+    Organizer.getUserCategory(callLocation)
+        ? Renderer.renderTodoModal('user-category', [category.getID(), category.getName()])
+        : Renderer.renderTodoModal(callLocation);
 
 }
 
