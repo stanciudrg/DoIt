@@ -1415,7 +1415,8 @@ and the dropdown list that is only rendered if it contains any categories */
 /* Change the positioning of the categories-dropdown whenever 
 its content is leaking outside the viewport. */
 .categories-dropdown.top-positioned {
-    top: -239px;
+    top: auto !important;
+    bottom: 37px !important;
 }
 
 .categories-dropdown.center-positioned {

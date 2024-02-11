@@ -535,7 +535,7 @@ function sendSortSettingsRequest(e) {
 function sendFilterSettingsRequest(e) {
 
     e.stopImmediatePropagation();
-    ontroller.handleFilterSettingsRequest();
+    Controller.handleFilterSettingsRequest();
 
 }
 
@@ -544,8 +544,8 @@ export function markContentCustomizeSetting(type, state) {
 
     const methods = {
 
-        'sort': function () { state ? addClass(DOMCache.sortSetting, `sortingOn`) : removeClass(DOMCache.sortSetting, `sortingOn`) },
-        'filter': function () { state ? addClass(DOMCache.filterSetting, `filterOn`) : removeClass(DOMCache.filterSetting, `filterOn`) }
+        'sort': function () { state ? addClass(find(DOMCache.sortSetting, 'button'), `sortingOn`) : removeClass(find(DOMCache.sortSetting, 'button'), `sortingOn`) },
+        'filter': function () { state ? addClass(find(DOMCache.filterSetting, 'button'), `filterOn`) : removeClass(find(DOMCache.filterSetting, 'button'), `filterOn`) }
 
     }
 
@@ -1957,8 +1957,7 @@ function checkIfMobile() {
     }
 };
 
-// The checkBounds function determines whether the element position needs to be changed 
-// as a result of it leaking out of the viewport, and changes its position using CSS classes;
+
 function disableScrolling() {
     const html = document.querySelector('html');
     // Add right padding to the HTML element of the DOM that is equal to the width of the scrollbar,
@@ -1974,6 +1973,8 @@ function enableScrolling() {
     removeClass(html, 'overlay-over');
 }
 
+// The checkBounds function determines whether the element position needs to be changed 
+// as a result of it leaking out of the viewport, and changes its position using CSS classes;
 function checkBounds(element, breakpoint) {
     if (hasClass(element, 'top-positioned')) removeClass(element, 'top-positioned');
     if (hasClass(element, 'center-positioned')) removeClass(element, 'center-positioned');
