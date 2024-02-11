@@ -1,5 +1,8 @@
 import * as Creator from './creator.js';
 import * as focusTrap from 'focus-trap';
+import { format, addDays } from 'date-fns';
+import flatpickr from 'flatpickr';
+import '../../node_modules/flatpickr/dist/flatpickr.css';
 
 // Keeps a reference of initial, static DOM elements that are rendered on init()
 // Allows for quicker DOM traversal and editing, reduces the number of DOM lookups
