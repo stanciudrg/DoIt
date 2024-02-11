@@ -932,7 +932,7 @@ function sendTodoModalRequest(e) {
 
     // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
     // a complex modal request and provide the dataset.id of the 'content' container as an argument
-    if (hasClass(e.target, 'add-button')) return Controller.handleTodoModalRequest((getParentOf(e.target).dataset.id));
+    // * if (hasClass(e.target, 'add-button')) return Controller.handleTodoModalRequest((getParentOf(e.target).dataset.id));
     // Otherwise call the renderTodoModal with the 'all-todos' argument, which is a devCategory that holds all todos,
     // and has no special logic, thus can be considered as 'default', and using it as an argument can be considered
     // as asking for the default behavior of a function
@@ -1423,6 +1423,78 @@ export function renderCategorySelectItem(categoryID, categoryName) {
 
 }
 
+//
+//
+// Todos searcher
+//
+//
+
+function renderSearchModal() {
+
+    const todosSearcher = Creator.createTodosSearcher();
+    const searchBar = find(todosSearcher, '.input-container');
+
+    const searchBarInput = find(searchBar, 'input');
+    searchBarInput.addEventListener('input', sendSearchCoordinates);
+
+    const searchResultsList = find(todosSearcher, '#search-results-list');
+    searchResultsList.addEventListener('click', handleAnchorTodoElementsClickEvents);
+
+    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
+    function closeByClickOutside(e) { if (e.target == DOMCache.modal) { closeModal(); } }
+
+    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
+    function closeByKeyboard(e) { if (e.key == 'Escape') { closeModal(); } }
+
+    render(DOMCache.modal, todosSearcher);
+    addClass(DOMCache.modal, 'show');
+    disableScrolling();
+    applyFocus(searchBar);
+
+    // Traps TAB focus within todosSearcher
+    const trap = focusTrap.createFocusTrap(todosSearcher, {
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        setReturnFocus: () => find(DOMCache.main, '.highlighted') || this,
+    });
+    trap.activate();
+
+    // Get user input and ask the Controller to search for todos, which will in turn
+    // ask back the Renderer to render the list of results, if any
+    function sendSearchCoordinates() { Controller.searchTodos(this.value) };
+
+    function handleAnchorTodoElementsClickEvents(e) {
+
+        const anchorTodoItem = e.target.closest('.anchor-todo-item');
+        if (!anchorTodoItem) return;
+
+        // If an anchor todo item is clicked, close the search modal and ask the Controller
+        // to handle the logic for showing to the user the todo that they are looking for
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closeModal();
+        Controller.handleShowTodoLocationRequest(anchorTodoItem.dataset.id);
+
+    }
+
+    function closeModal() {
+
+        trap.deactivate();
+
+        // Remove event listeners to prevent memory leaks and other unwanted behavior
+        searchBarInput.removeEventListener('input', sendSearchCoordinates);
+        searchResultsList.removeEventListener('click', handleAnchorTodoElementsClickEvents);
+
+        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
+        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
+
+        removeClass(DOMCache.modal, 'show');
+        enableScrolling();
+        todosSearcher.remove();
+
+    }
+
+}
 
 //
 //
