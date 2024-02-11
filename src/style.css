@@ -391,3 +391,21 @@ fieldset .input-container label,
 }
 
 /* -------------------------------- */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Class added whenever a modal or the header in mobile mode is open to temporarily disable scrolling */
+html.overlay-over {
+    overflow: hidden;
+    touch-action: none;
+}
+
+body {
+    display: grid;
+    grid-template-columns: 275px auto;
+    background-image: linear-gradient(to left, #ffffff, #fdfdfd, #fbfbfb, #f9f9fa, #f7f7f8);
+    transition: grid-template-columns 600ms;
+    transition-timing-function: var(--transition-timing-function);
+}
