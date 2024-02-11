@@ -278,7 +278,24 @@ function renderRenameCategoryInput(categoryID) {
     const userCategoryButtonName = find(userCategoryButton, '.button-name');
     const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
 
-    renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
+    // renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
+
+}
+
+export function renameUserCategoryButton(categoryID, newName) {
+
+    updateTextContent(find(find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`), '.button-name'), newName);
+
+}
+
+export function deleteUserCategoryButton(categoryID) {
+
+    const button = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+    // For accessibility reasons, user category buttons are stored into a li element
+    getParentOf(button).remove();
+
+    // Delete the property with the same name as the categoryID from the categoriesContent object
+    delete categoriesContent[categoryID];
 
 }
 
