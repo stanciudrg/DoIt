@@ -768,6 +768,18 @@ export function deleteTodoFeature(todoID, feature) {
 
 }
 
+export function markTodoAsOverdue(todoID) {
+
+    addClass(find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`), 'overdue');
+
+}
+
+export function markTodoAsDue(todoID) {
+
+    removeClass(find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`), 'overdue');
+
+}
+
 //
 //
 // Controller assist functions
