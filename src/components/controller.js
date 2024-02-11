@@ -4,6 +4,51 @@ import { UserCategory } from './category.js';
 import { Todo } from './todo.js';
 import { isEqual, isFuture, intlFormatDistance, format, differenceInDays, parseISO, isThisWeek, isThisMonth } from 'date-fns';
 
+export function createCategory(name) {
+
+    const category = UserCategory(name);
+    Organizer.addCategory(category);
+    Renderer.renderUserCategoryButton(category.getName(), category.getID());
+    Renderer.updateUserCategoriesCount(Organizer.getUserCategories().length);
+
+}
+
+export function renameCategory(categoryID, newName) {
+
+    const category = Organizer.getUserCategory(categoryID);
+    Organizer.changeUserCategoryName(categoryID, newName);
+    Renderer.renameUserCategoryButton(categoryID, newName);
+    // If the category to be renamed has its content rendered, also rename the content title
+    Renderer.getCurrentContentID() == categoryID && Renderer.renameContentTitle(newName);
+    // If the todos of the category are rendered, and their additional info that contains their category information is visible,
+    // change their category information to reflect the new category name
+    category.getTodos().forEach(todo => Renderer.isAdditionalInfoVisible(todo.get('id')) && Renderer.updateTodoFeature(todo.get('id'), 'categoryID', todo.get('categoryName')));
+
+}
+
+export function deleteCategory(categoryID) {
+
+    const category = Organizer.getUserCategory(categoryID);
+    const todos = category.getTodos()
+
+    // If the category to be deleted has its content rendered, make sure to switch to the main
+    // 'All todos' devCategory, to prevent the 'content' container from being empty
+    Renderer.getCurrentContentID() == categoryID && handleDisplayContentRequest('all-todos');
+    Organizer.deleteCategory(categoryID);
+    Renderer.deleteUserCategoryButton(categoryID);
+    Renderer.updateUserCategoriesCount(Organizer.getUserCategories().length);
+
+    todos.forEach((todo) => {
+
+        // If the todos of the category are rendered, and their additional info that contains their category information is visible,
+        // remove their information about the category
+        Renderer.isAdditionalInfoVisible(todo.get('id')) && Renderer.deleteTodoFeature(todo.get('id'), 'categoryID');
+        // * toggleTodoExpandFeature(todo);
+
+    });
+
+}
+
 // Helper functions
 function getCurrentSortingMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentSortingMethod() }
 function getCurrentFilterMethod() { return Organizer.getCategory(Renderer.getCurrentContentID()).getCurrentFilterMethod() }
