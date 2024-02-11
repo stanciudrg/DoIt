@@ -1386,6 +1386,31 @@ export function renderCategoriesDropdownList() {
 
 }
 
+// Renders a user category button within the categoriesDropdownList on each call
+export function renderCategorySelectItem(categoryID, categoryName) {
+
+    const categorySelectButton = find(DOMCache.modal, '.categories-dropdown-button');
+    const categoryInput = getParentOf(categorySelectButton);
+    const categoriesDropdownContainer = find(categoryInput, '.categories-dropdown');
+    const categoriesDropdownList = find(categoriesDropdownContainer, '.categories-dropdown-list');
+
+    const categoriesDropdownTitle = find(categoryInput, '.categories-dropdown-title');
+    categoriesDropdownTitle.removeAttribute('tabindex');
+    updateTextContent(categoriesDropdownTitle, 'Pick a category');
+
+    const categorySelectItem = Creator.createCategorySelectItem(categoryID, categoryName);
+    render(categoriesDropdownList, categorySelectItem);
+
+    const selectItemButton = find(categorySelectItem, 'button');
+    if (categorySelectButton.dataset.id == selectItemButton.dataset.id) { addClass(selectItemButton, 'selected') };
+    if (hasClass(selectItemButton, 'selected')) selectItemButton.setAttribute('aria-label', `Category: ${selectItemButton.textContent} (currently selected)`);
+
+    // Check if the categoriesDropdownContainer has not leaked outside the viewport each time
+    // a new user category button is rendered within it;
+    checkBounds(categoriesDropdownContainer, 265);
+
+}
+
 
 //
 //
