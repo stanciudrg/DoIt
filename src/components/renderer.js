@@ -577,6 +577,16 @@ export function renderTodoElementExpander(todoID) {
 
 }
 
+// Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
+// that can be rendered
+export function deleteTodoElementExpander(todoID) {
+
+    const todoItem = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoExpander = find(todoItem, '.expand-button');
+    todoExpander.remove();
+
+}
+
 // Inserts a container at the end of the Todo DOM element that contains additional information (eg. priority, dueDate, category);
 export function renderTodoAdditionalInfo(todoID) {
 
@@ -614,13 +624,30 @@ export function deleteTodoAdditionalInfo(todoID) {
 // (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user) 
 export function dispatchTransitionEndEvent(todoID) { find(DOMCache.main, `[data-id="${todoID}"]`).dispatchEvent(new Event('transitionend')) };
 
-// Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
-// that can be rendered
-export function deleteTodoElementExpander(todoID) {
+export function updateTodoElementCompletedStatus(todoID, status) {
 
-    const todoItem = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoExpander = find(todoItem, '.expand-button');
-    todoExpander.remove();
+    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+    const todoCompletedStatusTogglerInput = find(todoElement, 'input[type="checkbox"]');
+
+    const methods = {
+
+        'completed': function () {
+
+            addClass(todoElement, 'completed');
+            todoCompletedStatusTogglerInput.setAttribute('checked', '');
+
+        },
+
+        'uncompleted': function () {
+
+            removeClass(todoElement, 'completed');
+            todoCompletedStatusTogglerInput.removeAttribute('checked');
+
+        }
+
+    }
+
+    methods[status]();
 
 }
 
