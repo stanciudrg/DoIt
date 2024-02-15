@@ -20,8 +20,13 @@
   "devDependencies": {
     "css-loader": "^6.10.0",
     "css-minimizer-webpack-plugin": "^5.0.1",
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
     "html-webpack-plugin": "^5.5.3",
     "mini-css-extract-plugin": "^2.7.6",
+    "prettier": "3.2.5",
     "svg-inline-loader": "^0.8.2",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",

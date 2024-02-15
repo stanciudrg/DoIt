@@ -1,48 +1,46 @@
-import * as Controller from './controller.js';
-import * as Creator from './creator.js';
-import * as focusTrap from 'focus-trap';
-import { format, addDays } from 'date-fns';
-import flatpickr from 'flatpickr';
-import '../../node_modules/flatpickr/dist/flatpickr.css';
+import * as Controller from "./controller.js";
+import * as Creator from "./creator.js";
+import * as focusTrap from "focus-trap";
+import { format, addDays } from "date-fns";
+import flatpickr from "flatpickr";
+import "../../node_modules/flatpickr/dist/flatpickr.css";
 
 // Keeps a reference of initial, static DOM elements that are rendered on init()
 // Allows for quicker DOM traversal and editing, reduces the number of DOM lookups
 const DOMCache = {
-
-    body: document.querySelector('body'),
-    modal: Creator.createModal(),
-    header: Creator.createHeader('Do It'),
-    // Used to disable user input and add a grey background behind header
-    // in mobile mode
-    headerOverlay: Creator.createElementWithClass('div', 'header-overlay'),
-    menuButton: Creator.createMenuButton(),
-    nav: document.createElement('nav'),
-    devNavbar: Creator.createElementWithID('div', 'dev-nav'),
-    // !! devNavbarList holds devCategoryButtons that have an ID ('all-todos, 'today', 'this-week'). userNavbarList (defined below) holds userCategoryButtons that do not
-    // have an ID but they have a dataset.id attribute, since the categoryID property
-    // of userCategory objects is a uuid number that is not always compatible with selectors
-    // and creates the need of additional code to be written in order to fix the compatibility
-    // issue
-    devNavbarList: Creator.createElementWithID('ul', 'dev-nav-list'),
-    addTodoButton: Creator.createAddTodoButton(),
-    searchButton: Creator.createSearchButton(),
-    userNavbar: Creator.createUserNavbar(),
-    addCategoryButton: Creator.createAddButton('Add category'),
-    expandCategoriesButton: Creator.createExpandButton('Hide user categories'),
-    userNavbarList: Creator.createElementWithID('ul', 'user-nav-list'),
-    main: document.createElement('main'),
-    contentHeader: Creator.createContentHeader(),
-    contentTitle: Creator.createElementWithClass('h2', 'content-title'),
-    contentSettings: Creator.createElementWithClass('div', 'content-settings'),
-    sortSetting: Creator.createContentSortSetting(),
-    filterSetting: Creator.createContentFilterSetting(),
-    content: Creator.createElementWithClass('div', 'content'),
-    contentAddButton: Creator.createAddButton('Add todo'),
-    footer: document.createElement('footer'),
-    // Media query used for turning the app into mobile mode
-    mobileVersion: window.matchMedia("(max-width: 750px), (max-height: 400px)"),
-
-}
+  body: document.querySelector("body"),
+  modal: Creator.createModal(),
+  header: Creator.createHeader("Do It"),
+  // Used to disable user input and add a grey background behind header
+  // in mobile mode
+  headerOverlay: Creator.createElementWithClass("div", "header-overlay"),
+  menuButton: Creator.createMenuButton(),
+  nav: document.createElement("nav"),
+  devNavbar: Creator.createElementWithID("div", "dev-nav"),
+  // !! devNavbarList holds devCategoryButtons that have an ID ('all-todos, 'today', 'this-week'). userNavbarList (defined below) holds userCategoryButtons that do not
+  // have an ID but they have a dataset.id attribute, since the categoryID property
+  // of userCategory objects is a uuid number that is not always compatible with selectors
+  // and creates the need of additional code to be written in order to fix the compatibility
+  // issue
+  devNavbarList: Creator.createElementWithID("ul", "dev-nav-list"),
+  addTodoButton: Creator.createAddTodoButton(),
+  searchButton: Creator.createSearchButton(),
+  userNavbar: Creator.createUserNavbar(),
+  addCategoryButton: Creator.createAddButton("Add category"),
+  expandCategoriesButton: Creator.createExpandButton("Hide user categories"),
+  userNavbarList: Creator.createElementWithID("ul", "user-nav-list"),
+  main: document.createElement("main"),
+  contentHeader: Creator.createContentHeader(),
+  contentTitle: Creator.createElementWithClass("h2", "content-title"),
+  contentSettings: Creator.createElementWithClass("div", "content-settings"),
+  sortSetting: Creator.createContentSortSetting(),
+  filterSetting: Creator.createContentFilterSetting(),
+  content: Creator.createElementWithClass("div", "content"),
+  contentAddButton: Creator.createAddButton("Add todo"),
+  footer: document.createElement("footer"),
+  // Media query used for turning the app into mobile mode
+  mobileVersion: window.matchMedia("(max-width: 750px), (max-height: 400px)"),
+};
 
 // Object used to store a reference to the existing developer and user categories ID's and the current DOM content being rendered.
 // Each time a category is created, a new property bearing its ID is added to categoriesContent object.
@@ -56,38 +54,67 @@ const DOMCache = {
 const categoriesContent = {};
 
 export function init() {
+  // DOM insertion
+  render(
+    DOMCache.body,
+    DOMCache.modal,
+    DOMCache.header,
+    DOMCache.main,
+    DOMCache.footer,
+    DOMCache.headerOverlay,
+  );
+  render(find(DOMCache.header, "#header-top-side"), DOMCache.menuButton);
+  render(DOMCache.header, DOMCache.nav);
+  render(DOMCache.nav, DOMCache.devNavbar, DOMCache.userNavbar);
+  render(DOMCache.devNavbar, DOMCache.devNavbarList);
+  render(DOMCache.devNavbarList, DOMCache.addTodoButton, DOMCache.searchButton);
+  render(
+    find(DOMCache.userNavbar, "#user-nav-header"),
+    DOMCache.addCategoryButton,
+    DOMCache.expandCategoriesButton,
+  );
+  render(DOMCache.userNavbar, DOMCache.userNavbarList);
+  render(DOMCache.main, DOMCache.contentHeader, DOMCache.content);
+  render(
+    find(DOMCache.contentHeader, "header"),
+    DOMCache.contentTitle,
+    DOMCache.contentSettings,
+  );
+  render(
+    DOMCache.contentSettings,
+    DOMCache.sortSetting,
+    DOMCache.filterSetting,
+  );
+  render(DOMCache.content, DOMCache.contentAddButton);
 
-    // DOM insertion
-    render(DOMCache.body, DOMCache.modal, DOMCache.header, DOMCache.main, DOMCache.footer, DOMCache.headerOverlay);
-    render(find(DOMCache.header, '#header-top-side'), DOMCache.menuButton)
-    render(DOMCache.header, DOMCache.nav);
-    render(DOMCache.nav, DOMCache.devNavbar, DOMCache.userNavbar);
-    render(DOMCache.devNavbar, DOMCache.devNavbarList);
-    render(DOMCache.devNavbarList, DOMCache.addTodoButton, DOMCache.searchButton);
-    render(find(DOMCache.userNavbar, '#user-nav-header'), DOMCache.addCategoryButton, DOMCache.expandCategoriesButton);
-    render(DOMCache.userNavbar, DOMCache.userNavbarList);
-    render(DOMCache.main, DOMCache.contentHeader, DOMCache.content);
-    render(find(DOMCache.contentHeader, 'header'), DOMCache.contentTitle, DOMCache.contentSettings);
-    render(DOMCache.contentSettings, DOMCache.sortSetting, DOMCache.filterSetting);
-    render(DOMCache.content, DOMCache.contentAddButton);
+  // Event listener attaching
+  DOMCache.menuButton.addEventListener("click", toggleNavbar);
+  find(DOMCache.addTodoButton, "button").addEventListener(
+    "click",
+    sendTodoModalRequest,
+  );
+  find(DOMCache.searchButton, "button").addEventListener(
+    "click",
+    renderSearchModal,
+  );
+  DOMCache.addCategoryButton.addEventListener("click", renderCategoryModal);
+  DOMCache.expandCategoriesButton.addEventListener(
+    "click",
+    toggleUserCategoriesList,
+  );
+  DOMCache.userNavbarList.addEventListener(
+    "click",
+    handleUserCategoryClickEvents,
+  );
+  DOMCache.sortSetting.addEventListener("click", sendSortSettingsRequest);
+  DOMCache.filterSetting.addEventListener("click", sendFilterSettingsRequest);
+  DOMCache.contentAddButton.addEventListener("click", sendTodoModalRequest);
 
-    // Event listener attaching
-    DOMCache.menuButton.addEventListener('click', toggleNavbar);
-    find(DOMCache.addTodoButton, 'button').addEventListener('click', sendTodoModalRequest);
-    find(DOMCache.searchButton, 'button').addEventListener('click', renderSearchModal);
-    DOMCache.addCategoryButton.addEventListener('click', renderCategoryModal);
-    DOMCache.expandCategoriesButton.addEventListener('click', toggleUserCategoriesList);
-    DOMCache.userNavbarList.addEventListener('click', handleUserCategoryClickEvents);
-    DOMCache.sortSetting.addEventListener('click', sendSortSettingsRequest);
-    DOMCache.filterSetting.addEventListener('click', sendFilterSettingsRequest);
-    DOMCache.contentAddButton.addEventListener('click', sendTodoModalRequest);
-
-    DOMCache.mobileVersion.addEventListener('change', checkIfMobile);
-    // Manually fires a change event to detect whether the app should initialize in mobile version
-    DOMCache.mobileVersion.dispatchEvent(new Event('change'));
-    // Enables the CSS :active selector on iOS devices
-    document.addEventListener("touchstart", function () { }, false);
-
+  DOMCache.mobileVersion.addEventListener("change", checkIfMobile);
+  // Manually fires a change event to detect whether the app should initialize in mobile version
+  DOMCache.mobileVersion.dispatchEvent(new Event("change"));
+  // Enables the CSS :active selector on iOS devices
+  document.addEventListener("touchstart", function () {}, false);
 }
 
 //
@@ -97,267 +124,280 @@ export function init() {
 //
 
 function showNavbar() {
+  DOMCache.menuButton.setAttribute("aria-label", "Hide menu");
+  DOMCache.nav.style.visibility = "visible";
 
-    DOMCache.menuButton.setAttribute('aria-label', 'Hide menu')
-    DOMCache.nav.style.visibility = 'visible';
+  if (hasClass(DOMCache.header, "hidden")) {
+    removeClass(DOMCache.header, "hidden");
+    removeClass(DOMCache.body, "header-hidden");
+    removeClass(DOMCache.menuButton, "selected");
+  }
 
-    if (hasClass(DOMCache.header, 'hidden')) {
+  addClass(DOMCache.header, "visible");
+  if (!hasClass(DOMCache.header, "mobile")) return;
 
-        removeClass(DOMCache.header, 'hidden');
-        removeClass(DOMCache.body, 'header-hidden');
-        removeClass(DOMCache.menuButton, 'selected');
+  // If mobile, disable scrolling and add a grey overlay behind header that prevents user input
+  disableScrolling();
+  DOMCache.headerOverlay.style.display = "initial";
+  addClass(DOMCache.headerOverlay, "visible");
 
-    }
+  // Remove the eventListener that triggered this function until
+  // the header is closed to prevent conflicts in case the user
+  // clicks the menuButton again
+  DOMCache.menuButton.removeEventListener("click", toggleNavbar);
+  DOMCache.header.addEventListener("click", mobileHeaderActions);
+  DOMCache.headerOverlay.addEventListener("click", closeNavbar);
+  // Add a new eventListener on the mobileVersion media query to close the navbar
+  // in case the window exits mobile mode
+  DOMCache.mobileVersion.addEventListener("change", closeNavbar);
 
-    addClass(DOMCache.header, 'visible');
-    if (!hasClass(DOMCache.header, 'mobile')) return;
+  // Traps TAB focusing within the header
+  const trap = focusTrap.createFocusTrap(DOMCache.header, {
+    initialFocus: () => false,
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    returnFocusOnDeactivate: () => true,
+  });
+  trap.activate();
 
-    // If mobile, disable scrolling and add a grey overlay behind header that prevents user input
-    disableScrolling();
-    DOMCache.headerOverlay.style.display = 'initial';
-    addClass(DOMCache.headerOverlay, 'visible');
+  function mobileHeaderActions(e) {
+    const userCategoryButton = e.target.closest(".todo-holder");
 
-    // Remove the eventListener that triggered this function until
-    // the header is closed to prevent conflicts in case the user
-    // clicks the menuButton again
-    DOMCache.menuButton.removeEventListener('click', toggleNavbar);
-    DOMCache.header.addEventListener('click', mobileHeaderActions);
-    DOMCache.headerOverlay.addEventListener('click', closeNavbar);
-    // Add a new eventListener on the mobileVersion media query to close the navbar
-    // in case the window exits mobile mode
-    DOMCache.mobileVersion.addEventListener('change', closeNavbar);
+    // If the user is currently editing a user category button, and clicks the name input,
+    // do not close the header
+    if (find(userCategoryButton, ".input-container")) return;
+    if (userCategoryButton) closeNavbar();
+    // The click behavior of menuButton is now reversed to close the navbar instead of opening it
+    if (e.target == DOMCache.menuButton) closeNavbar();
+    if (e.target.closest("#search")) closeNavbar();
+  }
 
-    // Traps TAB focusing within the header
-    const trap = focusTrap.createFocusTrap(DOMCache.header, {
-        initialFocus: () => false,
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        returnFocusOnDeactivate: () => true,
-    });
-    trap.activate();
+  function closeNavbar() {
+    // Deactivate the focus trap
+    trap.deactivate();
+    // Attach the eventListener that triggers this function back on the menuButton
+    DOMCache.menuButton.addEventListener("click", toggleNavbar);
+    // Remove events to prevent memory leaks and other unwanted behavior
+    DOMCache.header.removeEventListener("click", mobileHeaderActions);
+    DOMCache.headerOverlay.removeEventListener("click", closeNavbar);
+    DOMCache.mobileVersion.removeEventListener("change", closeNavbar);
 
-    function mobileHeaderActions(e) {
-
-        const userCategoryButton = e.target.closest('.todo-holder');
-
-        // If the user is currently editing a user category button, and clicks the name input,
-        // do not close the header
-        if (find(userCategoryButton, '.input-container')) return;
-        if (userCategoryButton) closeNavbar();
-        // The click behavior of menuButton is now reversed to close the navbar instead of opening it
-        if (e.target == DOMCache.menuButton) closeNavbar();
-        if (e.target.closest('#search')) closeNavbar();
-
-    }
-
-    function closeNavbar() {
-
-        // Deactivate the focus trap
-        trap.deactivate();
-        // Attach the eventListener that triggers this function back on the menuButton
-        DOMCache.menuButton.addEventListener('click', toggleNavbar);
-        // Remove events to prevent memory leaks and other unwanted behavior
-        DOMCache.header.removeEventListener('click', mobileHeaderActions);
-        DOMCache.headerOverlay.removeEventListener('click', closeNavbar);
-        DOMCache.mobileVersion.removeEventListener('change', closeNavbar);
-
-        // Closing the navbar will also enable scrolling, unless
-        // the navbar was closed due to the searchbar being opened, which is also supposed
-        // to keep the scrolling disabled, since it is a modal.
-        if (!find(DOMCache.modal, '#search-container')) enableScrolling();
-        if (DOMCache.mobileVersion.matches) hideNavbar();
-
-        // Ensures that the transition works by waiting for it to finish before changing
-        // other properties that do not transition their state
-        DOMCache.headerOverlay.addEventListener('transitionend', remove);
-        removeClass(DOMCache.headerOverlay, 'visible');
-
-        function remove() {
-
-            if (!hasClass(DOMCache.headerOverlay, 'visible')) DOMCache.headerOverlay.style.display = 'none';
-            DOMCache.headerOverlay.removeEventListener('transitionend', remove);
-
-        }
-
-    }
-
-}
-
-function hideNavbar() {
-
-    DOMCache.menuButton.setAttribute('aria-label', 'Show menu');
-    if (hasClass(DOMCache.header, 'hidden')) DOMCache.nav.style.visibility = 'hidden';
+    // Closing the navbar will also enable scrolling, unless
+    // the navbar was closed due to the searchbar being opened, which is also supposed
+    // to keep the scrolling disabled, since it is a modal.
+    if (!find(DOMCache.modal, "#search-container")) enableScrolling();
+    if (DOMCache.mobileVersion.matches) hideNavbar();
 
     // Ensures that the transition works by waiting for it to finish before changing
     // other properties that do not transition their state
-    DOMCache.header.addEventListener('transitionend', remove);
-
-    if (hasClass(DOMCache.header, 'visible')) removeClass(DOMCache.header, 'visible');
-    addClass(DOMCache.header, 'hidden');
-    addClass(DOMCache.body, 'header-hidden');
-    addClass(DOMCache.nav, 'header-hidden');
-    addClass(DOMCache.menuButton, 'selected');
+    DOMCache.headerOverlay.addEventListener("transitionend", remove);
+    removeClass(DOMCache.headerOverlay, "visible");
 
     function remove() {
-
-        if (hasClass(DOMCache.header, 'hidden')) DOMCache.nav.style.visibility = 'hidden';
-        DOMCache.header.removeEventListener('transitionend', remove);
-
+      if (!hasClass(DOMCache.headerOverlay, "visible"))
+        DOMCache.headerOverlay.style.display = "none";
+      DOMCache.headerOverlay.removeEventListener("transitionend", remove);
     }
+  }
+}
 
+function hideNavbar() {
+  DOMCache.menuButton.setAttribute("aria-label", "Show menu");
+  if (hasClass(DOMCache.header, "hidden"))
+    DOMCache.nav.style.visibility = "hidden";
+
+  // Ensures that the transition works by waiting for it to finish before changing
+  // other properties that do not transition their state
+  DOMCache.header.addEventListener("transitionend", remove);
+
+  if (hasClass(DOMCache.header, "visible"))
+    removeClass(DOMCache.header, "visible");
+  addClass(DOMCache.header, "hidden");
+  addClass(DOMCache.body, "header-hidden");
+  addClass(DOMCache.nav, "header-hidden");
+  addClass(DOMCache.menuButton, "selected");
+
+  function remove() {
+    if (hasClass(DOMCache.header, "hidden"))
+      DOMCache.nav.style.visibility = "hidden";
+    DOMCache.header.removeEventListener("transitionend", remove);
+  }
 }
 
 function toggleNavbar(e) {
-
-    e.stopImmediatePropagation();
-    hasClass(DOMCache.header, 'hidden') ? showNavbar() : hideNavbar();
-
+  e.stopImmediatePropagation();
+  hasClass(DOMCache.header, "hidden") ? showNavbar() : hideNavbar();
 }
 
 export function selectNewCategoryButton(categoryID) {
-
-    // Is either a devCategory button that has an ID, or a userCategory button that has a 
-    // dataset.id. Looks for a devCategory first since they are only three ('All todos', 
-    // 'Today', 'Next 7 days');
-    const newButton = find(DOMCache.devNavbarList, `[id="${categoryID}"]`) || find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
-    addClass(getParentOf(newButton), 'selected');
-
+  // Is either a devCategory button that has an ID, or a userCategory button that has a
+  // dataset.id. Looks for a devCategory first since they are only three ('All todos',
+  // 'Today', 'Next 7 days');
+  const newButton =
+    find(DOMCache.devNavbarList, `[id="${categoryID}"]`) ||
+    find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+  addClass(getParentOf(newButton), "selected");
 }
 
-export function unselectOldCategoryButton() { removeClass(find(DOMCache.nav, '.selected'), 'selected') }
+export function unselectOldCategoryButton() {
+  removeClass(find(DOMCache.nav, ".selected"), "selected");
+}
 
 export function updateCategoryTodosCount(categoryID, todosCount) {
-
-    // Is either a devCategory button that has an ID, or a userCategory button that has a 
-    // dataset.id. Looks for a devCategory first since they are only three ('All todos', 
-    // 'Today', 'Next 7 days');
-    const category = find(DOMCache.devNavbarList, `[id="${categoryID}"]`) || find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
-    const todosCounter = find(category, '.todos-count');
-    updateTextContent(todosCounter, todosCount);
-
+  // Is either a devCategory button that has an ID, or a userCategory button that has a
+  // dataset.id. Looks for a devCategory first since they are only three ('All todos',
+  // 'Today', 'Next 7 days');
+  const category =
+    find(DOMCache.devNavbarList, `[id="${categoryID}"]`) ||
+    find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+  const todosCounter = find(category, ".todos-count");
+  updateTextContent(todosCounter, todosCount);
 }
 
 export function updateUserCategoriesCount(categoriesCount) {
-
-    updateTextContent(find(DOMCache.userNavbar, '#categories-counter'), categoriesCount);
-
+  updateTextContent(
+    find(DOMCache.userNavbar, "#categories-counter"),
+    categoriesCount,
+  );
 }
 
 function toggleUserCategoriesList() {
+  hasClass(DOMCache.expandCategoriesButton, "expanded")
+    ? DOMCache.expandCategoriesButton.setAttribute(
+        "aria-label",
+        "Hide user categories",
+      )
+    : DOMCache.expandCategoriesButton.setAttribute(
+        "aria-label",
+        "Show user categories",
+      );
 
-    hasClass(DOMCache.expandCategoriesButton, 'expanded')
-        ? DOMCache.expandCategoriesButton.setAttribute('aria-label', 'Hide user categories')
-        : DOMCache.expandCategoriesButton.setAttribute('aria-label', 'Show user categories');
+  toggleClass(DOMCache.expandCategoriesButton, "expanded");
 
-    toggleClass(DOMCache.expandCategoriesButton, 'expanded');
+  if (hasClass(DOMCache.userNavbarList, "hidden")) {
+    DOMCache.userNavbarList.style.removeProperty("display");
+    removeClass(DOMCache.userNavbarList, "hidden");
+    return;
+  }
 
-    if (hasClass(DOMCache.userNavbarList, 'hidden')) {
+  // Ensures that the animation works by waiting for it to finish before changing
+  // other properties that do not transition their state
+  DOMCache.userNavbarList.addEventListener("animationend", remove);
+  addClass(DOMCache.userNavbarList, "hidden");
 
-        DOMCache.userNavbarList.style.removeProperty('display');
-        removeClass(DOMCache.userNavbarList, 'hidden');
-        return;
-
-    }
-
-    // Ensures that the animation works by waiting for it to finish before changing
-    // other properties that do not transition their state
-    DOMCache.userNavbarList.addEventListener('animationend', remove);
-    addClass(DOMCache.userNavbarList, 'hidden');
-
-    function remove() {
-
-        if (hasClass(DOMCache.userNavbarList, 'hidden')) DOMCache.userNavbarList.style.display = 'none';
-        DOMCache.userNavbarList.removeEventListener('animationend', remove);
-
-    }
-
+  function remove() {
+    if (hasClass(DOMCache.userNavbarList, "hidden"))
+      DOMCache.userNavbarList.style.display = "none";
+    DOMCache.userNavbarList.removeEventListener("animationend", remove);
+  }
 }
 
 function sendDisplayContentRequest() {
-
-    const categoryID = this.id || this.dataset.id;
-    Controller.handleDisplayContentRequest(categoryID);
-
+  const categoryID = this.id || this.dataset.id;
+  Controller.handleDisplayContentRequest(categoryID);
 }
 
 export function renderDevCategoryButton(categoryName, categoryID) {
+  const devCategoryButton = Creator.createDevCategoryButton(
+    categoryName,
+    categoryID,
+  );
+  find(devCategoryButton, "button").addEventListener(
+    "click",
+    sendDisplayContentRequest,
+  );
 
-    const devCategoryButton = Creator.createDevCategoryButton(categoryName, categoryID);
-    find(devCategoryButton, 'button').addEventListener('click', sendDisplayContentRequest);
-
-    render(DOMCache.devNavbarList, devCategoryButton);
-    // Create an empty property with the same name as the categoryID on the categoriesContent object.
-    categoriesContent[categoryID] = '';
-
+  render(DOMCache.devNavbarList, devCategoryButton);
+  // Create an empty property with the same name as the categoryID on the categoriesContent object.
+  categoriesContent[categoryID] = "";
 }
 
 export function renderUserCategoryButton(categoryName, categoryID) {
+  const userCategoryButton = Creator.createUserCategoryButton(
+    categoryName,
+    categoryID,
+  );
 
-    const userCategoryButton = Creator.createUserCategoryButton(categoryName, categoryID);
-
-    render(DOMCache.userNavbarList, userCategoryButton);
-    categoriesContent[categoryID] = '';
-
+  render(DOMCache.userNavbarList, userCategoryButton);
+  categoriesContent[categoryID] = "";
 }
 
 function handleUserCategoryClickEvents(e) {
+  const li = e.target.closest("li");
+  const userCategoryButton = find(li, ".todo-holder");
 
-    const li = e.target.closest('li');
-    const userCategoryButton = find(li, '.todo-holder');
+  if (!li) return;
+  if (find(userCategoryButton, ".input-container")) return;
 
-    if (!li) return;
-    if (find(userCategoryButton, '.input-container')) return;
+  if (hasClass(e.target, "settings-button")) {
+    e.stopImmediatePropagation();
+    return renderUserCategorySettings(userCategoryButton.dataset.id);
+  }
 
-    if (hasClass(e.target, 'settings-button')) {
-
-        e.stopImmediatePropagation();
-        return renderUserCategorySettings(userCategoryButton.dataset.id);
-
-    }
-
-    // bind is used because devCategory buttons have the sendDisplayContentRequest
-    // function attached directly on themselves, therefore providing a 'this' value.
-    // userCategory button click events, on the other hand, are handled by their ancestor,
-    // thus the userCategory buttons are manually provided as 'this'
-    sendDisplayContentRequest.bind(userCategoryButton)();
-
+  // bind is used because devCategory buttons have the sendDisplayContentRequest
+  // function attached directly on themselves, therefore providing a 'this' value.
+  // userCategory button click events, on the other hand, are handled by their ancestor,
+  // thus the userCategory buttons are manually provided as 'this'
+  sendDisplayContentRequest.bind(userCategoryButton)();
 }
 
-
 function renderUserCategorySettings(categoryID) {
+  const userCategoryButton = find(
+    DOMCache.userNavbarList,
+    `[data-id="${categoryID}"]`,
+  );
+  const userCategorySettingsButton = find(
+    getParentOf(userCategoryButton),
+    ".settings-button",
+  );
 
-    const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
-    const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
-
-    renderSettings(userCategoryButton, userCategorySettingsButton, 'Rename', renderUserCategoryRenameInput, 'Delete', Controller.handleDeleteRequest, 'category');
-
+  renderSettings(
+    userCategoryButton,
+    userCategorySettingsButton,
+    "Rename",
+    renderUserCategoryRenameInput,
+    "Delete",
+    Controller.handleDeleteRequest,
+    "category",
+  );
 }
 
 function renderUserCategoryRenameInput(categoryID) {
+  const userCategoryButton = find(
+    DOMCache.userNavbarList,
+    `[data-id="${categoryID}"]`,
+  );
+  const userCategoryButtonName = find(userCategoryButton, ".button-name");
+  const userCategorySettingsButton = find(
+    getParentOf(userCategoryButton),
+    ".settings-button",
+  );
 
-    const userCategoryButton = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
-    const userCategoryButtonName = find(userCategoryButton, '.button-name');
-    const userCategorySettingsButton = find(getParentOf(userCategoryButton), '.settings-button');
-
-    renderRenameInput(userCategoryButton, userCategoryButtonName, userCategorySettingsButton, Controller.renameCategory);
-
+  renderRenameInput(
+    userCategoryButton,
+    userCategoryButtonName,
+    userCategorySettingsButton,
+    Controller.renameCategory,
+  );
 }
 
 export function renameUserCategoryButton(categoryID, newName) {
-
-    updateTextContent(find(find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`), '.button-name'), newName);
-
+  updateTextContent(
+    find(
+      find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`),
+      ".button-name",
+    ),
+    newName,
+  );
 }
 
 export function deleteUserCategoryButton(categoryID) {
+  const button = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
+  // For accessibility reasons, user category buttons are stored into a li element
+  getParentOf(button).remove();
 
-    const button = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
-    // For accessibility reasons, user category buttons are stored into a li element
-    getParentOf(button).remove();
-
-    // Delete the property with the same name as the categoryID from the categoriesContent object
-    delete categoriesContent[categoryID];
-
+  // Delete the property with the same name as the categoryID from the categoriesContent object
+  delete categoriesContent[categoryID];
 }
 
 //
@@ -368,218 +408,261 @@ export function deleteUserCategoryButton(categoryID) {
 
 // Renders the settings button when the current category that has it's content rendered is editable (it's a userCategory)
 export function renderContentSettingsButton() {
-
-    const contentSettingsButton = Creator.createSettingsButton('Edit category');
-    contentSettingsButton.addEventListener('click', renderContentSettings);
-    render(DOMCache.contentSettings, contentSettingsButton);
-
+  const contentSettingsButton = Creator.createSettingsButton("Edit category");
+  contentSettingsButton.addEventListener("click", renderContentSettings);
+  render(DOMCache.contentSettings, contentSettingsButton);
 }
 
 // Deletes the settings button when the current category that has it's content rendered is non-editable (it's a devCategory);
 export function deleteContentSettingsButton() {
-
-    const editContentTitleButton = find(DOMCache.contentSettings, '.settings-container');
-    editContentTitleButton.removeEventListener('click', renderContentSettings);
-    editContentTitleButton.remove();
-
+  const editContentTitleButton = find(
+    DOMCache.contentSettings,
+    ".settings-container",
+  );
+  editContentTitleButton.removeEventListener("click", renderContentSettings);
+  editContentTitleButton.remove();
 }
 
 function renderContentSettings(e) {
+  e.stopImmediatePropagation();
+  const contentSettingsButton = find(
+    DOMCache.contentHeader,
+    ".settings-button",
+  );
 
-    e.stopImmediatePropagation()
-    const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
-
-    // Removes the event listener that leads to this function being run to prevent conflicts with the
-    // function that will be called inside the renderSettings() function whenever the user will click back
-    // on the settingsButton that triggers this entire event chain
-    contentSettingsButton.removeEventListener('click', renderContentSettings);
-    renderSettings(DOMCache.content, contentSettingsButton, 'Rename', renderRenameContentTitleInput, 'Delete', Controller.handleDeleteRequest, 'category');
-    // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
-    contentSettingsButton.addEventListener('click', renderContentSettings);
-
+  // Removes the event listener that leads to this function being run to prevent conflicts with the
+  // function that will be called inside the renderSettings() function whenever the user will click back
+  // on the settingsButton that triggers this entire event chain
+  contentSettingsButton.removeEventListener("click", renderContentSettings);
+  renderSettings(
+    DOMCache.content,
+    contentSettingsButton,
+    "Rename",
+    renderRenameContentTitleInput,
+    "Delete",
+    Controller.handleDeleteRequest,
+    "category",
+  );
+  // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
+  contentSettingsButton.addEventListener("click", renderContentSettings);
 }
 
 function renderRenameContentTitleInput() {
+  const contentTitle = find(DOMCache.contentHeader, ".content-title");
+  const contentSettingsButton = find(
+    DOMCache.contentHeader,
+    ".settings-button",
+  );
 
-    const contentTitle = find(DOMCache.contentHeader, '.content-title');
-    const contentSettingsButton = find(DOMCache.contentHeader, '.settings-button');
-
-    renderRenameInput(DOMCache.content, contentTitle, contentSettingsButton, Controller.renameCategory);
-
+  renderRenameInput(
+    DOMCache.content,
+    contentTitle,
+    contentSettingsButton,
+    Controller.renameCategory,
+  );
 }
 
-export function renameContentTitle(categoryName) { updateTextContent(DOMCache.contentTitle, categoryName) };
+export function renameContentTitle(categoryName) {
+  updateTextContent(DOMCache.contentTitle, categoryName);
+}
 
 // Type can be either 'sort' or 'filter',
 // Current setting is the current sortingMethod or currentFilter method
 // ...settingNames are the available sorting or filter methods for the current category that is being rendered
 export function renderContentCustomizer(type, currentSetting, ...settingNames) {
+  // By default, clicking a similar button (settings opener) prevents this instance of hideByClickOutside function from firing, which is responsible
+  // for hiding the current settings list. This results in two settings lists being visible in the same time, which is not desired in
+  // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
+  // is attached) solves this issue.
+  document.dispatchEvent(new Event("click"));
 
-    // By default, clicking a similar button (settings opener) prevents this instance of hideByClickOutside function from firing, which is responsible
-    // for hiding the current settings list. This results in two settings lists being visible in the same time, which is not desired in 
-    // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
-    // is attached) solves this issue.
-    document.dispatchEvent(new Event('click'));
+  // Get either the sort-category-button or the filter-category-button
+  const location = find(DOMCache.contentSettings, `.${type}-category-button`);
+  addClass(location, "focused");
 
-    // Get either the sort-category-button or the filter-category-button
-    const location = find(DOMCache.contentSettings, `.${type}-category-button`);
-    addClass(location, 'focused')
+  const types = {
+    sort: {
+      removeEventListener: function () {
+        location.removeEventListener("click", sendSortSettingsRequest);
+      },
+      addEventListener: function () {
+        location.addEventListener("click", sendSortSettingsRequest);
+      },
+      applySetting: function (settingType) {
+        Controller.sortTodos(settingType, getCurrentContentID());
+      },
+    },
 
-    const types = {
+    filter: {
+      removeEventListener: function () {
+        location.removeEventListener("click", sendFilterSettingsRequest);
+      },
+      addEventListener: function () {
+        location.addEventListener("click", sendFilterSettingsRequest);
+      },
+      applySetting: function (settingType) {
+        Controller.filterTodos(settingType, getCurrentContentID());
+      },
+    },
+  };
 
-        'sort': {
+  // Removes the event listener that leads to this function being run to prevent conflicts with the
+  // new behavior defined within this function, which states that clicking the settingsButton
+  // deletes the filter or sorting methods list instead of rendering it
 
-            removeEventListener: function () { location.removeEventListener('click', sendSortSettingsRequest) },
-            addEventListener: function () { location.addEventListener('click', sendSortSettingsRequest) },
-            applySetting: function (settingType) { Controller.sortTodos(settingType, getCurrentContentID()) },
+  types[type].removeEventListener();
+  location.addEventListener("click", deleteSettings);
 
-        },
+  const dropdownListContainer = Creator.createCustomizeSettingsList();
+  const dropdownListTitle = find(dropdownListContainer, ".dropdown-list-title");
+  const dropdownList = find(dropdownListContainer, ".dropdown-list");
+  dropdownList.addEventListener("click", handleSettingItemsClickEvents);
 
-        'filter': {
+  type == "sort"
+    ? updateTextContent(
+        dropdownListTitle,
+        `${Controller.capitalizeFirstLetter(type)} by`,
+      )
+    : updateTextContent(
+        dropdownListTitle,
+        `${Controller.capitalizeFirstLetter(type)}`,
+      );
 
-            removeEventListener: function () { location.removeEventListener('click', sendFilterSettingsRequest) },
-            addEventListener: function () { location.addEventListener('click', sendFilterSettingsRequest) },
-            applySetting: function (settingType) { Controller.filterTodos(settingType, getCurrentContentID()) },
+  // Render the dropdownListContainer in the parent of the button that triggers the event to prevent accessibility
+  // errors when nesting div elements into button elements
+  render(getParentOf(location), dropdownListContainer);
 
-        }
-
+  function handleSettingItemsClickEvents(e) {
+    if (hasClass(e.target, "named-button")) {
+      applySetting(e.target.dataset.id);
+      deleteSettings(e);
     }
+  }
 
-    // Removes the event listener that leads to this function being run to prevent conflicts with the
-    // new behavior defined within this function, which states that clicking the settingsButton
-    // deletes the filter or sorting methods list instead of rendering it
+  // Render a sorting or filter method button into the settingsList for each settingName
+  for (const settingName of settingNames) {
+    const settingItem = Creator.createSettingItem(
+      Controller.capitalizeFirstLetter(settingName.split("-").join(" ")),
+      `${type}-todos`,
+      settingName,
+    );
+    if (find(settingItem, "button").dataset.id == currentSetting)
+      addClass(find(settingItem, "button"), "selected");
+    render(dropdownList, settingItem);
+  }
 
-    types[type].removeEventListener();
-    location.addEventListener('click', deleteSettings);
+  document.addEventListener("click", deleteByClickOutside);
+  function deleteByClickOutside(e) {
+    if (getParentOf(e.target) !== dropdownList) deleteSettings(e);
+  }
 
-    const dropdownListContainer = Creator.createCustomizeSettingsList();
-    const dropdownListTitle = find(dropdownListContainer, '.dropdown-list-title');
-    const dropdownList = find(dropdownListContainer, '.dropdown-list');
-    dropdownList.addEventListener('click', handleSettingItemsClickEvents);
-
-    type == 'sort'
-        ? updateTextContent(dropdownListTitle, `${Controller.capitalizeFirstLetter(type)} by`)
-        : updateTextContent(dropdownListTitle, `${Controller.capitalizeFirstLetter(type)}`)
-
-    // Render the dropdownListContainer in the parent of the button that triggers the event to prevent accessibility
-    // errors when nesting div elements into button elements
-    render(getParentOf(location), dropdownListContainer);
-
-    function handleSettingItemsClickEvents(e) {
-
-        if (hasClass(e.target, 'named-button')) {
-
-            applySetting(e.target.dataset.id);
-            deleteSettings(e);
-
-        }
-
+  document.addEventListener("keyup", deleteByKeyboard);
+  function deleteByKeyboard(e) {
+    if (e.key == "Escape") {
+      deleteSettings(e);
     }
+  }
 
-    // Render a sorting or filter method button into the settingsList for each settingName
-    for (const settingName of settingNames) {
+  // Trap TAB focus within settingsList
+  const trap = focusTrap.createFocusTrap(dropdownList, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+  });
+  trap.activate();
 
-        const settingItem = Creator.createSettingItem(Controller.capitalizeFirstLetter(settingName.split('-').join(' ')), `${type}-todos`, settingName);
-        if (find(settingItem, 'button').dataset.id == currentSetting) addClass(find(settingItem, 'button'), 'selected');
-        render(dropdownList, settingItem);
+  function deleteSettings(e) {
+    e.stopImmediatePropagation();
+    trap.deactivate();
 
-    }
+    // Remove event listeners to prevent memory leaks and other unwanted behavior
+    location.removeEventListener("click", deleteSettings);
+    dropdownList.removeEventListener("click", handleSettingItemsClickEvents);
 
-    document.addEventListener('click', deleteByClickOutside);
-    function deleteByClickOutside(e) { if (getParentOf(e.target) !== dropdownList) deleteSettings(e) };
+    document.removeEventListener("click", deleteByClickOutside);
+    document.removeEventListener("keyup", deleteByKeyboard);
 
-    document.addEventListener('keyup', deleteByKeyboard);
-    function deleteByKeyboard(e) { if (e.key == 'Escape') { deleteSettings(e) } };
+    // Re-attach  the event listener that leads to this function being run
+    types[type].addEventListener();
 
-    // Trap TAB focus within settingsList
-    const trap = focusTrap.createFocusTrap(dropdownList, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-    });
-    trap.activate();
+    // Remove the settingsList from the DOM;
+    dropdownListContainer.remove();
+    removeClass(location, "focused");
+  }
 
-
-    function deleteSettings(e) {
-
-        e.stopImmediatePropagation();
-        trap.deactivate();
-
-        // Remove event listeners to prevent memory leaks and other unwanted behavior
-        location.removeEventListener('click', deleteSettings);
-        dropdownList.removeEventListener('click', handleSettingItemsClickEvents)
-
-        document.removeEventListener('click', deleteByClickOutside);
-        document.removeEventListener('keyup', deleteByKeyboard);
-
-        // Re-attach  the event listener that leads to this function being run
-        types[type].addEventListener();
-
-        // Remove the settingsList from the DOM;
-        dropdownListContainer.remove();
-        removeClass(location, 'focused')
-
-
-    }
-
-    function applySetting(settingType) { types[type].applySetting(settingType) };
-
+  function applySetting(settingType) {
+    types[type].applySetting(settingType);
+  }
 }
 
 function sendSortSettingsRequest(e) {
-
-    e.stopImmediatePropagation();
-    Controller.handleSortSettingsRequest();
-
+  e.stopImmediatePropagation();
+  Controller.handleSortSettingsRequest();
 }
 
 function sendFilterSettingsRequest(e) {
-
-    e.stopImmediatePropagation();
-    Controller.handleFilterSettingsRequest();
-
+  e.stopImmediatePropagation();
+  Controller.handleFilterSettingsRequest();
 }
 
 // Notifies the user whether the current content is being sorted or filtered
 export function markContentCustomizeSetting(type, state) {
+  const methods = {
+    sort: function () {
+      state
+        ? addClass(find(DOMCache.sortSetting, "button"), `sortingOn`)
+        : removeClass(find(DOMCache.sortSetting, "button"), `sortingOn`);
+    },
+    filter: function () {
+      state
+        ? addClass(find(DOMCache.filterSetting, "button"), `filterOn`)
+        : removeClass(find(DOMCache.filterSetting, "button"), `filterOn`);
+    },
+  };
 
-    const methods = {
-
-        'sort': function () { state ? addClass(find(DOMCache.sortSetting, 'button'), `sortingOn`) : removeClass(find(DOMCache.sortSetting, 'button'), `sortingOn`) },
-        'filter': function () { state ? addClass(find(DOMCache.filterSetting, 'button'), `filterOn`) : removeClass(find(DOMCache.filterSetting, 'button'), `filterOn`) }
-
-    }
-
-    methods[type]();
-
+  methods[type]();
 }
 
 export function renderTodosList(categoryID) {
+  // Set the dataset.ID of the 'content' container to match the current ID of the category that provides the todosList
+  DOMCache.content.dataset.id = categoryID;
 
-    // Set the dataset.ID of the 'content' container to match the current ID of the category that provides the todosList
-    DOMCache.content.dataset.id = categoryID;
+  // Access the property with the same name as the categoryID on the categoriesContent object,
+  // and create a reference to the todosList that will be further used by numerous other Renderer functions
+  categoriesContent[categoryID] = Creator.createElementWithClass(
+    "ul",
+    "todos-list",
+  );
+  categoriesContent[categoryID].addEventListener(
+    "click",
+    handleTodoElementsClickEvents,
+  );
+  categoriesContent[categoryID].addEventListener(
+    "change",
+    handleTodoElementsChangeEvents,
+  );
 
-    // Access the property with the same name as the categoryID on the categoriesContent object,
-    // and create a reference to the todosList that will be further used by numerous other Renderer functions
-    categoriesContent[categoryID] = Creator.createElementWithClass('ul', 'todos-list');
-    categoriesContent[categoryID].addEventListener('click', handleTodoElementsClickEvents);
-    categoriesContent[categoryID].addEventListener('change', handleTodoElementsChangeEvents);
-
-    // Also insert the value of the property into the DOM
-    DOMCache.content.insertBefore(categoriesContent[categoryID], DOMCache.contentAddButton);
-
+  // Also insert the value of the property into the DOM
+  DOMCache.content.insertBefore(
+    categoriesContent[categoryID],
+    DOMCache.contentAddButton,
+  );
 }
 
 export function deleteTodosList(categoryID) {
+  // Remove event listeners to prevent conflicts and avoid memory leaks
+  categoriesContent[categoryID].removeEventListener(
+    "click",
+    handleTodoElementsClickEvents,
+  );
+  categoriesContent[categoryID].removeEventListener(
+    "change",
+    handleTodoElementsChangeEvents,
+  );
 
-    // Remove event listeners to prevent conflicts and avoid memory leaks
-    categoriesContent[categoryID].removeEventListener('click', handleTodoElementsClickEvents);
-    categoriesContent[categoryID].removeEventListener('change', handleTodoElementsChangeEvents);
-
-    // Remove the todos list from the DOM and from the memory
-    find(DOMCache.content, '.todos-list').remove();
-    categoriesContent[categoryID].remove();
-    categoriesContent[categoryID] = '';
-
+  // Remove the todos list from the DOM and from the memory
+  find(DOMCache.content, ".todos-list").remove();
+  categoriesContent[categoryID].remove();
+  categoriesContent[categoryID] = "";
 }
 
 //
@@ -589,362 +672,392 @@ export function deleteTodosList(categoryID) {
 //
 
 function handleTodoElementsClickEvents(e) {
+  const todoItem = e.target.closest(".todo-item");
 
-    const todoItem = e.target.closest('.todo-item');
+  if (!todoItem) return;
+  // There is a separate 'change' event that is handling the completedStatusInput,
+  // which contains a checkbox and a span
+  if (e.target.type == "checkbox" || e.target.tagName == "SPAN") return;
 
-    if (!todoItem) return;
-    // There is a separate 'change' event that is handling the completedStatusInput,
-    // which contains a checkbox and a span
-    if (e.target.type == 'checkbox' || e.target.tagName == 'SPAN') return;
+  if (hasClass(e.target, "settings-button")) {
+    e.stopImmediatePropagation();
+    return renderTodoSettings(todoItem.dataset.id);
+  }
 
-    if (hasClass(e.target, 'settings-button')) {
+  if (hasClass(e.target, "expand-button")) {
+    if (hasClass(todoItem, "expanded"))
+      return deleteTodoAdditionalInfo(todoItem.dataset.id);
+    return Controller.handleTodoExpandRequest(todoItem.dataset.id);
+  }
 
-        e.stopImmediatePropagation();
-        return renderTodoSettings(todoItem.dataset.id);
-
-    }
-
-    if (hasClass(e.target, 'expand-button')) {
-
-        if (hasClass(todoItem, 'expanded')) return deleteTodoAdditionalInfo(todoItem.dataset.id);
-        return Controller.handleTodoExpandRequest(todoItem.dataset.id);
-
-    }
-
-    Controller.handleTodoModalRequest(todoItem.dataset.id);
-
+  Controller.handleTodoModalRequest(todoItem.dataset.id);
 }
 
 function handleTodoElementsChangeEvents(e) {
-
-    const todoItem = e.target.closest('.todo-item');
-    e.target.type == 'checkbox' && Controller.toggleTodoCompletedStatus(todoItem.dataset.id)
-
+  const todoItem = e.target.closest(".todo-item");
+  e.target.type == "checkbox" &&
+    Controller.toggleTodoCompletedStatus(todoItem.dataset.id);
 }
 
 export function renderTodoElement(todoID, index, todoTitle) {
-
-    const todoItem = Creator.createTodoItem(todoID, index, todoTitle);
-    // Insert the todoItem at the passed index to ensure that Todo DOM elements
-    // and Todo objects are organized in the same order based on their category sorting or filtering methods
-    categoriesContent[getCurrentContentID()].insertBefore(todoItem, find(categoriesContent[getCurrentContentID()], `[data-index="${index}"]`))
-
+  const todoItem = Creator.createTodoItem(todoID, index, todoTitle);
+  // Insert the todoItem at the passed index to ensure that Todo DOM elements
+  // and Todo objects are organized in the same order based on their category sorting or filtering methods
+  categoriesContent[getCurrentContentID()].insertBefore(
+    todoItem,
+    find(categoriesContent[getCurrentContentID()], `[data-index="${index}"]`),
+  );
 }
 
 // Function run by the Controller after organizing a category that is currently being rendered.
 // Refreshes the index of Todo DOM elements to mirror the index property of Todo objects
 export function updateTodoIndex(todoID, index) {
-
-    find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`).dataset.index = index;
-
+  find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  ).dataset.index = index;
 }
 
 export function moveTodoElement(todoID, index) {
-
-    // Moves a Todo DOM element at a specified index. Used by the Controller
-    // whenever editing a Todo property changes its order relative to its siblings in case
-    // a sorting or filter method is being used by the category
-    const currentContent = categoriesContent[getCurrentContentID()];
-    const todoElement = find(currentContent, `[data-id="${todoID}"]`);
-    currentContent.insertBefore(todoElement, find(currentContent, `[data-index="${index}"]`))
-
+  // Moves a Todo DOM element at a specified index. Used by the Controller
+  // whenever editing a Todo property changes its order relative to its siblings in case
+  // a sorting or filter method is being used by the category
+  const currentContent = categoriesContent[getCurrentContentID()];
+  const todoElement = find(currentContent, `[data-id="${todoID}"]`);
+  currentContent.insertBefore(
+    todoElement,
+    find(currentContent, `[data-index="${index}"]`),
+  );
 }
 
 export function deleteTodoElement(todoID) {
-
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    todoElement.remove();
-
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  todoElement.remove();
 }
 
 function renderTodoSettings(todoID) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoSettingsButton = find(todoElement, ".settings-button");
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoSettingsButton = find(todoElement, '.settings-button');
-
-    renderSettings(todoElement, todoSettingsButton, 'Edit', Controller.handleTodoModalRequest, 'Delete', Controller.handleDeleteRequest, 'todo')
-
+  renderSettings(
+    todoElement,
+    todoSettingsButton,
+    "Edit",
+    Controller.handleTodoModalRequest,
+    "Delete",
+    Controller.handleDeleteRequest,
+    "todo",
+  );
 }
-
 
 // Adds a button on the Todo DOM element that allows the user to render additional information
 // about the Todo.
 export function renderTodoElementExpander(todoID) {
-
-    const todoItem = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoExpander = Creator.createExpandButton('Show todo additional info');
-    render(todoItem, todoExpander);
-
+  const todoItem = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoExpander = Creator.createExpandButton("Show todo additional info");
+  render(todoItem, todoExpander);
 }
 
 // Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
 // that can be rendered
 export function deleteTodoElementExpander(todoID) {
-
-    const todoItem = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoExpander = find(todoItem, '.expand-button');
-    todoExpander.remove();
-
+  const todoItem = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoExpander = find(todoItem, ".expand-button");
+  todoExpander.remove();
 }
 
 // Inserts a container at the end of the Todo DOM element that contains additional information (eg. priority, dueDate, category);
 export function renderTodoAdditionalInfo(todoID) {
+  const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
+  const todoElementExpander = find(todoElement, ".expand-button");
+  todoElementExpander.setAttribute("aria-label", "Hide todo additional info");
+  const todoAdditionalInfo = Creator.createElementWithClass(
+    "div",
+    "todo-additional-info",
+  );
 
-    const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
-    const todoElementExpander = find(todoElement, '.expand-button');
-    todoElementExpander.setAttribute('aria-label', 'Hide todo additional info')
-    const todoAdditionalInfo = Creator.createElementWithClass('div', 'todo-additional-info');
-
-    todoElement.insertBefore(todoAdditionalInfo, todoElementExpander);
-    addClass(todoElement, 'expanded');
-
+  todoElement.insertBefore(todoAdditionalInfo, todoElementExpander);
+  addClass(todoElement, "expanded");
 }
 
 export function deleteTodoAdditionalInfo(todoID) {
+  const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
+  const todoElementExpander = find(todoElement, ".expand-button");
+  if (todoElementExpander)
+    todoElementExpander.setAttribute("aria-label", "Show todo additional info");
+  // Ensures that the animation works by waiting for it to finish before changing
+  // other properties that do not transition their state
+  todoElement.addEventListener("animationend", deleteAdditionalInfo);
+  removeClass(todoElement, "expanded");
 
-    const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
-    const todoElementExpander = find(todoElement, '.expand-button');
-    if (todoElementExpander) todoElementExpander.setAttribute('aria-label', 'Show todo additional info');
-    // Ensures that the animation works by waiting for it to finish before changing
-    // other properties that do not transition their state
-    todoElement.addEventListener('animationend', deleteAdditionalInfo);
-    removeClass(todoElement, 'expanded');
-
-    function deleteAdditionalInfo() {
-
-        if (!hasClass(todoElement, 'expanded')) find(todoElement, '.todo-additional-info').remove()
-        todoElement.removeEventListener('animationend', deleteAdditionalInfo);
-
-    };
-
+  function deleteAdditionalInfo() {
+    if (!hasClass(todoElement, "expanded"))
+      find(todoElement, ".todo-additional-info").remove();
+    todoElement.removeEventListener("animationend", deleteAdditionalInfo);
+  }
 }
 
 // Manually triggers a transitionend event when the todoAdditionalInfo container within a Todo DOM element
 // is visible and needs to be deleted because it no longer contains any additional information
-// (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user) 
-export function dispatchTransitionEndEvent(todoID) { find(DOMCache.main, `[data-id="${todoID}"]`).dispatchEvent(new Event('transitionend')) };
+// (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user)
+export function dispatchTransitionEndEvent(todoID) {
+  find(DOMCache.main, `[data-id="${todoID}"]`).dispatchEvent(
+    new Event("transitionend"),
+  );
+}
 
 export function updateTodoElementCompletedStatus(todoID, status) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoCompletedStatusTogglerInput = find(
+    todoElement,
+    'input[type="checkbox"]',
+  );
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoCompletedStatusTogglerInput = find(todoElement, 'input[type="checkbox"]');
+  const methods = {
+    completed: function () {
+      addClass(todoElement, "completed");
+      todoCompletedStatusTogglerInput.setAttribute("checked", "");
+    },
 
-    const methods = {
+    uncompleted: function () {
+      removeClass(todoElement, "completed");
+      todoCompletedStatusTogglerInput.removeAttribute("checked");
+    },
+  };
 
-        'completed': function () {
-
-            addClass(todoElement, 'completed');
-            todoCompletedStatusTogglerInput.setAttribute('checked', '');
-
-        },
-
-        'uncompleted': function () {
-
-            removeClass(todoElement, 'completed');
-            todoCompletedStatusTogglerInput.removeAttribute('checked');
-
-        }
-
-    }
-
-    methods[status]();
-
+  methods[status]();
 }
 
 // Adds a class to the completedStatusSpan that styles the Todo to reflect its current priority
 export function colorTodoCompletedStatusSpan(todoID, priority) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoCompletedStatusSpan = find(todoElement, "span");
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoCompletedStatusSpan = find(todoElement, 'span');
-
-    todoCompletedStatusSpan.className = '';
-    if (!priority) return
-    addClass(todoCompletedStatusSpan, `priority-${priority}`);
-
+  todoCompletedStatusSpan.className = "";
+  if (!priority) return;
+  addClass(todoCompletedStatusSpan, `priority-${priority}`);
 }
 
 export function renderTodoAdditionalFeature(todoID, feature, value) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoAdditionalInfo = find(todoElement, ".todo-additional-info");
+  const newFeature = Creator.createTodoAdditionalFeature(feature, value);
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoAdditionalInfo = find(todoElement, '.todo-additional-info');
-    const newFeature = Creator.createTodoAdditionalFeature(feature, value);
+  const methods = {
+    miniDueDate: function () {
+      const todoInfo = find(todoElement, ".todo-info");
+      const todoSettingsContainer = find(todoElement, ".settings-container");
+      todoInfo.insertBefore(newFeature, todoSettingsContainer);
+    },
 
-    const methods = {
+    description: function () {
+      render(todoAdditionalInfo, newFeature);
+    },
+    priority: function () {
+      // Ensures that the priorityContainer is always the first element within its container
+      const todoDueDate =
+        find(todoAdditionalInfo, ".todo-due-date") ||
+        find(todoAdditionalInfo, ".todo-category") ||
+        null;
+      todoAdditionalInfo.insertBefore(newFeature, todoDueDate);
+    },
+    dueDate: function () {
+      // Ensures that the dueDateContainer is either the first, or the second element within its container
+      const todoCategory = find(todoAdditionalInfo, ".todo-category") || null;
+      todoAdditionalInfo.insertBefore(newFeature, todoCategory);
+    },
 
-        'miniDueDate': function () {
+    categoryID: function () {
+      render(todoAdditionalInfo, newFeature);
+    },
+    categoryName: function () {
+      this["categoryID"]();
+    },
+  };
 
-            const todoInfo = find(todoElement, '.todo-info');
-            const todoSettingsContainer = find(todoElement, '.settings-container');
-            todoInfo.insertBefore(newFeature, todoSettingsContainer);
-
-        },
-
-        'description': function () { render(todoAdditionalInfo, newFeature) },
-        'priority': function () {
-
-            // Ensures that the priorityContainer is always the first element within its container
-            const todoDueDate = find(todoAdditionalInfo, '.todo-due-date') || find(todoAdditionalInfo, '.todo-category') || null;
-            todoAdditionalInfo.insertBefore(newFeature, todoDueDate);
-
-        },
-        'dueDate': function () {
-
-            // Ensures that the dueDateContainer is either the first, or the second element within its container
-            const todoCategory = find(todoAdditionalInfo, '.todo-category') || null;
-            todoAdditionalInfo.insertBefore(newFeature, todoCategory);
-
-        },
-
-        'categoryID': function () { render(todoAdditionalInfo, newFeature) },
-        'categoryName': function () { this['categoryID']() },
-
-    }
-
-    methods[feature]();
-
+  methods[feature]();
 }
 
 export function updateTodoFeature(todoID, feature, value) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  // let variable whose value is dynamically changed by methods objects, and is
+  // later used to update the textContent of its value;
+  let featureToUpdate;
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    // let variable whose value is dynamically changed by methods objects, and is
-    // later used to update the textContent of its value;
-    let featureToUpdate;
+  const methods = {
+    title: function () {
+      featureToUpdate = find(todoElement, ".todo-title");
+    },
+    miniDueDate: function () {
+      featureToUpdate = find(todoElement, ".todo-mini-due-date");
+    },
+    description: function () {
+      featureToUpdate = find(todoElement, ".todo-description-paragraph");
+    },
 
-    const methods = {
+    priority: function () {
+      const todoPriority = todoElement.querySelector(
+        "[class^='todo-priority']",
+      );
+      todoPriority.className = "";
+      addClass(todoPriority, `todo-priority-${value}`);
 
-        'title': function () { featureToUpdate = find(todoElement, '.todo-title') },
-        'miniDueDate': function () { featureToUpdate = find(todoElement, '.todo-mini-due-date'); },
-        'description': function () { featureToUpdate = find(todoElement, '.todo-description-paragraph') },
+      featureToUpdate = find(todoPriority, ".info-holder-value");
+    },
 
-        'priority': function () {
+    dueDate: function () {
+      const todoDueDate = find(todoElement, ".todo-due-date");
+      // is the todo overdue?
+      featureToUpdate = find(todoDueDate, ".info-holder-value");
+    },
 
-            const todoPriority = todoElement.querySelector("[class^='todo-priority']");
-            todoPriority.className = '';
-            addClass(todoPriority, `todo-priority-${value}`);
+    categoryID: function () {
+      featureToUpdate = find(
+        find(todoElement, ".todo-category"),
+        ".info-holder-value",
+      );
+    },
+    categoryName: function () {
+      this["categoryID"]();
+    },
+  };
 
-            featureToUpdate = find(todoPriority, '.info-holder-value');
-
-        },
-
-        'dueDate': function () {
-
-            const todoDueDate = find(todoElement, '.todo-due-date');
-            // is the todo overdue?
-            featureToUpdate = find(todoDueDate, '.info-holder-value');
-
-        },
-
-        'categoryID': function () { featureToUpdate = find(find(todoElement, '.todo-category'), '.info-holder-value') },
-        'categoryName': function () { this['categoryID']() },
-
-    }
-
-    methods[feature]();
-    updateTextContent(featureToUpdate, value);
-
+  methods[feature]();
+  updateTextContent(featureToUpdate, value);
 }
 
 export function deleteTodoFeature(todoID, feature) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  // let variable whose value is dynamically changed by methods objects, and is
+  // later used to delete its value from the DOM
+  let featureToDelete;
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    // let variable whose value is dynamically changed by methods objects, and is
-    // later used to delete its value from the DOM
-    let featureToDelete;
+  const methods = {
+    miniDueDate: function () {
+      featureToDelete = find(todoElement, ".todo-mini-due-date");
+    },
+    description: function () {
+      featureToDelete = find(todoElement, ".todo-description");
+    },
+    priority: function () {
+      featureToDelete = todoElement.querySelector("[class^='todo-priority']");
+    },
+    dueDate: function () {
+      featureToDelete = find(todoElement, ".todo-due-date");
+    },
+    categoryID: function () {
+      featureToDelete = find(todoElement, ".todo-category");
+    },
+    categoryName: function () {
+      this["categoryID"]();
+    },
+  };
 
-    const methods = {
-
-        'miniDueDate': function () { featureToDelete = find(todoElement, '.todo-mini-due-date') },
-        'description': function () { featureToDelete = find(todoElement, '.todo-description') },
-        'priority': function () { featureToDelete = todoElement.querySelector("[class^='todo-priority']") },
-        'dueDate': function () { featureToDelete = find(todoElement, '.todo-due-date') },
-        'categoryID': function () { featureToDelete = find(todoElement, '.todo-category') },
-        'categoryName': function () { this['categoryID']() },
-
-    }
-
-    methods[feature]();
-    featureToDelete.remove();
-
+  methods[feature]();
+  featureToDelete.remove();
 }
 
 export function markTodoAsOverdue(todoID) {
-
-    addClass(find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`), 'overdue');
-
+  addClass(
+    find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`),
+    "overdue",
+  );
 }
 
 export function markTodoAsDue(todoID) {
-
-    removeClass(find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`), 'overdue');
-
+  removeClass(
+    find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`),
+    "overdue",
+  );
 }
 
 export function markTodoAsFiltered(state, todoID) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  const todoCompletedStatusToggler = find(todoElement, "input");
+  const todoSettingsButton = find(todoElement, ".settings-button");
+  const todoAdditionalInfo = find(todoElement, ".todo-additional-info");
+  const todoExpander = find(todoElement, ".expand-button");
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    const todoCompletedStatusToggler = find(todoElement, 'input');
-    const todoSettingsButton = find(todoElement, '.settings-button');
-    const todoAdditionalInfo = find(todoElement, '.todo-additional-info');
-    const todoExpander = find(todoElement, '.expand-button');
+  const methods = {
+    // Turns the Todo DOM element into an un-focusable, un-clickable element.
+    // If its additionalInfo is being rendered, it deletes it
+    out: function () {
+      todoElement.setAttribute("tabindex", "-1");
+      todoCompletedStatusToggler.setAttribute("tabindex", "-1");
+      todoSettingsButton.setAttribute("tabindex", "-1");
+      todoAdditionalInfo && deleteTodoAdditionalInfo(todoID);
+      todoExpander && todoExpander.setAttribute("tabindex", "-1");
+      addClass(todoElement, "filteredOut");
+    },
 
-    const methods = {
+    in: function () {
+      // Reverts the Todo DOM element to its default values
+      todoElement.setAttribute("tabindex", "0");
+      todoCompletedStatusToggler.removeAttribute("tabindex");
+      todoSettingsButton.removeAttribute("tabindex");
+      if (todoExpander) todoExpander.removeAttribute("tabindex");
+      removeClass(todoElement, "filteredOut");
+    },
+  };
 
-        // Turns the Todo DOM element into an un-focusable, un-clickable element.
-        // If its additionalInfo is being rendered, it deletes it
-        'out': function () {
-
-            todoElement.setAttribute('tabindex', '-1');
-            todoCompletedStatusToggler.setAttribute('tabindex', '-1');
-            todoSettingsButton.setAttribute('tabindex', '-1');
-            todoAdditionalInfo && deleteTodoAdditionalInfo(todoID);
-            todoExpander && todoExpander.setAttribute('tabindex', '-1');
-            addClass(todoElement, 'filteredOut');
-
-
-        },
-
-        'in': function () {
-
-            // Reverts the Todo DOM element to its default values
-            todoElement.setAttribute('tabindex', '0');
-            todoCompletedStatusToggler.removeAttribute('tabindex');
-            todoSettingsButton.removeAttribute('tabindex');
-            if (todoExpander) todoExpander.removeAttribute('tabindex');
-            removeClass(todoElement, 'filteredOut')
-
-        }
-
-    }
-
-    methods[state]();
-
+  methods[state]();
 }
 
 // Highlights the Todo DOM element after the user selected it from the search results list
 export function highlightTodoElement(todoID) {
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
+  // If the element is filtered out, make it focusable until removeHighlight is called
+  if (hasClass(todoElement, "filteredOut"))
+    todoElement.setAttribute("tabindex", "0");
+  todoElement.addEventListener("blur", removeHighlight);
 
-    const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
-    // If the element is filtered out, make it focusable until removeHighlight is called
-    if (hasClass(todoElement, 'filteredOut')) todoElement.setAttribute('tabindex', '0');
-    todoElement.addEventListener('blur', removeHighlight);
+  addClass(todoElement, "highlighted");
+  applyFocus(todoElement);
 
-    addClass(todoElement, 'highlighted');
-    applyFocus(todoElement);
+  window.addEventListener("click", removeHighlight);
+  window.addEventListener("touchstart", removeHighlight);
 
-    window.addEventListener('click', removeHighlight);
-    window.addEventListener('touchstart', removeHighlight);
-
-    function removeHighlight() {
-
-        removeClass(todoElement, 'highlighted');
-        if (hasClass(todoElement, 'filteredOut')) todoElement.setAttribute('tabindex', '-1');
-        todoElement.removeEventListener('blur', removeHighlight);
-        window.removeEventListener('click', removeHighlight);
-        window.removeEventListener('touchstart', removeHighlight);
-
-    }
-
+  function removeHighlight() {
+    removeClass(todoElement, "highlighted");
+    if (hasClass(todoElement, "filteredOut"))
+      todoElement.setAttribute("tabindex", "-1");
+    todoElement.removeEventListener("blur", removeHighlight);
+    window.removeEventListener("click", removeHighlight);
+    window.removeEventListener("touchstart", removeHighlight);
+  }
 }
 
 //
@@ -963,498 +1076,574 @@ export function highlightTodoElement(todoID) {
 //
 
 function sendTodoModalRequest(e) {
-
-    // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
-    // a complex modal request and provide the dataset.id of the 'content' container as an argument
-    if (hasClass(e.target, 'add-button')) return Controller.handleTodoModalRequest((getParentOf(e.target).dataset.id));
-    // Otherwise call the renderTodoModal with the 'all-todos' argument, which is a devCategory that holds all todos,
-    // and has no special logic, thus can be considered as 'default', and using it as an argument can be considered
-    // as asking for the default behavior of a function
-    renderTodoModal('all-todos');
-
+  // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
+  // a complex modal request and provide the dataset.id of the 'content' container as an argument
+  if (hasClass(e.target, "add-button"))
+    return Controller.handleTodoModalRequest(getParentOf(e.target).dataset.id);
+  // Otherwise call the renderTodoModal with the 'all-todos' argument, which is a devCategory that holds all todos,
+  // and has no special logic, thus can be considered as 'default', and using it as an argument can be considered
+  // as asking for the default behavior of a function
+  renderTodoModal("all-todos");
 }
 
 // The todo modal will have different values already set when being open based
 // on its callLocation and the locationAttributes that are passed along with it
 export function renderTodoModal(callLocation, locationAttributes) {
+  const form = Creator.createFormModal("Todo details", "todo-form");
+  const formFieldset = find(form, "fieldset");
 
-    const form = Creator.createFormModal('Todo details', 'todo-form');
-    const formFieldset = find(form, 'fieldset');
+  const closeButton = find(form, ".close-modal");
+  closeButton.addEventListener("click", closeModal);
 
-    const closeButton = find(form, '.close-modal');
-    closeButton.addEventListener('click', closeModal);
+  const submitButton = find(form, ".submit-modal");
+  // Disable the submitButton by default, only enable it when a Todo title is provided
+  disableButton(submitButton);
+  submitButton.addEventListener("click", submitFormModal);
 
-    const submitButton = find(form, '.submit-modal');
-    // Disable the submitButton by default, only enable it when a Todo title is provided
-    disableButton(submitButton);
-    submitButton.addEventListener('click', submitFormModal);
+  // formOverlay used by other inputs that have their own dropdown content to temporarily disable
+  // input behind their dropdown
+  const formOverlay = Creator.createElementWithClass("div", "form-overlay");
+  render(form, formOverlay);
 
-    // formOverlay used by other inputs that have their own dropdown content to temporarily disable
-    // input behind their dropdown
-    const formOverlay = Creator.createElementWithClass('div', 'form-overlay');
-    render(form, formOverlay);
+  const textAreasContainer = Creator.createElementWithClass(
+    "div",
+    "text-areas-container",
+  );
+  render(formFieldset, textAreasContainer);
 
-    const textAreasContainer = Creator.createElementWithClass('div', 'text-areas-container');
-    render(formFieldset, textAreasContainer);
+  const titleInputContainer = Creator.createTextArea(
+    "title",
+    "title",
+    "todo-title",
+    { minlength: "1", maxlength: "500", placeholder: "Todo title", rows: "1" },
+  );
+  const titleInput = find(titleInputContainer, "textarea");
+  titleInput.addEventListener("input", checkInput);
+  titleInput.addEventListener("keydown", changeEnterKeyBehavior);
+  render(textAreasContainer, titleInputContainer);
 
-    const titleInputContainer = Creator.createTextArea('title', 'title', 'todo-title', { minlength: '1', maxlength: '500', placeholder: 'Todo title', rows: '1' });
-    const titleInput = find(titleInputContainer, 'textarea');
-    titleInput.addEventListener('input', checkInput);
-    titleInput.addEventListener('keydown', changeEnterKeyBehavior);
-    render(textAreasContainer, titleInputContainer);
+  const descriptionInputContainer = Creator.createTextArea(
+    "description",
+    "description",
+    "todo-description",
+    { maxlength: "500", placeholder: "Description", rows: "1", cols: "1" },
+  );
+  const descriptionInput = find(descriptionInputContainer, "textarea");
+  descriptionInput.addEventListener("input", checkInput);
+  descriptionInput.addEventListener("keydown", changeEnterKeyBehavior);
+  descriptionInput.addEventListener("click", scrollIntoView);
+  render(textAreasContainer, descriptionInputContainer);
 
-    const descriptionInputContainer = Creator.createTextArea('description', 'description', 'todo-description', { maxlength: '500', placeholder: 'Description', rows: '1', cols: '1' });
-    const descriptionInput = find(descriptionInputContainer, 'textarea');
-    descriptionInput.addEventListener('input', checkInput);
-    descriptionInput.addEventListener('keydown', changeEnterKeyBehavior);
-    descriptionInput.addEventListener('click', scrollIntoView);
-    render(textAreasContainer, descriptionInputContainer);
+  const prioritiesFieldset = Creator.createPrioritiesFieldset();
+  render(formFieldset, prioritiesFieldset);
 
-    const prioritiesFieldset = Creator.createPrioritiesFieldset();
-    render(formFieldset, prioritiesFieldset);
+  const priorityCheckboxes = findAll(prioritiesFieldset, "input");
+  for (const checkbox of priorityCheckboxes) {
+    checkbox.addEventListener("change", preventMultipleCheckboxes);
+  }
 
-    const priorityCheckboxes = findAll(prioritiesFieldset, 'input');
-    for (const checkbox of priorityCheckboxes) { checkbox.addEventListener('change', preventMultipleCheckboxes) };
+  const dueDateInputContainer = Creator.createInput(
+    "dueDate",
+    "due-date",
+    "todo-due-date",
+    "text",
+    { placeholder: "Due date" },
+  );
+  render(formFieldset, dueDateInputContainer);
 
-    const dueDateInputContainer = Creator.createInput('dueDate', 'due-date', 'todo-due-date', 'text', { placeholder: "Due date" });
-    render(formFieldset, dueDateInputContainer);
+  const dueDateInput = find(dueDateInputContainer, "input");
+  dueDateInput.addEventListener("change", replaceInput);
 
-    const dueDateInput = find(dueDateInputContainer, 'input');
-    dueDateInput.addEventListener('change', replaceInput);
+  // Custom datePicker imported from the flatpickr JavaScript library. Check flatpickr
+  // Javascript library documentation for more information regarding the settings used
+  // for this app
+  const datePicker = new flatpickr(dueDateInput, {
+    minDate: format(new Date(), "yyyy-MM-dd"),
+    maxDate: "",
+    defaultDate: "",
+    disableMobile: true,
+    static: true,
+    onOpen: function () {
+      showCalendar();
+    },
+  });
 
-    // Custom datePicker imported from the flatpickr JavaScript library. Check flatpickr
-    // Javascript library documentation for more information regarding the settings used
-    // for this app
-    const datePicker = new flatpickr(dueDateInput, {
-        minDate: format(new Date(), 'yyyy-MM-dd'),
-        maxDate: '',
-        defaultDate: '',
-        disableMobile: true,
-        static: true,
-        onOpen: function () { showCalendar() },
-    });
+  // Button used to clear the date value
+  const clearDueDateButton = Creator.createClearButton(
+    "Clear selected due date",
+    "clear-date",
+  );
+  clearDueDateButton.addEventListener("click", clearDateInput);
+  render(dueDateInputContainer, clearDueDateButton);
 
-    // Button used to clear the date value
-    const clearDueDateButton = Creator.createClearButton('Clear selected due date', 'clear-date');
-    clearDueDateButton.addEventListener('click', clearDateInput);
-    render(dueDateInputContainer, clearDueDateButton);
+  // Custom input for selecting the category of the Todo
+  const categoryInputContainer = Creator.createCategoryInput();
+  render(formFieldset, categoryInputContainer);
 
-    // Custom input for selecting the category of the Todo
-    const categoryInputContainer = Creator.createCategoryInput();
-    render(formFieldset, categoryInputContainer);
+  const categorySelectButton = find(categoryInputContainer, "button");
+  categorySelectButton.addEventListener(
+    "click",
+    Controller.handleCategoriesDropdownRequest,
+  );
+  addClass(categorySelectButton, "empty");
 
-    const categorySelectButton = find(categoryInputContainer, 'button');
-    categorySelectButton.addEventListener('click', Controller.handleCategoriesDropdownRequest)
-    addClass(categorySelectButton, 'empty');
+  const clearCategoryButton = Creator.createClearButton(
+    "Clear selected category",
+    "clear-category",
+  );
+  clearCategoryButton.addEventListener("click", clearCategory);
+  render(categoryInputContainer, clearCategoryButton);
 
-    const clearCategoryButton = Creator.createClearButton('Clear selected category', 'clear-category');
-    clearCategoryButton.addEventListener('click', clearCategory);
-    render(categoryInputContainer, clearCategoryButton);
+  DOMCache.modal.addEventListener("keyup", closeByKeyboard);
+  DOMCache.modal.addEventListener("mousedown", closeByClickOutside);
 
-    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
-    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
+  render(DOMCache.modal, form);
+  addClass(DOMCache.modal, "show");
+  // Do not disable scrolling if the app is in mobile version and has its header open, since
+  // the scrolling is already disabled in that case by another function
+  if (
+    !(
+      hasClass(DOMCache.header, "mobile") &&
+      hasClass(DOMCache.header, "visible")
+    )
+  )
+    disableScrolling();
 
-    render(DOMCache.modal, form);
-    addClass(DOMCache.modal, 'show');
-    // Do not disable scrolling if the app is in mobile version and has its header open, since
-    // the scrolling is already disabled in that case by another function
-    if (!(hasClass(DOMCache.header, 'mobile') && hasClass(DOMCache.header, 'visible'))) disableScrolling();
+  // Trap TAB focus within the form
+  const trap = focusTrap.createFocusTrap(form, {
+    initialFocus: () => DOMCache.modal,
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    returnFocusOnDeactivate: () => true,
+    preventScroll: () => true,
+    setReturnFocus: () => {
+      if (callLocation == "edit-todo")
+        return find(
+          find(
+            categoriesContent[getCurrentContentID()],
+            `[data-id="${locationAttributes[6]}"]`,
+          ),
+          ".settings-button",
+        );
+    },
+  });
+  trap.activate();
 
-    // Trap TAB focus within the form
-    const trap = focusTrap.createFocusTrap(form, {
-        initialFocus: () => DOMCache.modal,
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        returnFocusOnDeactivate: () => true,
-        preventScroll: () => true,
-        setReturnFocus: () => { if (callLocation == 'edit-todo') return find(find(categoriesContent[getCurrentContentID()], `[data-id="${locationAttributes[6]}"]`), '.settings-button') }
-    });
-    trap.activate();
+  const locationDefaults = {
+    "all-todos": function () {
+      return applyFocus(titleInput);
+    },
 
+    // If the callLocation is the 'today' devCategory, set the value of dueDate input to today
+    today: function () {
+      datePicker.set("maxDate", format(new Date(), "yyyy-MM-dd"));
+      selectDate(format(new Date(), "yyyy-MM-dd"), true);
+      applyFocus(titleInput);
+    },
 
-    const locationDefaults = {
+    // If the callLocation is the 'this-week' devCategory, set the value of dueDate input to today
+    // and set the maxDate to be 7 days from the current date
+    "this-week": function () {
+      datePicker.set("maxDate", format(addDays(new Date(), 7), "yyyy-MM-dd"));
+      selectDate(format(new Date(), "yyyy-MM-dd"), true);
+      applyFocus(titleInput);
+    },
 
-        'all-todos': function () { return applyFocus(titleInput); },
+    // If the callLocation is a 'user-category', set the value of the custom category input to
+    // the userCategory from which the todoModal was opened
+    "user-category": function () {
+      const [categoryID, categoryName] = locationAttributes;
+      selectCategory(categoryID, categoryName);
+      applyFocus(titleInput);
+    },
 
-        // If the callLocation is the 'today' devCategory, set the value of dueDate input to today
-        'today': function () {
+    // If the callLocation is 'edit-todo', the todoModal was called by clicking the Todo DOM element or selecting
+    // the editTodo setting, in which case fill the inputs with the already existing property values of the
+    // Todo object
 
-            datePicker.set('maxDate', format(new Date(), 'yyyy-MM-dd'));
-            selectDate(format(new Date(), 'yyyy-MM-dd'), true);
-            applyFocus(titleInput);
+    "edit-todo": function () {
+      const [title, description, priority, dueDate, categoryID, categoryName] =
+        locationAttributes;
+      submitButton.textContent = "Edit";
 
-        },
+      if (title) {
+        titleInput.value = title;
+        titleInput.dispatchEvent(new Event("input"));
+      }
 
-        // If the callLocation is the 'this-week' devCategory, set the value of dueDate input to today
-        // and set the maxDate to be 7 days from the current date
-        'this-week': function () {
+      if (description) {
+        descriptionInput.value = description;
+        descriptionInput.dispatchEvent(new Event("input"));
+      }
 
-            datePicker.set('maxDate', format(addDays(new Date(), 7), 'yyyy-MM-dd'));
-            selectDate(format(new Date(), 'yyyy-MM-dd'), true);
-            applyFocus(titleInput);
+      priority &&
+        find(prioritiesFieldset, `input[value='${priority}']`).setAttribute(
+          "checked",
+          "true",
+        );
+      categoryID && selectCategory(categoryID, categoryName);
+      dueDate && selectDate(dueDate);
+    },
+  };
 
-        },
+  locationDefaults[callLocation]();
 
-        // If the callLocation is a 'user-category', set the value of the custom category input to
-        // the userCategory from which the todoModal was opened
-        'user-category': function () {
+  // Modify the default 'Enter' key behavior of Todo title and Todo description text areas
+  function changeEnterKeyBehavior(e) {
+    if (e.key == "Enter" && e.shiftKey) return;
 
-            const [categoryID, categoryName] = locationAttributes;
-            selectCategory(categoryID, categoryName);
-            applyFocus(titleInput);
+    if (e.key == "Enter") {
+      e.preventDefault();
+      if (submitButton.disabled) return;
+      submitButton.dispatchEvent(new Event("click"));
+    }
+  }
 
-        },
+  function selectCategory(categoryID, categoryName) {
+    // Simulates an input by setting the dataset of the category input button to the value of the categoryID
+    // and by setting the textContent of the category input button to the value of the categoryName
+    categorySelectButton.dataset.id = categoryID;
+    updateTextContent(categorySelectButton, categoryName);
+    categorySelectButton.setAttribute(
+      "aria-label",
+      `Todo category: ${categoryName}. Click this button to change the category of this todo`,
+    );
+    removeClass(categorySelectButton, "empty");
+  }
 
-        // If the callLocation is 'edit-todo', the todoModal was called by clicking the Todo DOM element or selecting
-        // the editTodo setting, in which case fill the inputs with the already existing property values of the 
-        // Todo object
+  // Manually sets the date of the dueDateInput following a custom format
+  function selectDate(dueDate) {
+    dueDateInput.value = `${Controller.formatDate(dueDate)} / ${dueDate}`;
+  }
 
-        'edit-todo': function () {
+  function closeByClickOutside(e) {
+    if (e.target == DOMCache.modal) {
+      closeModal();
+    }
+  }
 
-            const [title, description, priority, dueDate, categoryID, categoryName] = locationAttributes;
-            submitButton.textContent = 'Edit';
+  function closeByKeyboard(e) {
+    if (e.key == "Escape") {
+      // If a formOverlay is visible, it means that the input that set it to visible
+      // is currently managing the 'Escape' key, therefore stop.
+      // This prevents the issue where hitting the 'Escape' key to close, for example, the date picker,
+      // also closes the modal, which is not desirable for accessibility reasons
+      if (hasClass(formOverlay, "visible")) return;
+      closeModal();
+    }
+  }
 
-            if (title) {
+  function checkInput() {
+    // Transforms textareas into autogrowing textareas by keeping their height
+    // the same value as their scrollHeight. Also prevents the textAreasContainer
+    // from changing its scroll position each time an input event is fired
+    // on the textareas
+    const oldScrollPosition = textAreasContainer.scrollTop;
+    this.style.height = "auto";
+    this.style.height = `${this.scrollHeight}px`;
+    textAreasContainer.scrollTo(0, oldScrollPosition);
 
-                titleInput.value = title;
-                titleInput.dispatchEvent(new Event('input'));
+    if (this == titleInput) {
+      // Only enable the submitButton if the titleInput has at least one character
+      this.value.match(/([a-zA-Z0-9)]){1,}/g)
+        ? enableButton(submitButton)
+        : disableButton(submitButton);
+    }
+  }
 
-            }
+  // By default, the descriptionInput is not always scrolled into view when it is not fully visible and it is being
+  // clicked on mobile devices. This function solves the bug in the majority of cases
+  function scrollIntoView() {
+    if (DOMCache.mobileVersion.matches) {
+      this.blur();
+      if (this == descriptionInput)
+        textAreasContainer.scrollTo(0, textAreasContainer.scrollHeight);
+      this.focus({ preventScroll: true });
+    }
+  }
 
-            if (description) {
+  // Prevents selecting more than one of the three priority checkboxes
+  function preventMultipleCheckboxes() {
+    if (this.checked) {
+      for (const checkbox of priorityCheckboxes) {
+        checkbox.checked = false;
+      }
+      this.checked = true;
+    }
+  }
 
-                descriptionInput.value = description;
-                descriptionInput.dispatchEvent(new Event('input'));
+  // Automatically replace the dueDate value provided by flatpickr with a custom, formatted version
+  function replaceInput() {
+    if (!dueDateInput.value) return;
+    dueDateInput.value = `${Controller.formatDate(dueDateInput.value)} / ${dueDateInput.value}`;
+  }
 
-            }
+  function clearDateInput() {
+    datePicker.clear();
+  }
 
-            priority && find(prioritiesFieldset, `input[value='${priority}']`).setAttribute('checked', 'true');
-            categoryID && selectCategory(categoryID, categoryName);
-            dueDate && selectDate(dueDate);
+  function showCalendar() {
+    const calendar = find(form, ".flatpickr-calendar");
 
-        }
+    // Run the calendar through the checkBounds function to determine whether its position needs to be changed
+    // after being rendered (in case its leaking out of the viewport)
+    checkBounds(calendar, 325);
 
-    };
+    addClass(dueDateInput, "focused");
+    dueDateInput.addEventListener("change", hideDueDateOverlay);
 
-    locationDefaults[callLocation]();
+    // Make the formOverlay visible to prevent the main modal from also being closed when the user
+    // tries to close the calendar either by pressing 'Escape' or by clicking outside the calendar
+    addClass(formOverlay, "visible");
+    formOverlay.addEventListener("click", hideDueDateOverlay);
 
-    // Modify the default 'Enter' key behavior of Todo title and Todo description text areas
-    function changeEnterKeyBehavior(e) {
-
-        if (e.key == "Enter" && e.shiftKey) return;
-
-        if (e.key == "Enter") {
-
-            e.preventDefault();
-            if (submitButton.disabled) return;
-            submitButton.dispatchEvent(new Event('click'));
-
-        }
+    document.addEventListener("keyup", hideByKbd);
+    function hideByKbd(e) {
+      if (e.key == "Escape" || e.key == "Tab") {
+        hideDueDateOverlay(e);
+      }
     }
 
-    function selectCategory(categoryID, categoryName) {
+    function hideDueDateOverlay(e) {
+      // If calendar is still open, stop
+      if (hasClass(e.target, "active")) return;
 
-        // Simulates an input by setting the dataset of the category input button to the value of the categoryID
-        // and by setting the textContent of the category input button to the value of the categoryName
-        categorySelectButton.dataset.id = categoryID;
-        updateTextContent(categorySelectButton, categoryName);
-        categorySelectButton.setAttribute('aria-label', `Todo category: ${categoryName}. Click this button to change the category of this todo`);
-        removeClass(categorySelectButton, 'empty');
+      // Otherwise remove the formOverlay and eventListeners to prevent memory leaks and other unwanted behavior
+      removeClass(dueDateInput, "focused");
+      dueDateInput.removeEventListener("change", hideDueDateOverlay);
 
+      removeClass(formOverlay, "visible");
+      formOverlay.removeEventListener("click", hideDueDateOverlay);
+
+      document.removeEventListener("keyup", hideByKbd);
+    }
+  }
+
+  // Clears the current category input value when clicking the clearCategory button
+  function clearCategory() {
+    categorySelectButton.dataset.id = "";
+    updateTextContent(categorySelectButton, "Category");
+    addClass(categorySelectButton, "empty");
+  }
+
+  function submitFormModal(e) {
+    // Prevents the default form submission behavior
+    e.preventDefault();
+
+    // Gets the formData
+    const formData = new FormData(form);
+    // Formats the dueDate
+    const dueDate = formData.get("dueDate")
+      ? formData.get("dueDate").split("/")[1].trim()
+      : formData.get("dueDate");
+    // Manually gets the categoryID and categoryName since they are custom inputs that are not recognized by FormData
+    const categoryID = categorySelectButton.dataset.id;
+    const categoryName = !categoryID ? "" : categorySelectButton.textContent;
+
+    closeModal();
+
+    // If the todoModal was rendered for editing purposes, ask the Controller to handle the
+    // edit request by providing the Todo ID (locationAttributes[6]) along with the remaining information
+    if (callLocation == "edit-todo")
+      return Controller.handleEditTodoRequest(
+        locationAttributes[6],
+        formData.get("title").trim(),
+        formData.get("description").trim(),
+        formData.get("priority"),
+        dueDate,
+        categoryID,
+        categoryName,
+      );
+
+    // Otherwise ask the Controller to create, scan, and add the Todo where needed
+    Controller.scanAndAddTodo(
+      formData.get("title").trim(),
+      formData.get("description").trim(),
+      formData.get("priority"),
+      dueDate,
+      categoryID,
+      categoryName,
+    );
+  }
+
+  function closeModal() {
+    trap.deactivate();
+
+    // Remove event listeners to prevent memory leaks and other unwanted behavior
+    closeButton.removeEventListener("click", closeModal);
+    submitButton.removeEventListener("click", submitFormModal);
+
+    titleInput.removeEventListener("input", checkInput);
+    titleInput.removeEventListener("keydown", changeEnterKeyBehavior);
+    descriptionInput.removeEventListener("input", checkInput);
+    descriptionInput.removeEventListener("keydown", changeEnterKeyBehavior);
+    descriptionInput.removeEventListener("click", scrollIntoView);
+
+    for (const checkbox of priorityCheckboxes) {
+      checkbox.removeEventListener("change", preventMultipleCheckboxes);
     }
 
-    // Manually sets the date of the dueDateInput following a custom format
-    function selectDate(dueDate) { dueDateInput.value = `${Controller.formatDate(dueDate)} / ${dueDate}` };
+    dueDateInput.removeEventListener("change", replaceInput);
+    clearDueDateButton.removeEventListener("click", clearDateInput);
+    datePicker.destroy();
 
-    function closeByClickOutside(e) { if (e.target == DOMCache.modal) { closeModal(); } };
+    categorySelectButton.removeEventListener(
+      "click",
+      Controller.handleCategoriesDropdownRequest,
+    );
+    clearCategoryButton.removeEventListener("click", clearCategory);
 
-    function closeByKeyboard(e) {
+    DOMCache.modal.removeEventListener("keyup", closeByKeyboard);
+    DOMCache.modal.removeEventListener("mousedown", closeByClickOutside);
 
-        if (e.key == "Escape") {
-
-            // If a formOverlay is visible, it means that the input that set it to visible
-            // is currently managing the 'Escape' key, therefore stop.
-            // This prevents the issue where hitting the 'Escape' key to close, for example, the date picker,
-            // also closes the modal, which is not desirable for accessibility reasons
-            if (hasClass(formOverlay, 'visible')) return;
-            closeModal();
-
-        }
-
-    }
-
-    function checkInput() {
-
-        // Transforms textareas into autogrowing textareas by keeping their height
-        // the same value as their scrollHeight. Also prevents the textAreasContainer
-        // from changing its scroll position each time an input event is fired
-        // on the textareas
-        const oldScrollPosition = textAreasContainer.scrollTop;
-        this.style.height = 'auto';
-        this.style.height = `${this.scrollHeight}px`;
-        textAreasContainer.scrollTo(0, oldScrollPosition);
-
-        if (this == titleInput) {
-
-            // Only enable the submitButton if the titleInput has at least one character
-            this.value.match(/([a-zA-Z0-9)]){1,}/g)
-                ? enableButton(submitButton)
-                : disableButton(submitButton);
-
-        }
-
-    }
-
-    // By default, the descriptionInput is not always scrolled into view when it is not fully visible and it is being
-    // clicked on mobile devices. This function solves the bug in the majority of cases
-    function scrollIntoView() {
-
-        if (DOMCache.mobileVersion.matches) {
-
-            this.blur();
-            if (this == descriptionInput) textAreasContainer.scrollTo(0, textAreasContainer.scrollHeight);
-            this.focus({ preventScroll: true });
-
-        }
-
-    }
-
-    // Prevents selecting more than one of the three priority checkboxes
-    function preventMultipleCheckboxes() {
-
-        if (this.checked) {
-
-            for (const checkbox of priorityCheckboxes) { checkbox.checked = false; }
-            this.checked = true;
-
-        }
-
-    }
-
-    // Automatically replace the dueDate value provided by flatpickr with a custom, formatted version
-    function replaceInput() {
-
-        if (!dueDateInput.value) return;
-        dueDateInput.value = `${Controller.formatDate(dueDateInput.value)} / ${dueDateInput.value}`;
-
-    }
-
-    function clearDateInput() { datePicker.clear() };
-
-    function showCalendar() {
-
-        const calendar = find(form, '.flatpickr-calendar');
-
-        // Run the calendar through the checkBounds function to determine whether its position needs to be changed
-        // after being rendered (in case its leaking out of the viewport)
-        checkBounds(calendar, 325);
-
-        addClass(dueDateInput, 'focused');
-        dueDateInput.addEventListener('change', hideDueDateOverlay);
-
-        // Make the formOverlay visible to prevent the main modal from also being closed when the user
-        // tries to close the calendar either by pressing 'Escape' or by clicking outside the calendar
-        addClass(formOverlay, 'visible');
-        formOverlay.addEventListener('click', hideDueDateOverlay);
-
-        document.addEventListener('keyup', hideByKbd);
-        function hideByKbd(e) { if (e.key == 'Escape' || e.key == 'Tab') { hideDueDateOverlay(e) } };
-
-        function hideDueDateOverlay(e) {
-
-            // If calendar is still open, stop
-            if (hasClass(e.target, 'active')) return;
-
-            // Otherwise remove the formOverlay and eventListeners to prevent memory leaks and other unwanted behavior
-            removeClass(dueDateInput, 'focused');
-            dueDateInput.removeEventListener('change', hideDueDateOverlay);
-
-            removeClass(formOverlay, 'visible');
-            formOverlay.removeEventListener('click', hideDueDateOverlay);
-
-            document.removeEventListener('keyup', hideByKbd);
-
-        }
-
-    };
-
-    // Clears the current category input value when clicking the clearCategory button
-    function clearCategory() {
-
-        categorySelectButton.dataset.id = '';
-        updateTextContent(categorySelectButton, 'Category');
-        addClass(categorySelectButton, 'empty');
-
-    }
-
-    function submitFormModal(e) {
-
-        // Prevents the default form submission behavior
-        e.preventDefault();
-
-        // Gets the formData
-        const formData = new FormData(form);
-        // Formats the dueDate
-        const dueDate = formData.get('dueDate') ? formData.get('dueDate').split('/')[1].trim() : formData.get('dueDate');
-        // Manually gets the categoryID and categoryName since they are custom inputs that are not recognized by FormData
-        const categoryID = categorySelectButton.dataset.id;
-        const categoryName = !categoryID ? '' : categorySelectButton.textContent;
-
-        closeModal();
-
-        // If the todoModal was rendered for editing purposes, ask the Controller to handle the 
-        // edit request by providing the Todo ID (locationAttributes[6]) along with the remaining information
-        if (callLocation == 'edit-todo') return Controller.handleEditTodoRequest(locationAttributes[6], formData.get('title').trim(), formData.get('description').trim(), formData.get('priority'), dueDate, categoryID, categoryName)
-
-        // Otherwise ask the Controller to create, scan, and add the Todo where needed
-        Controller.scanAndAddTodo(formData.get('title').trim(), formData.get('description').trim(), formData.get('priority'), dueDate, categoryID, categoryName);
-
-    }
-
-    function closeModal() {
-
-        trap.deactivate();
-
-        // Remove event listeners to prevent memory leaks and other unwanted behavior
-        closeButton.removeEventListener('click', closeModal);
-        submitButton.removeEventListener('click', submitFormModal);
-
-        titleInput.removeEventListener('input', checkInput);
-        titleInput.removeEventListener('keydown', changeEnterKeyBehavior);
-        descriptionInput.removeEventListener('input', checkInput);
-        descriptionInput.removeEventListener('keydown', changeEnterKeyBehavior);
-        descriptionInput.removeEventListener('click', scrollIntoView);
-
-        for (const checkbox of priorityCheckboxes) { checkbox.removeEventListener('change', preventMultipleCheckboxes) };
-
-        dueDateInput.removeEventListener('change', replaceInput);
-        clearDueDateButton.removeEventListener('click', clearDateInput);
-        datePicker.destroy();
-
-        categorySelectButton.removeEventListener('click', Controller.handleCategoriesDropdownRequest);
-        clearCategoryButton.removeEventListener('click', clearCategory);
-
-        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
-        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
-
-        // If the app is not in mobile mode with its header open, enable back scrolling
-        if (!(hasClass(DOMCache.header, 'mobile') && hasClass(DOMCache.header, 'visible'))) enableScrolling();
-        removeClass(DOMCache.modal, 'show');
-        removeClass(DOMCache.body, 'overlay-over');
-        // Remove the form from the DOM
-        form.remove();
-
-    }
-
+    // If the app is not in mobile mode with its header open, enable back scrolling
+    if (
+      !(
+        hasClass(DOMCache.header, "mobile") &&
+        hasClass(DOMCache.header, "visible")
+      )
+    )
+      enableScrolling();
+    removeClass(DOMCache.modal, "show");
+    removeClass(DOMCache.body, "overlay-over");
+    // Remove the form from the DOM
+    form.remove();
+  }
 }
 
 // Creates a custom dropdown list containing all user categories
 export function renderCategoriesDropdownList() {
+  const formOverlay = find(DOMCache.modal, ".form-overlay");
+  formOverlay.addEventListener("click", hideDropdownList);
+  addClass(formOverlay, "visible");
 
-    const formOverlay = find(DOMCache.modal, '.form-overlay');
-    formOverlay.addEventListener('click', hideDropdownList);
-    addClass(formOverlay, 'visible');
+  const categorySelectButton = find(
+    DOMCache.modal,
+    ".categories-dropdown-button",
+  );
+  // Disable the category select button while the dropdown is visible to prevent
+  // creating multiple dropdowns
+  disableButton(categorySelectButton);
+  addClass(categorySelectButton, "focused");
 
-    const categorySelectButton = find(DOMCache.modal, '.categories-dropdown-button');
-    // Disable the category select button while the dropdown is visible to prevent
-    // creating multiple dropdowns
-    disableButton(categorySelectButton);
-    addClass(categorySelectButton, 'focused');
+  const categoryInput = getParentOf(categorySelectButton);
 
-    const categoryInput = getParentOf(categorySelectButton);
+  const categoriesDropdown = Creator.createCategoriesDropdown();
+  categoriesDropdown.addEventListener("keyup", hideByKbd);
+  render(categoryInput, categoriesDropdown);
 
-    const categoriesDropdown = Creator.createCategoriesDropdown();
-    categoriesDropdown.addEventListener('keyup', hideByKbd);
-    render(categoryInput, categoriesDropdown);
+  const categoriesDropdownList = find(
+    categoriesDropdown,
+    ".categories-dropdown-list",
+  );
+  categoriesDropdownList.addEventListener(
+    "click",
+    handleCategoryListItemsClickEvents,
+  );
 
-    const categoriesDropdownList = find(categoriesDropdown, '.categories-dropdown-list');
-    categoriesDropdownList.addEventListener('click', handleCategoryListItemsClickEvents);
+  document.addEventListener("keyup", hideByKbd);
 
-    document.addEventListener('keyup', hideByKbd);
+  // Traps TAB focusing within categoriesDropdown
+  const trap = focusTrap.createFocusTrap(categoriesDropdown, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    initialFocus: () => false,
+    setReturnFocus: () => categorySelectButton,
+  });
+  trap.activate();
 
-    // Traps TAB focusing within categoriesDropdown
-    const trap = focusTrap.createFocusTrap(categoriesDropdown, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        initialFocus: () => false,
-        setReturnFocus: () => categorySelectButton,
-    });
-    trap.activate();
+  function handleCategoryListItemsClickEvents(e) {
+    const categoryListItem = e.target.closest(".category-select-item");
+    if (!categoryListItem) return;
 
-    function handleCategoryListItemsClickEvents(e) {
-
-        const categoryListItem = e.target.closest('.category-select-item');
-        if (!categoryListItem) return;
-
-        // Simulates an input by setting the dataset of the category input button to the value of the categoryID
-        // and by setting the textContent of the category input button to the value of the categoryName.
-        // It also marks the currently selected category by adding a blue dot next to it
-        categorySelectButton.dataset.id = categoryListItem.dataset.id;
-        updateTextContent(categorySelectButton, categoryListItem.textContent);
-        categorySelectButton.setAttribute('aria-label', `Todo category: ${this.textContent}. Click this button to change the category of this todo`);
-        removeClass(categorySelectButton, 'empty');
-        if (find(categoriesDropdownList, '.selected')) { removeClass(find(categoriesDropdownList, '.selected'), 'selected') };
-        addClass(categoryListItem, 'selected');
-        hideDropdownList();
-
+    // Simulates an input by setting the dataset of the category input button to the value of the categoryID
+    // and by setting the textContent of the category input button to the value of the categoryName.
+    // It also marks the currently selected category by adding a blue dot next to it
+    categorySelectButton.dataset.id = categoryListItem.dataset.id;
+    updateTextContent(categorySelectButton, categoryListItem.textContent);
+    categorySelectButton.setAttribute(
+      "aria-label",
+      `Todo category: ${this.textContent}. Click this button to change the category of this todo`,
+    );
+    removeClass(categorySelectButton, "empty");
+    if (find(categoriesDropdownList, ".selected")) {
+      removeClass(find(categoriesDropdownList, ".selected"), "selected");
     }
+    addClass(categoryListItem, "selected");
+    hideDropdownList();
+  }
 
-    function hideDropdownList() {
+  function hideDropdownList() {
+    trap.deactivate();
 
-        trap.deactivate();
+    document.removeEventListener("keyup", hideByKbd);
 
-        document.removeEventListener('keyup', hideByKbd);
+    formOverlay.removeEventListener("click", hideDropdownList);
+    removeClass(formOverlay, "visible");
 
-        formOverlay.removeEventListener('click', hideDropdownList);
-        removeClass(formOverlay, 'visible');
+    enableButton(categorySelectButton);
+    removeClass(categorySelectButton, "focused");
 
-        enableButton(categorySelectButton);
-        removeClass(categorySelectButton, 'focused');
+    categoriesDropdownList.removeEventListener(
+      "click",
+      handleCategoryListItemsClickEvents,
+    );
 
-        categoriesDropdownList.removeEventListener('click', handleCategoryListItemsClickEvents);
+    categoriesDropdown.removeEventListener("keyup", hideByKbd);
+    removeClass(categoriesDropdown, "visible");
+    categoriesDropdown.remove();
+  }
 
-        categoriesDropdown.removeEventListener('keyup', hideByKbd);
-        removeClass(categoriesDropdown, 'visible');
-        categoriesDropdown.remove();
-
-    };
-
-    function hideByKbd(e) {
-
-        if (e.key == 'Escape') {
-
-            e.stopPropagation();
-            hideDropdownList();
-
-        }
-
+  function hideByKbd(e) {
+    if (e.key == "Escape") {
+      e.stopPropagation();
+      hideDropdownList();
     }
-
+  }
 }
 
 // Renders a user category button within the categoriesDropdownList on each call
 export function renderCategorySelectItem(categoryID, categoryName) {
+  const categorySelectButton = find(
+    DOMCache.modal,
+    ".categories-dropdown-button",
+  );
+  const categoryInput = getParentOf(categorySelectButton);
+  const categoriesDropdownContainer = find(
+    categoryInput,
+    ".categories-dropdown",
+  );
+  const categoriesDropdownList = find(
+    categoriesDropdownContainer,
+    ".categories-dropdown-list",
+  );
 
-    const categorySelectButton = find(DOMCache.modal, '.categories-dropdown-button');
-    const categoryInput = getParentOf(categorySelectButton);
-    const categoriesDropdownContainer = find(categoryInput, '.categories-dropdown');
-    const categoriesDropdownList = find(categoriesDropdownContainer, '.categories-dropdown-list');
+  const categoriesDropdownTitle = find(
+    categoryInput,
+    ".categories-dropdown-title",
+  );
+  categoriesDropdownTitle.removeAttribute("tabindex");
+  updateTextContent(categoriesDropdownTitle, "Pick a category");
 
-    const categoriesDropdownTitle = find(categoryInput, '.categories-dropdown-title');
-    categoriesDropdownTitle.removeAttribute('tabindex');
-    updateTextContent(categoriesDropdownTitle, 'Pick a category');
+  const categorySelectItem = Creator.createCategorySelectItem(
+    categoryID,
+    categoryName,
+  );
+  render(categoriesDropdownList, categorySelectItem);
 
-    const categorySelectItem = Creator.createCategorySelectItem(categoryID, categoryName);
-    render(categoriesDropdownList, categorySelectItem);
+  const selectItemButton = find(categorySelectItem, "button");
+  if (categorySelectButton.dataset.id == selectItemButton.dataset.id) {
+    addClass(selectItemButton, "selected");
+  }
+  if (hasClass(selectItemButton, "selected"))
+    selectItemButton.setAttribute(
+      "aria-label",
+      `Category: ${selectItemButton.textContent} (currently selected)`,
+    );
 
-    const selectItemButton = find(categorySelectItem, 'button');
-    if (categorySelectButton.dataset.id == selectItemButton.dataset.id) { addClass(selectItemButton, 'selected') };
-    if (hasClass(selectItemButton, 'selected')) selectItemButton.setAttribute('aria-label', `Category: ${selectItemButton.textContent} (currently selected)`);
-
-    // Check if the categoriesDropdownContainer has not leaked outside the viewport each time
-    // a new user category button is rendered within it;
-    checkBounds(categoriesDropdownContainer, 265);
-
+  // Check if the categoriesDropdownContainer has not leaked outside the viewport each time
+  // a new user category button is rendered within it;
+  checkBounds(categoriesDropdownContainer, 265);
 }
 
 //
@@ -1464,97 +1653,103 @@ export function renderCategorySelectItem(categoryID, categoryName) {
 //
 
 function renderSearchModal() {
+  const todosSearcher = Creator.createTodosSearcher();
+  const searchBar = find(todosSearcher, ".input-container");
 
-    const todosSearcher = Creator.createTodosSearcher();
-    const searchBar = find(todosSearcher, '.input-container');
+  const searchBarInput = find(searchBar, "input");
+  searchBarInput.addEventListener("input", sendSearchCoordinates);
 
-    const searchBarInput = find(searchBar, 'input');
-    searchBarInput.addEventListener('input', sendSearchCoordinates);
+  const searchResultsList = find(todosSearcher, "#search-results-list");
+  searchResultsList.addEventListener(
+    "click",
+    handleAnchorTodoElementsClickEvents,
+  );
 
-    const searchResultsList = find(todosSearcher, '#search-results-list');
-    searchResultsList.addEventListener('click', handleAnchorTodoElementsClickEvents);
-
-    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
-    function closeByClickOutside(e) { if (e.target == DOMCache.modal) { closeModal(); } }
-
-    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
-    function closeByKeyboard(e) { if (e.key == 'Escape') { closeModal(); } }
-
-    render(DOMCache.modal, todosSearcher);
-    addClass(DOMCache.modal, 'show');
-    disableScrolling();
-    applyFocus(searchBar);
-
-    // Traps TAB focus within todosSearcher
-    const trap = focusTrap.createFocusTrap(todosSearcher, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        setReturnFocus: () => find(DOMCache.main, '.highlighted') || this,
-    });
-    trap.activate();
-
-    // Get user input and ask the Controller to search for todos, which will in turn
-    // ask back the Renderer to render the list of results, if any
-    function sendSearchCoordinates() { Controller.searchTodos(this.value) };
-
-    function handleAnchorTodoElementsClickEvents(e) {
-
-        const anchorTodoItem = e.target.closest('.anchor-todo-item');
-        if (!anchorTodoItem) return;
-
-        // If an anchor todo item is clicked, close the search modal and ask the Controller
-        // to handle the logic for showing to the user the todo that they are looking for
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        closeModal();
-        Controller.handleShowTodoLocationRequest(anchorTodoItem.dataset.id);
-
+  DOMCache.modal.addEventListener("mousedown", closeByClickOutside);
+  function closeByClickOutside(e) {
+    if (e.target == DOMCache.modal) {
+      closeModal();
     }
+  }
 
-    function closeModal() {
-
-        trap.deactivate();
-
-        // Remove event listeners to prevent memory leaks and other unwanted behavior
-        searchBarInput.removeEventListener('input', sendSearchCoordinates);
-        searchResultsList.removeEventListener('click', handleAnchorTodoElementsClickEvents);
-
-        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
-        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
-
-        removeClass(DOMCache.modal, 'show');
-        enableScrolling();
-        todosSearcher.remove();
-
+  DOMCache.modal.addEventListener("keyup", closeByKeyboard);
+  function closeByKeyboard(e) {
+    if (e.key == "Escape") {
+      closeModal();
     }
+  }
 
+  render(DOMCache.modal, todosSearcher);
+  addClass(DOMCache.modal, "show");
+  disableScrolling();
+  applyFocus(searchBar);
+
+  // Traps TAB focus within todosSearcher
+  const trap = focusTrap.createFocusTrap(todosSearcher, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    setReturnFocus: () => find(DOMCache.main, ".highlighted") || this,
+  });
+  trap.activate();
+
+  // Get user input and ask the Controller to search for todos, which will in turn
+  // ask back the Renderer to render the list of results, if any
+  function sendSearchCoordinates() {
+    Controller.searchTodos(this.value);
+  }
+
+  function handleAnchorTodoElementsClickEvents(e) {
+    const anchorTodoItem = e.target.closest(".anchor-todo-item");
+    if (!anchorTodoItem) return;
+
+    // If an anchor todo item is clicked, close the search modal and ask the Controller
+    // to handle the logic for showing to the user the todo that they are looking for
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    closeModal();
+    Controller.handleShowTodoLocationRequest(anchorTodoItem.dataset.id);
+  }
+
+  function closeModal() {
+    trap.deactivate();
+
+    // Remove event listeners to prevent memory leaks and other unwanted behavior
+    searchBarInput.removeEventListener("input", sendSearchCoordinates);
+    searchResultsList.removeEventListener(
+      "click",
+      handleAnchorTodoElementsClickEvents,
+    );
+
+    DOMCache.modal.removeEventListener("mousedown", closeByClickOutside);
+    DOMCache.modal.removeEventListener("keyup", closeByKeyboard);
+
+    removeClass(DOMCache.modal, "show");
+    enableScrolling();
+    todosSearcher.remove();
+  }
 }
 
 export function renderAnchorTodoElement(ID, title) {
+  const resultsList = find(DOMCache.modal, "#search-results-list");
+  const anchorTodoElement = Creator.createAnchorTodoItem(ID, title);
 
-    const resultsList = find(DOMCache.modal, '#search-results-list');
-    const anchorTodoElement = Creator.createAnchorTodoItem(ID, title);
-
-    render(resultsList, anchorTodoElement);
-
+  render(resultsList, anchorTodoElement);
 }
 
 export function deleteAllAnchorTodoElements() {
-
-    const resultsList = find(DOMCache.modal, '#search-results-list');
-    for (const result of findAll(resultsList, '.anchor-todo-item')) { result.remove() };
-
+  const resultsList = find(DOMCache.modal, "#search-results-list");
+  for (const result of findAll(resultsList, ".anchor-todo-item")) {
+    result.remove();
+  }
 }
 
 // If the results list contains a Todo that is already completed, also design
 // the anchorTodoElement to appears as being already completed
 export function markAnchorTodoElementAsCompleted(todoID) {
+  const resultsList = find(DOMCache.modal, "#search-results-list");
+  const anchorTodoElement = find(resultsList, `[data-id= "${todoID}"]`);
 
-    const resultsList = find(DOMCache.modal, '#search-results-list');
-    const anchorTodoElement = find(resultsList, `[data-id= "${todoID}"]`);
-
-    addClass(anchorTodoElement, 'completed');
-
+  addClass(anchorTodoElement, "completed");
 }
 
 //
@@ -1564,88 +1759,95 @@ export function markAnchorTodoElementAsCompleted(todoID) {
 //
 
 function renderCategoryModal() {
+  const form = Creator.createFormModal("Category details", "category-form");
+  const formFieldset = find(form, "fieldset");
 
-    const form = Creator.createFormModal('Category details', 'category-form');
-    const formFieldset = find(form, 'fieldset');
+  const closeButton = find(form, ".close-modal");
+  closeButton.addEventListener("click", closeModal);
 
-    const closeButton = find(form, '.close-modal');
-    closeButton.addEventListener('click', closeModal);
+  const submitButton = find(form, ".submit-modal");
+  // Disable the submit button by default, only enable it when user enters at least one character
+  // in the categoryName input field
+  disableButton(submitButton);
+  submitButton.addEventListener("click", submitFormModal);
 
-    const submitButton = find(form, '.submit-modal');
-    // Disable the submit button by default, only enable it when user enters at least one character
-    // in the categoryName input field
-    disableButton(submitButton)
-    submitButton.addEventListener('click', submitFormModal);
+  const categoryNameContainer = Creator.createInput(
+    "name",
+    "name",
+    "category-name",
+    "text",
+    {
+      minlength: "2",
+      placeholder: "Category name",
+    },
+  );
+  render(formFieldset, categoryNameContainer);
 
-    const categoryNameContainer = Creator.createInput('name', 'name', 'category-name', 'text', {
-        minlength: '2', placeholder: 'Category name'
-    });
-    render(formFieldset, categoryNameContainer);
+  const categoryNameInput = find(categoryNameContainer, "#category-name");
+  categoryNameInput.addEventListener("input", checkInput);
 
-    const categoryNameInput = find(categoryNameContainer, '#category-name');
-    categoryNameInput.addEventListener('input', checkInput);
+  DOMCache.modal.addEventListener("mousedown", closeByClickOutside);
+  DOMCache.modal.addEventListener("keyup", closeByKeyboard);
 
-    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
-    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
+  render(DOMCache.modal, form);
+  addClass(DOMCache.modal, "show");
+  disableScrolling;
+  applyFocus(categoryNameInput);
 
-    render(DOMCache.modal, form);
-    addClass(DOMCache.modal, 'show');
-    disableScrolling;
-    applyFocus(categoryNameInput);
+  // Trap TAB focusing within the form
+  const trap = focusTrap.createFocusTrap(form, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    returnFocusOnDeactivate: () => true,
+    setReturnFocus: () => this,
+  });
+  trap.activate();
 
-    // Trap TAB focusing within the form
-    const trap = focusTrap.createFocusTrap(form, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        returnFocusOnDeactivate: () => true,
-        setReturnFocus: () => this,
-    });
-    trap.activate();
-
-    function closeByClickOutside(e) { if (e.target == DOMCache.modal) { closeModal(); } }
-    function closeByKeyboard(e) { if (e.key == 'Escape') { closeModal(); } }
-
-    function checkInput() {
-
-        // Only enable the submitButton if the titleInput has at least one character
-        this.value.match(/([a-zA-Z0-9)]){1,}/g)
-            ? enableButton(submitButton)
-            : disableButton(submitButton);
-
+  function closeByClickOutside(e) {
+    if (e.target == DOMCache.modal) {
+      closeModal();
     }
-
-    function closeModal() {
-
-        trap.deactivate();
-
-        // Remove event listeners to prevent memory leaks and other unwanted behavior
-        closeButton.removeEventListener('click', closeModal);
-        submitButton.removeEventListener('click', submitFormModal);
-
-        categoryNameInput.removeEventListener('input', checkInput);
-
-        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
-        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
-
-        removeClass(DOMCache.modal, 'show');
-        enableScrolling;
-        // Remove the form from the DOM
-        form.remove();
-
+  }
+  function closeByKeyboard(e) {
+    if (e.key == "Escape") {
+      closeModal();
     }
+  }
 
-    function submitFormModal(e) {
+  function checkInput() {
+    // Only enable the submitButton if the titleInput has at least one character
+    this.value.match(/([a-zA-Z0-9)]){1,}/g)
+      ? enableButton(submitButton)
+      : disableButton(submitButton);
+  }
 
-        // Prevent default form submission, gather the formData, get the categoryName, trim the value, and
-        // ask the Controller to create a new category
-        e.preventDefault();
-        closeModal();
+  function closeModal() {
+    trap.deactivate();
 
-        const formData = new FormData(form);
-        Controller.createCategory(formData.get('name').trim());
+    // Remove event listeners to prevent memory leaks and other unwanted behavior
+    closeButton.removeEventListener("click", closeModal);
+    submitButton.removeEventListener("click", submitFormModal);
 
-    }
+    categoryNameInput.removeEventListener("input", checkInput);
 
+    DOMCache.modal.removeEventListener("mousedown", closeByClickOutside);
+    DOMCache.modal.removeEventListener("keyup", closeByKeyboard);
+
+    removeClass(DOMCache.modal, "show");
+    enableScrolling;
+    // Remove the form from the DOM
+    form.remove();
+  }
+
+  function submitFormModal(e) {
+    // Prevent default form submission, gather the formData, get the categoryName, trim the value, and
+    // ask the Controller to create a new category
+    e.preventDefault();
+    closeModal();
+
+    const formData = new FormData(form);
+    Controller.createCategory(formData.get("name").trim());
+  }
 }
 
 //
@@ -1654,114 +1856,113 @@ function renderCategoryModal() {
 //
 //
 
-
 // Type can be 'todo' or 'category', callLocationID can be todoID or categoryID,
 // callLocationName can be todoTitle or categoryName, and hasTodos specifies
 // whether the 'category' type contains any todos
-export function renderDeleteModal(type, callLocationID, callLocationName, hasTodos) {
+export function renderDeleteModal(
+  type,
+  callLocationID,
+  callLocationName,
+  hasTodos,
+) {
+  const deleteModal = Creator.createDeleteModal();
+  const deleteModalPara = find(deleteModal, ".delete-modal-paragraph");
+  // Turn the callLocationName into an array...
+  const itemName = Array.from(callLocationName);
 
-    const deleteModal = Creator.createDeleteModal();
-    const deleteModalPara = find(deleteModal, '.delete-modal-paragraph');
-    // Turn the callLocationName into an array...
-    const itemName = Array.from(callLocationName);
-
-    // ... and if it has more than 50 characters, delete all characters after index 49,
-    // and push three dots at the end of the array '...' to let the user know that the name
-    // is longer than the paragraph can hold without overflowing
-    if (itemName.length > 49) {
-
-        itemName.splice(49);
-        for (let i = 0; i < 3; i++) { itemName.push('.') };
-
+  // ... and if it has more than 50 characters, delete all characters after index 49,
+  // and push three dots at the end of the array '...' to let the user know that the name
+  // is longer than the paragraph can hold without overflowing
+  if (itemName.length > 49) {
+    itemName.splice(49);
+    for (let i = 0; i < 3; i++) {
+      itemName.push(".");
     }
+  }
 
-    deleteModalPara.innerHTML = `Are you sure you want to permanently delete <strong>${itemName.join('')}</strong> ? `
+  deleteModalPara.innerHTML = `Are you sure you want to permanently delete <strong>${itemName.join("")}</strong> ? `;
 
-    const closeButton = find(deleteModal, '.close-modal');
-    closeButton.addEventListener('click', closeModal);
+  const closeButton = find(deleteModal, ".close-modal");
+  closeButton.addEventListener("click", closeModal);
 
-    const deleteButton = find(deleteModal, '.confirm-delete-button');
-    deleteButton.addEventListener('click', sendDeleteConfirmation);
+  const deleteButton = find(deleteModal, ".confirm-delete-button");
+  deleteButton.addEventListener("click", sendDeleteConfirmation);
 
-    DOMCache.modal.addEventListener('mousedown', closeByClickOutside);
-    function closeByClickOutside(e) { if (e.target == DOMCache.modal) closeModal() };
+  DOMCache.modal.addEventListener("mousedown", closeByClickOutside);
+  function closeByClickOutside(e) {
+    if (e.target == DOMCache.modal) closeModal();
+  }
 
-    DOMCache.modal.addEventListener('keyup', closeByKeyboard);
-    function closeByKeyboard(e) { if (e.key == 'Escape') closeModal() };
+  DOMCache.modal.addEventListener("keyup", closeByKeyboard);
+  function closeByKeyboard(e) {
+    if (e.key == "Escape") closeModal();
+  }
 
-    render(DOMCache.modal, deleteModal);
-    addClass(DOMCache.modal, 'show');
+  render(DOMCache.modal, deleteModal);
+  addClass(DOMCache.modal, "show");
 
-    // Trap TAB focus within deleteModal
-    const trap = focusTrap.createFocusTrap(deleteModal, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        returnFocusOnDeactivate: () => true,
-    });
-    trap.activate();
+  // Trap TAB focus within deleteModal
+  const trap = focusTrap.createFocusTrap(deleteModal, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    returnFocusOnDeactivate: () => true,
+  });
+  trap.activate();
 
-    applyFocus(deleteButton);
+  applyFocus(deleteButton);
 
-    const methods = {
+  const methods = {
+    // The todo type needs a delete function only...
+    todo: {
+      delete: function () {
+        Controller.scanAndDeleteTodo(callLocationID);
+      },
+    },
 
-        // The todo type needs a delete function only...
-        todo: {
+    // While the category type also needs an init function that checks whether
+    // the hasTodos argument is true
+    category: {
+      init: function () {
+        if (!hasTodos) return;
+        // If the category contains todos, add a custom checkbox that allows the user
+        // to specify whether they want to delete the containing todos
+        const deleteTodosInputContainer = Creator.createDeleteTodosCheckbox();
+        deleteModal.insertBefore(
+          deleteTodosInputContainer,
+          find(deleteModal, ".modal-actions"),
+        );
+      },
 
-            delete: function () { Controller.scanAndDeleteTodo(callLocationID) },
+      delete: function () {
+        // If the 'Also delete containing todos' checkbox is checked, ask the Controller to deleteAllTodosOfCategory
+        if (hasTodos)
+          find(deleteModal, "#delete-todos").checked &&
+            Controller.deleteAllTodosOfCategory(callLocationID);
+        Controller.deleteCategory(callLocationID);
+      },
+    },
+  };
 
-        },
+  if (type == "category") methods[type].init();
 
-        // While the category type also needs an init function that checks whether
-        // the hasTodos argument is true
-        category: {
+  function sendDeleteConfirmation() {
+    closeModal();
+    methods[type].delete();
+  }
 
-            init: function () {
+  function closeModal() {
+    trap.deactivate();
 
-                if (!hasTodos) return;
-                // If the category contains todos, add a custom checkbox that allows the user
-                // to specify whether they want to delete the containing todos
-                const deleteTodosInputContainer = Creator.createDeleteTodosCheckbox();
-                deleteModal.insertBefore(deleteTodosInputContainer, find(deleteModal, ('.modal-actions')));
+    // Remove event listeners to prevent memory leaks and other unwanted behavior
+    closeButton.removeEventListener("click", closeModal);
+    deleteButton.removeEventListener("click", sendDeleteConfirmation);
 
-            },
+    DOMCache.modal.removeEventListener("mousedown", closeByClickOutside);
+    DOMCache.modal.removeEventListener("keyup", closeByKeyboard);
 
-            delete: function () {
-
-                // If the 'Also delete containing todos' checkbox is checked, ask the Controller to deleteAllTodosOfCategory
-                if (hasTodos) find(deleteModal, '#delete-todos').checked && Controller.deleteAllTodosOfCategory(callLocationID);
-                Controller.deleteCategory(callLocationID);
-
-            },
-
-        }
-
-    }
-
-    if (type == 'category') methods[type].init();
-
-    function sendDeleteConfirmation() {
-
-        closeModal();
-        methods[type].delete();
-
-    }
-
-    function closeModal() {
-
-        trap.deactivate();
-
-        // Remove event listeners to prevent memory leaks and other unwanted behavior
-        closeButton.removeEventListener('click', closeModal);
-        deleteButton.removeEventListener('click', sendDeleteConfirmation);
-
-        DOMCache.modal.removeEventListener('mousedown', closeByClickOutside);
-        DOMCache.modal.removeEventListener('keyup', closeByKeyboard);
-
-        removeClass(DOMCache.modal, 'show');
-        deleteModal.remove();
-
-    }
-
+    removeClass(DOMCache.modal, "show");
+    deleteModal.remove();
+  }
 }
 
 //
@@ -1770,11 +1971,27 @@ export function renderDeleteModal(type, callLocationID, callLocationName, hasTod
 //
 //
 
-export function isSearchBarOpen() { return find(DOMCache.modal, '#search-container') };
-export function isVisible(ID) { return find(DOMCache.content, `[data-id="${ID}"]`) };
-export function isAdditionalInfoVisible(todoID) { return find(find(DOMCache.main, `[data-id="${todoID}"]`), '.todo-additional-info') };
-export function isTodoExpanderVisible(todoID) { return find(find(categoriesContent[getCurrentContentID()], `[data-id= "${todoID}"]`), '.expand-button') };
-export function getCurrentContentID() { return DOMCache.content.dataset.id; }
+export function isSearchBarOpen() {
+  return find(DOMCache.modal, "#search-container");
+}
+export function isVisible(ID) {
+  return find(DOMCache.content, `[data-id="${ID}"]`);
+}
+export function isAdditionalInfoVisible(todoID) {
+  return find(
+    find(DOMCache.main, `[data-id="${todoID}"]`),
+    ".todo-additional-info",
+  );
+}
+export function isTodoExpanderVisible(todoID) {
+  return find(
+    find(categoriesContent[getCurrentContentID()], `[data-id= "${todoID}"]`),
+    ".expand-button",
+  );
+}
+export function getCurrentContentID() {
+  return DOMCache.content.dataset.id;
+}
 
 //
 //
@@ -1793,85 +2010,92 @@ export function getCurrentContentID() { return DOMCache.content.dataset.id; }
 // deleteSettingsName is the name of the second setting, which is 'Delete' in all cases
 // deleteFunction is the function that is run when the user clicks the deleteSettingButton
 // deleteType specifies whether the user is trying to delete a category or a todo
-function renderSettings(location, callLocation, editSettingName, editFunction, deleteSettingName, deleteFunction, deleteType) {
+function renderSettings(
+  location,
+  callLocation,
+  editSettingName,
+  editFunction,
+  deleteSettingName,
+  deleteFunction,
+  deleteType,
+) {
+  // By default, clicking another settings button prevents this instance of hideByClickOutside function from firing, which is responsible
+  // for hiding the current settings list. This leads to two settings lists being rendered in the same time, which is not desired in
+  // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
+  // is attached) solves this issue.
+  document.dispatchEvent(new Event("click"));
 
-    // By default, clicking another settings button prevents this instance of hideByClickOutside function from firing, which is responsible
-    // for hiding the current settings list. This leads to two settings lists being rendered in the same time, which is not desired in 
-    // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
-    // is attached) solves this issue.
-    document.dispatchEvent(new Event('click'));
+  addClass(callLocation, "focused");
+  // If the user clicks back on the button that lead to this function, delete the rendered settings
+  callLocation.addEventListener("click", deleteSettings);
 
-    addClass(callLocation, 'focused');
-    // If the user clicks back on the button that lead to this function, delete the rendered settings
-    callLocation.addEventListener('click', deleteSettings);
+  const settingsList = Creator.createElementWithClass("ul", "settings-list");
+  // Render the settingsList in the parent of the button that triggers the event to prevent accessibility
+  // errors when nesting ul elements into button elements
+  render(getParentOf(callLocation), settingsList);
 
-    const settingsList = Creator.createElementWithClass('ul', 'settings-list');
-    // Render the settingsList in the parent of the button that triggers the event to prevent accessibility
-    // errors when nesting ul elements into button elements
-    render(getParentOf(callLocation), settingsList);
+  // If the settingsList is being rendered outside the current viewport, change its positioning
+  if (isOutOfBounds("bottom", settingsList, 100))
+    addClass(settingsList, "top-positioned");
 
-    // If the settingsList is being rendered outside the current viewport, change its positioning
-    if (isOutOfBounds('bottom', settingsList, 100)) addClass(settingsList, 'top-positioned');
+  const editButton = Creator.createSettingItem(editSettingName);
+  editButton.addEventListener("click", edit);
+  render(settingsList, editButton);
 
-    const editButton = Creator.createSettingItem(editSettingName);
-    editButton.addEventListener('click', edit);
-    render(settingsList, editButton);
+  const deleteButton = Creator.createSettingItem(deleteSettingName);
+  deleteButton.addEventListener("click", remove);
+  render(settingsList, deleteButton);
 
-    const deleteButton = Creator.createSettingItem(deleteSettingName);
-    deleteButton.addEventListener('click', remove);
-    render(settingsList, deleteButton);
+  document.addEventListener("click", deleteByClickOutside);
+  function deleteByClickOutside(e) {
+    if (getParentOf(e.target) !== settingsList) deleteSettings(e);
+  }
 
-    document.addEventListener('click', deleteByClickOutside);
-    function deleteByClickOutside(e) { if (getParentOf(e.target) !== settingsList) deleteSettings(e) };
-
-    document.addEventListener('keyup', deleteByKeyboard);
-    function deleteByKeyboard(e) { if (e.key == 'Escape') { deleteSettings(e) } };
-
-    // Trap TAB focusing within the settingsList
-    const trap = focusTrap.createFocusTrap(settingsList, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-    });
-    trap.activate();
-
-    function deleteSettings(e) {
-
-        e.stopImmediatePropagation();
-        trap.deactivate();
-
-        // Remove events to prevent memory leaks and other unwanted behavior
-        callLocation.removeEventListener('click', deleteSettings);
-
-        editButton.removeEventListener('click', edit);
-        deleteButton.removeEventListener('click', remove);
-
-        document.removeEventListener('keyup', deleteByKeyboard);
-        document.removeEventListener('click', deleteByClickOutside);
-
-        // Remove the settingsList from the DOM
-        settingsList.remove();
-        removeClass(callLocation, 'focused');
-
+  document.addEventListener("keyup", deleteByKeyboard);
+  function deleteByKeyboard(e) {
+    if (e.key == "Escape") {
+      deleteSettings(e);
     }
+  }
 
-    function edit(e) {
+  // Trap TAB focusing within the settingsList
+  const trap = focusTrap.createFocusTrap(settingsList, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+  });
+  trap.activate();
 
-        e.stopImmediatePropagation();
-        deleteSettings(e);
-        // Run the passed editFunction using the UUIDV of the element, which is either a category button or a todo element
-        editFunction(location.dataset.id);
+  function deleteSettings(e) {
+    e.stopImmediatePropagation();
+    trap.deactivate();
 
-    }
+    // Remove events to prevent memory leaks and other unwanted behavior
+    callLocation.removeEventListener("click", deleteSettings);
 
-    function remove(e) {
+    editButton.removeEventListener("click", edit);
+    deleteButton.removeEventListener("click", remove);
 
-        e.stopImmediatePropagation();
-        deleteSettings(e);
-        // Run the passed deleteFunction using the UUIDV of the element (which can be either a category button or a todo element)
-        deleteFunction(deleteType, location.dataset.id);
+    document.removeEventListener("keyup", deleteByKeyboard);
+    document.removeEventListener("click", deleteByClickOutside);
 
-    }
+    // Remove the settingsList from the DOM
+    settingsList.remove();
+    removeClass(callLocation, "focused");
+  }
 
+  function edit(e) {
+    e.stopImmediatePropagation();
+    deleteSettings(e);
+    // Run the passed editFunction using the UUIDV of the element, which is either a category button or a todo element
+    editFunction(location.dataset.id);
+  }
+
+  function remove(e) {
+    e.stopImmediatePropagation();
+    deleteSettings(e);
+    // Run the passed deleteFunction using the UUIDV of the element (which can be either a category button or a todo element)
+    deleteFunction(deleteType, location.dataset.id);
+  }
 }
 
 // Location is the element that will contain the renameInput,
@@ -1879,166 +2103,196 @@ function renderSettings(location, callLocation, editSettingName, editFunction, d
 // callLocation is the button that lead to this function, and action is the function
 // that should be run after the new name is submitted
 function renderRenameInput(location, nameContainer, callLocation, action) {
+  // Create a text input field using Creator
+  const renameField = Creator.createInput(
+    "New category name",
+    "name",
+    "category-edit-field",
+    "text",
+  );
 
-    // Create a text input field using Creator
-    const renameField = Creator.createInput('New category name', 'name', 'category-edit-field', 'text');
+  const renameInput = find(renameField, "input");
+  renameInput.addEventListener("focus", focusOnInput);
+  renameInput.addEventListener("mousedown", preventPropagation);
 
-    const renameInput = find(renameField, 'input');
-    renameInput.addEventListener('focus', focusOnInput);
-    renameInput.addEventListener('mousedown', preventPropagation);
+  document.addEventListener("mousedown", clickAction);
+  document.addEventListener("keydown", keyboardActions);
 
-    document.addEventListener('mousedown', clickAction);
-    document.addEventListener('keydown', keyboardActions);
+  replace(renameField, nameContainer);
+  updateInputValue(renameInput, nameContainer.textContent);
+  applyFocus(renameInput);
 
-    replace(renameField, nameContainer);
-    updateInputValue(renameInput, nameContainer.textContent);
-    applyFocus(renameInput);
+  // Trap TAB focusing within the renameField
+  const trap = focusTrap.createFocusTrap(renameField, {
+    allowOutsideClick: () => true,
+    escapeDeactivates: () => false,
+    setReturnFocus: () => callLocation,
+  });
+  trap.activate();
 
-    // Trap TAB focusing within the renameField
-    const trap = focusTrap.createFocusTrap(renameField, {
-        allowOutsideClick: () => true,
-        escapeDeactivates: () => false,
-        setReturnFocus: () => callLocation,
-    });
-    trap.activate();
+  function applyChanges() {
+    discardChanges();
+    action(location.dataset.id, renameInput.value.trim());
+  }
 
-    function applyChanges() {
+  function discardChanges() {
+    trap.deactivate();
+    // Remove events to prevent memory leaks and other unwanted behavior
+    removeEvents();
+    enableInput(DOMCache.body);
+    replace(nameContainer, renameField);
+  }
 
-        discardChanges();
-        action(location.dataset.id, renameInput.value.trim());
+  function removeEvents() {
+    renameInput.removeEventListener("focus", focusOnInput);
+    renameInput.removeEventListener("mousedown", preventPropagation);
+    document.removeEventListener("mousedown", clickAction);
+    document.removeEventListener("keydown", keyboardActions);
+  }
 
-    }
+  function preventPropagation(e) {
+    e.stopImmediatePropagation();
+  }
+  // Discard changes if user tries to submit an empty field
+  function clickAction() {
+    renameInput.value.trim().length == 0 ? discardChanges() : applyChanges();
+  }
 
-    function discardChanges() {
-
-        trap.deactivate()
-        // Remove events to prevent memory leaks and other unwanted behavior
-        removeEvents();
-        enableInput(DOMCache.body);
-        replace(nameContainer, renameField);
-
-    }
-
-    function removeEvents() {
-
-        renameInput.removeEventListener('focus', focusOnInput);
-        renameInput.removeEventListener('mousedown', preventPropagation);
-        document.removeEventListener('mousedown', clickAction);
-        document.removeEventListener('keydown', keyboardActions);
-
-    }
-
-    function preventPropagation(e) { e.stopImmediatePropagation() };
+  function keyboardActions(e) {
     // Discard changes if user tries to submit an empty field
-    function clickAction() { renameInput.value.trim().length == 0 ? discardChanges() : applyChanges() };
+    if (e.key == "Enter")
+      return renameInput.value.trim().length == 0
+        ? discardChanges()
+        : applyChanges();
+    if (e.key == "Escape") return discardChanges();
+  }
 
-    function keyboardActions(e) {
-        // Discard changes if user tries to submit an empty field
-        if (e.key == 'Enter') return renameInput.value.trim().length == 0 ? discardChanges() : applyChanges();
-        if (e.key == 'Escape') return discardChanges();
-
-    }
-
-    function focusOnInput() {
-
-        disableInput(DOMCache.body);
-        enableInput(renameInput);
-
-    }
-
+  function focusOnInput() {
+    disableInput(DOMCache.body);
+    enableInput(renameInput);
+  }
 }
 
 function checkIfMobile() {
-    if (hasClass(DOMCache.header, 'mobile')) removeClass(DOMCache.header, 'mobile');
+  if (hasClass(DOMCache.header, "mobile"))
+    removeClass(DOMCache.header, "mobile");
 
-    if (DOMCache.mobileVersion.matches) {
-        addClass(DOMCache.header, 'mobile');
-        hideNavbar();
-    }
-};
-
+  if (DOMCache.mobileVersion.matches) {
+    addClass(DOMCache.header, "mobile");
+    hideNavbar();
+  }
+}
 
 function disableScrolling() {
-    const html = document.querySelector('html');
-    // Add right padding to the HTML element of the DOM that is equal to the width of the scrollbar,
-    // to prevent the usual layout shift when the scrollbar appears and disappears
-    html.style.paddingRight = `${window.innerWidth - document.documentElement.clientWidth}px`
-    addClass(html, 'overlay-over');
+  const html = document.querySelector("html");
+  // Add right padding to the HTML element of the DOM that is equal to the width of the scrollbar,
+  // to prevent the usual layout shift when the scrollbar appears and disappears
+  html.style.paddingRight = `${window.innerWidth - document.documentElement.clientWidth}px`;
+  addClass(html, "overlay-over");
 }
 
 function enableScrolling() {
-    const html = document.querySelector('html');
-    // Remove the right padding added by disableScrolling function
-    html.style.removeProperty('padding')
-    removeClass(html, 'overlay-over');
+  const html = document.querySelector("html");
+  // Remove the right padding added by disableScrolling function
+  html.style.removeProperty("padding");
+  removeClass(html, "overlay-over");
 }
 
-// The checkBounds function determines whether the element position needs to be changed 
+// The checkBounds function determines whether the element position needs to be changed
 // as a result of it leaking out of the viewport, and changes its position using CSS classes;
 function checkBounds(element, breakpoint) {
-    if (hasClass(element, 'top-positioned')) removeClass(element, 'top-positioned');
-    if (hasClass(element, 'center-positioned')) removeClass(element, 'center-positioned');
+  if (hasClass(element, "top-positioned"))
+    removeClass(element, "top-positioned");
+  if (hasClass(element, "center-positioned"))
+    removeClass(element, "center-positioned");
 
-    if (isOutOfBounds('bottom', element, breakpoint)) addClass(element, 'top-positioned');
+  if (isOutOfBounds("bottom", element, breakpoint))
+    addClass(element, "top-positioned");
 
-    if (hasClass(element, 'top-positioned') && isOutOfBounds('top', element)) {
-        removeClass(element, 'top-positioned');
-        addClass(element, 'center-positioned');
-    }
+  if (hasClass(element, "top-positioned") && isOutOfBounds("top", element)) {
+    removeClass(element, "top-positioned");
+    addClass(element, "center-positioned");
+  }
 }
 
 function isOutOfBounds(position, element, breakpoint) {
-    // Get the element's position relative to the viewport
-    const elementBound = element.getBoundingClientRect();
-    // Get the top/y value of the element
-    const elementY = elementBound.y;
-    // Get the actual height of the HTML document
-    const clientHeight = document.querySelector('html').clientHeight;
+  // Get the element's position relative to the viewport
+  const elementBound = element.getBoundingClientRect();
+  // Get the top/y value of the element
+  const elementY = elementBound.y;
+  // Get the actual height of the HTML document
+  const clientHeight = document.querySelector("html").clientHeight;
 
-    const methods = {
-        'top': function () { return elementY < 0 },
-        'bottom': function () { return clientHeight - elementY < breakpoint },
-    }
-    return methods[position]();
+  const methods = {
+    top: function () {
+      return elementY < 0;
+    },
+    bottom: function () {
+      return clientHeight - elementY < breakpoint;
+    },
+  };
+  return methods[position]();
 }
 
-function render(target, ...elements) { for (const element of elements) { if (!target.contains(element)) target.appendChild(element) } };
-function find(element, identifier) { if (element && identifier) return element.querySelector(identifier) };
-function findAll(element, identifier) { return element.querySelectorAll(identifier) };
-function getParentOf(element) { return element.parentElement };
-function hasClass(element, className) { return element.classList.contains(className) };
-function addClass(element, className) { element.classList.add(className) };
-function removeClass(element, className) { element.classList.remove(className) };
-function toggleClass(element, className) { element.classList.toggle(className) };
-function updateInputValue(target, inputValue) { target.value = inputValue };
-function applyFocus(element) { element.focus() };
+function render(target, ...elements) {
+  for (const element of elements) {
+    if (!target.contains(element)) target.appendChild(element);
+  }
+}
+function find(element, identifier) {
+  if (element && identifier) return element.querySelector(identifier);
+}
+function findAll(element, identifier) {
+  return element.querySelectorAll(identifier);
+}
+function getParentOf(element) {
+  return element.parentElement;
+}
+function hasClass(element, className) {
+  return element.classList.contains(className);
+}
+function addClass(element, className) {
+  element.classList.add(className);
+}
+function removeClass(element, className) {
+  element.classList.remove(className);
+}
+function toggleClass(element, className) {
+  element.classList.toggle(className);
+}
+function updateInputValue(target, inputValue) {
+  target.value = inputValue;
+}
+function applyFocus(element) {
+  element.focus();
+}
 
 function updateTextContent(target, text) {
-    if (text == 0) return target.textContent = '';
-    target.textContent = text;
+  if (text == 0) return (target.textContent = "");
+  target.textContent = text;
 }
 
 function replace(newElement, element) {
-    const parent = element.parentElement;
-    parent.replaceChild(newElement, element);
+  const parent = element.parentElement;
+  parent.replaceChild(newElement, element);
 }
 
 function enableInput(element) {
-    element.style.pointerEvents = 'auto';
-    element.style.touchEvents = 'auto';
+  element.style.pointerEvents = "auto";
+  element.style.touchEvents = "auto";
 }
 
 function disableInput(element) {
-    element.style.pointerEvents = 'none';
-    element.style.touchEvents = 'none';
+  element.style.pointerEvents = "none";
+  element.style.touchEvents = "none";
 }
 
 function enableButton(button) {
-    button.disabled = false;
-    button.removeAttribute('tabindex');
+  button.disabled = false;
+  button.removeAttribute("tabindex");
 }
 
 function disableButton(button) {
-    button.disabled = true;
-    button.setAttribute('tabindex', '-1');
+  button.disabled = true;
+  button.setAttribute("tabindex", "-1");
 }
