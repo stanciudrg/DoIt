@@ -1,2 +1,5 @@
 {
+  "cSpell.ignoreWords": ["uuidv"],
+  "cSpell.words": ["Customizer", "todos"],
+  "editor.rulers": [80, 120]
 }
