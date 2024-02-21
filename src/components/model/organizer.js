@@ -5,20 +5,9 @@ import {
   devCategoryProto,
   userCategoryProto,
 } from "./category";
+import { scanTodo } from "../universalHelpers";
 import { Todo, todoProto } from "./todo";
-import { scanTodo } from "./controller";
-
-// Check whether localStorage is enabled by trying to access its methods
-const isLocalStorageEnabled = () => {
-  try {
-    const key = `__storage__test`;
-    window.localStorage.setItem(key, null);
-    window.localStorage.removeItem(key);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
+import * as LocalStorage from "./localStorage";
 
 // devCategories is where special, uneditable categories created by the developer are stored
 // 'All todos' devCategory holds all todos, regarding of their properties (dueDate, overdue, completed);
@@ -62,13 +51,19 @@ export function hasTodo(categoryID, todoID) {
   return getTodosOf(categoryID).find((todo) => todo.get("id") === todoID);
 }
 
+export function editTodo(todo, property, newValue) {
+  todo.set(property, newValue);
+
+  if (LocalStorage.isEnabled()) {
+    LocalStorage.editTodo(todo.get("id"), property, newValue);
+  }
+}
+
 export function addCategory(category) {
   userCategories.push(category);
-  if (isLocalStorageEnabled()) {
-    localStorage.setItem(
-      `userCategory-${category.getID()}`,
-      JSON.stringify(category),
-    );
+
+  if (LocalStorage.isEnabled()) {
+    LocalStorage.addCategory(category, category.getID());
   }
 }
 
@@ -77,13 +72,8 @@ function removeFromUserCategory(todo, categoryID) {
   todo.set("categoryID", "");
   todo.set("categoryName", "");
 
-  if (isLocalStorageEnabled()) {
-    const storageTodo = JSON.parse(
-      localStorage.getItem(`todo-${todo.get("id")}`),
-    );
-    storageTodo.categoryID = "";
-    storageTodo.categoryName = "";
-    localStorage.setItem(`todo-${todo.get("id")}`, JSON.stringify(storageTodo));
+  if (LocalStorage.isEnabled()) {
+    LocalStorage.removeFromUserCategory(todo.get("id"));
   }
 }
 
@@ -97,9 +87,7 @@ export function deleteCategory(categoryID) {
   // ...and then delete the userCategory
   userCategories.splice(userCategories.indexOf(category), 1);
 
-  if (isLocalStorageEnabled()) {
-    localStorage.removeItem(`userCategory-${categoryID}`);
-  }
+  if (LocalStorage.isEnabled()) LocalStorage.deleteCategory(categoryID);
 }
 
 export function changeUserCategoryName(categoryID, newName) {
@@ -109,27 +97,14 @@ export function changeUserCategoryName(categoryID, newName) {
 
   category.setName(newName);
 
-  if (!isLocalStorageEnabled) return;
+  if (!LocalStorage.isEnabled()) return;
 
-  const storageCategory = JSON.parse(
-    localStorage.getItem(`userCategory-${categoryID}`),
-  );
-  storageCategory.name = newName;
-  localStorage.setItem(
-    `userCategory-${categoryID}`,
-    JSON.stringify(storageCategory),
-  );
+  LocalStorage.changeUserCategoryName(categoryID, newName);
 
   // Go through each todo of the userCategory...
   category.getTodos().forEach((todo) => {
     // ... rename its categoryName property...
-    todo.set("categoryName", newName);
-    // ...then get the Todo from the localStorage, change its categoryName, and push it back
-    const storageTodo = JSON.parse(
-      localStorage.getItem(`todo-${todo.get("id")}`),
-    );
-    storageTodo.categoryName = newName;
-    localStorage.setItem(`todo-${todo.get("id")}`, JSON.stringify(storageTodo));
+    editTodo(todo, 'categoryName', newName);
   });
 }
 
@@ -143,50 +118,14 @@ export function setSortingMethod(categoryID, type) {
   const category = getCategory(categoryID);
   category.setSortingMethod(type);
 
-  const set = (categoryType) => {
-    const storageCategory = JSON.parse(
-      localStorage.getItem(`${categoryType}-${categoryID}`),
-    );
-    storageCategory.sortingMethod = type;
-    localStorage.setItem(
-      `${categoryType}-${categoryID}`,
-      JSON.stringify(storageCategory),
-    );
-  };
-
-  if (!isLocalStorageEnabled()) return;
-
-  if (JSON.parse(localStorage.getItem(`devCategory-${categoryID}`))) {
-    set("devCategory");
-    return;
-  }
-
-  set("userCategory");
+  if (LocalStorage.isEnabled()) LocalStorage.setSortingMethod(categoryID, type);
 }
 
 export function setFilterMethod(categoryID, type) {
   const category = getCategory(categoryID);
   category.setFilterMethod(type);
 
-  const set = (categoryType) => {
-    const storageCategory = JSON.parse(
-      localStorage.getItem(`${categoryType}-${categoryID}`),
-    );
-    storageCategory.filterMethod = type;
-    localStorage.setItem(
-      `${categoryType}-${categoryID}`,
-      JSON.stringify(storageCategory),
-    );
-  };
-
-  if (!isLocalStorageEnabled()) return;
-
-  if (JSON.parse(localStorage.getItem(`devCategory-${categoryID}`))) {
-    set("devCategory");
-    return;
-  }
-
-  set("userCategory");
+  if (LocalStorage.isEnabled()) LocalStorage.setFilterMethod(categoryID, type);
 }
 
 export function getTodo(ID) {
@@ -203,21 +142,7 @@ function isTodoWiped(id) {
 export function addTodo(todo, categoryID) {
   getCategory(categoryID).addTodo(todo);
 
-  if (isLocalStorageEnabled()) {
-    localStorage.setItem(`todo-${todo.get("id")}`, JSON.stringify(todo));
-  }
-}
-
-export function editTodo(todo, property, newValue) {
-  todo.set(property, newValue);
-
-  if (isLocalStorageEnabled()) {
-    const storageTodo = JSON.parse(
-      localStorage.getItem(`todo-${todo.get("id")}`),
-    );
-    storageTodo[property] = newValue;
-    localStorage.setItem(`todo-${todo.get("id")}`, JSON.stringify(storageTodo));
-  }
+  if (LocalStorage.isEnabled()) LocalStorage.addTodo(todo, todo.get("id"));
 }
 
 export function removeTodo(todo, categoryID) {
@@ -229,20 +154,19 @@ export function removeTodo(todo, categoryID) {
     getCategory(categoryID).removeTodo(todo);
   }
 
-  if (isLocalStorageEnabled() && isTodoWiped(todo.get("id"))) {
-    localStorage.removeItem(`todo-${todo.get("id")}`);
+  if (LocalStorage.isEnabled() && isTodoWiped(todo.get("id"))) {
+    LocalStorage.removeTodo(todo.get("id"));
   }
 }
 
 export function toggleCompletedStatus(todo) {
   todo.toggleCompletedStatus();
 
-  if (isLocalStorageEnabled()) {
-    const storageTodo = JSON.parse(
-      localStorage.getItem(`todo-${todo.get("id")}`),
+  if (LocalStorage.isEnabled()) {
+    LocalStorage.toggleTodoCompletedStatus(
+      todo.get("id"),
+      todo.get("completedStatus"),
     );
-    storageTodo.completedStatus = todo.get("completedStatus");
-    localStorage.setItem(`todo-${todo.get("id")}`, JSON.stringify(storageTodo));
   }
 }
 
@@ -263,7 +187,7 @@ export function search(parameter) {
 // Organizer initialization function. Responsible with verifying whether localStorage is enabled and
 // contains any data. If it does, it retrieves and stores it in the application memory
 export function init() {
-  if (!isLocalStorageEnabled) return;
+  if (!LocalStorage.isEnabled()) return;
 
   // If it's the first time the user visits the app, create an introductory Todo and UserCategory;
   const isFamiliar = localStorage.getItem("isFamiliar");

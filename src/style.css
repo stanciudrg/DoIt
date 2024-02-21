@@ -287,8 +287,7 @@ The form element is used for the Add and Edit Todo and Add Category modals,
 the #search-container is a div and is used for the Search modal, and the .delete-modal
 is used for the Delete Todo and Delete Category modals */
 form,
-#search-container,
-.delete-modal {
+#search-container {
     position: absolute;
     top: 15vh;
     background-color: var(--primary-color);
@@ -296,8 +295,7 @@ form,
     border-radius: var(--big-border-radius);
 }
 
-form,
-.delete-modal {
+form {
     display: grid;
     max-width: 350px;
     width: 100%;

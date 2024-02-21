@@ -1,5 +1,13 @@
 {
-  "cSpell.ignoreWords": ["uuidv"],
-  "cSpell.words": ["Customizer", "todos"],
+  "cSpell.ignoreWords": [
+    "autogrowing",
+    "textareas",
+    "uuidv"
+  ],
+  "cSpell.words": [
+    "Customizer",
+    "maxlength",
+    "todos"
+  ],
   "editor.rulers": [80, 120]
 }

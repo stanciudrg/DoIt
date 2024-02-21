@@ -37,6 +37,7 @@
     "flatpickr": "^4.6.13",
     "focus-trap": "^7.5.4",
     "fuse.js": "^7.0.0",
+    "pubsub-js": "^1.9.4",
     "uuid": "^9.0.1"
   }
 }
