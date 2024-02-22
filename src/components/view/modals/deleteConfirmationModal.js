@@ -1,20 +1,13 @@
 import * as focusTrap from "focus-trap";
 import PubSub from "pubsub-js";
-import {
-  createDeleteTodosCheckbox,
-  createElementWithClass,
-} from "../creator";
+import { createDeleteTodosCheckbox, createElementWithClass } from "../creator";
 import FormModal from "./formModal";
-import {
-  find,
-  render,
-  addClass,
-  removeClass,
-  enableButton,
-} from "../viewHelpers";
+import { find, render, enableButton } from "../viewHelpers";
 
 function DeleteConfirmationModal(name) {
-  const deleteConfirmationModal = Object.create(FormModal("Delete confirmation", "delete-modal"));
+  const deleteConfirmationModal = Object.create(
+    FormModal("Delete confirmation", "delete-modal"),
+  );
   deleteConfirmationModal.deleteParagraph = createElementWithClass(
     "p",
     "delete-modal-paragraph",
@@ -45,7 +38,7 @@ function DeleteConfirmationModal(name) {
 
   deleteConfirmationModal.closeModalFn = function closeModalFn() {
     deleteConfirmationModal.trap.deactivate();
-  }
+  };
 
   deleteConfirmationModal.initDeleteConfirmationModal =
     function initDeleteConfirmationModal() {
@@ -55,12 +48,15 @@ function DeleteConfirmationModal(name) {
         deleteConfirmationModal.deleteParagraph,
       );
       deleteConfirmationModal.deleteParagraph.innerHTML = `Are you sure you want to permanently delete <strong>${deleteConfirmationModal.transformString(name)}</strong> ? `;
-      deleteConfirmationModal.submitButton.textContent = 'Delete';
+      deleteConfirmationModal.modifySubmitButton(
+        "Delete",
+        "confirm-delete-button",
+      );
       enableButton(deleteConfirmationModal.submitButton);
-      removeClass(deleteConfirmationModal.submitButton, "submit-modal");
-      addClass(deleteConfirmationModal.submitButton, "confirm-delete-button");
       deleteConfirmationModal.trap.activate();
-      deleteConfirmationModal.addAdditionalCloseModalFn(deleteConfirmationModal.closeModalFn);
+      deleteConfirmationModal.addAdditionalCloseModalFn(
+        deleteConfirmationModal.closeModalFn,
+      );
     };
 
   return deleteConfirmationModal;
@@ -74,7 +70,7 @@ export function renderDeleteTodoModal(todoID, todoName) {
     e.preventDefault();
     deleteConfirmationModal.closeModal();
     PubSub.publish("DELETE_TODO_REQUEST", todoID);
-  }
+  };
 
   deleteConfirmationModal.setSubmitModalFn(submitModalFn);
 }
@@ -82,18 +78,21 @@ export function renderDeleteTodoModal(todoID, todoName) {
 export function renderDeleteCategoryModal(categoryID, categoryName, hasTodos) {
   const deleteConfirmationModal = DeleteConfirmationModal(categoryName);
   deleteConfirmationModal.initDeleteConfirmationModal();
-  const deleteTodosInputContainer = createDeleteTodosCheckbox();
-  render(deleteConfirmationModal.fieldset, deleteTodosInputContainer);
+  let deleteTodosInputContainer;
+  if (hasTodos) {
+    deleteTodosInputContainer = createDeleteTodosCheckbox();
+    render(deleteConfirmationModal.fieldset, deleteTodosInputContainer);
+  }
 
   const submitModalFn = (e) => {
     e.preventDefault();
     deleteConfirmationModal.closeModal();
-    if (hasTodos && find(deleteTodosInputContainer, "#delete-todos").checked) {
+    if (find(deleteTodosInputContainer, "#delete-todos").checked) {
       PubSub.publish("DELETE_CONTAINING_TODOS_REQUEST", categoryID);
     }
 
     PubSub.publish("DELETE_CATEGORY_REQUEST", categoryID);
-  }
+  };
 
   deleteConfirmationModal.setSubmitModalFn(submitModalFn);
 }

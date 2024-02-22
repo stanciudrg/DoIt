@@ -284,10 +284,10 @@ and for selecting whether deleting a category should also delete its containing 
 
 /* The three types of content that are being rendered into the #modal container.
 The form element is used for the Add and Edit Todo and Add Category modals,
-the #search-container is a div and is used for the Search modal, and the .delete-modal
+the .search-container is a div and is used for the Search modal, and the .delete-modal
 is used for the Delete Todo and Delete Category modals */
 form,
-#search-container {
+.search-container {
     position: absolute;
     top: 15vh;
     background-color: var(--primary-color);
@@ -378,7 +378,7 @@ nav::-webkit-scrollbar-thumb:hover,
 
 /* Hide fieldset legend for sighted users but allow the element to still be recognized by screen readers */
 form>fieldset>legend,
-#search-container label,
+.search-container label,
 fieldset .input-container label,
 .content-header label,
 .priorities-legend,
@@ -1588,22 +1588,24 @@ is to confirm whether the user wants to also delete the containing todos of the 
 }
 
 /* Contains the search container input and a dynamically rendered results list */
-#search-container {
+.search-container {
     max-width: 600px;
     width: 90%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    padding: 0;
+    gap: 0;
 }
 
-#search-container input {
+.search-container input {
     padding: 1rem;
     border-radius: var(--big-border-radius);
     background-color: var(--primary-color);
 }
 
 /* Disable default focus styling */
-#search-container input:focus {
+.search-container input:focus {
     outline: 0;
 }
 
@@ -1749,7 +1751,7 @@ it is completed or not */
 @media (max-height: 1000px) {
 
     .todo-form,
-    #search-container {
+    .search-container {
         top: 10vh;
     }
 

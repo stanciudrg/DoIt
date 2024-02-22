@@ -828,25 +828,25 @@ PubSub.subscribe("SHOW_TODO_LOCATION_REQUEST", (msg, todoID) => {
 
 // Asks the Renderer to render a deleteTodo or deleteCategory modal
 // and passes the todo or category info
-export function handleDeleteRequest(type, ID) {
-  if (!type || !ID) return;
-  // If the user is trying to delete a todo, provide the todoTitle property
-
-  if (type === "todo") {
-    const todo = Organizer.getTodo(ID);
-    Renderer.renderDeleteTodoModal(ID, todo.get("title"));
-  }
-
-  if (type === "category") {
-    const category = Organizer.getUserCategory(ID);
-    const hasTodos = category.getTodos().length > 0;
-    Renderer.renderDeleteCategoryModal(ID, category.getName(), hasTodos);
-  }
+export function handleDeleteTodoModalRequest(ID) {
+  if (!ID) return;
+  const todo = Organizer.getTodo(ID);
+  Renderer.renderDeleteTodoModal(ID, todo.get("title"));
 }
 
-PubSub.subscribe("DELETE_REQUEST", (msg, args) => {
-  const { type, ID } = args;
-  handleDeleteRequest(type, ID);
+PubSub.subscribe("DELETE_TODO_MODAL_REQUEST", (msg, ID) => {
+  handleDeleteTodoModalRequest(ID);
+});
+
+export function handleDeleteCategoryModalRequest(ID) {
+  if (!ID) return;
+  const category = Organizer.getUserCategory(ID);
+  const hasTodos = category.getTodos().length > 0;
+  Renderer.renderDeleteCategoryModal(ID, category.getName(), hasTodos);
+}
+
+PubSub.subscribe("DELETE_CATEGORY_MODAL_REQUEST", (msg, ID) => {
+  handleDeleteCategoryModalRequest(ID);
 });
 
 function checkDueDates() {

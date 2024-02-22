@@ -4,10 +4,27 @@ import PubSub from "pubsub-js";
 import { capitalizeFirstLetter } from "../universalHelpers";
 import * as Creator from "./creator";
 import { DOMCache, categoriesContent } from "./DOMCache";
-import { renderAddTodoModal, renderEditTodoModal } from './modals/todoFormModal';
-import renderAddCategoryModal from './modals/categoryFormModal';
-import { renderCategoriesDropdownList, renderCategorySelectItem } from './modals/categorySelectInput';
-import { renderDeleteTodoModal, renderDeleteCategoryModal } from './modals/deleteConfirmationModal';
+import {
+  renderAddTodoModal,
+  renderEditTodoModal,
+} from "./modals/todoFormModal";
+import {
+  renderCategoriesDropdownList,
+  renderCategorySelectItem,
+  renderAddCategoryModal,
+} from "./modals/categoryFormModal";
+import {
+  renderDeleteTodoModal,
+  renderDeleteCategoryModal,
+} from "./modals/deleteConfirmationModal";
+import {
+  renderSearchModal,
+  renderAnchorTodoElement,
+  deleteAllAnchorTodoElements,
+  markAnchorTodoElementAsCompleted,
+} from "./modals/searchModal";
+import renderTodoSettings from './contextMenus/todoSettingsMenu';
+import renderUserCategorySettings from './contextMenus/categorySettingsMenu';
 import {
   hasClass,
   removeClass,
@@ -22,16 +39,25 @@ import {
   getCurrentContentID,
   getTodoElement,
   getAdditionalFeatureContainer,
-  findAll,
   updateInputValue,
   applyFocus,
-  isOutOfBounds,
   disableInput,
   enableInput,
-  replace
+  replace,
 } from "./viewHelpers";
 
-export { renderAddTodoModal, renderEditTodoModal, renderCategoriesDropdownList, renderCategorySelectItem, renderDeleteTodoModal, renderDeleteCategoryModal };
+export {
+  renderAddTodoModal,
+  renderEditTodoModal,
+  renderCategoriesDropdownList,
+  renderCategorySelectItem,
+  renderDeleteTodoModal,
+  renderDeleteCategoryModal,
+  renderSearchModal,
+  renderAnchorTodoElement,
+  deleteAllAnchorTodoElements,
+  markAnchorTodoElementAsCompleted,
+};
 
 //
 //
@@ -265,7 +291,10 @@ function handleUserCategoryClickEvents(e) {
 
   if (hasClass(e.target, "settings-button")) {
     e.stopImmediatePropagation();
-    renderUserCategorySettings(userCategoryButton.dataset.id);
+    renderUserCategorySettings(find(getParentOf(find(
+      DOMCache.userNavbarList,
+      `[data-id="${userCategoryButton.dataset.id}"]`
+    )), '.settings-button'), userCategoryButton.dataset.id);
     return;
   }
 
@@ -274,27 +303,6 @@ function handleUserCategoryClickEvents(e) {
   // userCategory button click events, on the other hand, are handled by their ancestor,
   // thus the userCategory buttons are manually provided as 'this'
   sendDisplayContentRequest.bind(userCategoryButton)();
-}
-
-function renderUserCategorySettings(categoryID) {
-  const userCategoryButton = find(
-    DOMCache.userNavbarList,
-    `[data-id="${categoryID}"]`,
-  );
-  const userCategorySettingsButton = find(
-    getParentOf(userCategoryButton),
-    ".settings-button",
-  );
-
-  renderSettings(
-    userCategoryButton,
-    userCategorySettingsButton,
-    "Rename",
-    renderUserCategoryRenameInput,
-    "Delete",
-    Controller.handleDeleteRequest,
-    "category",
-  );
 }
 
 function renderUserCategoryRenameInput(categoryID) {
@@ -344,8 +352,13 @@ export function deleteUserCategoryButton(categoryID) {
 // Renders the settings button when the current category that has it's content rendered is editable (it's a userCategory)
 export function renderContentSettingsButton() {
   const contentSettingsButton = Creator.createSettingsButton("Edit category");
-  contentSettingsButton.addEventListener("click", renderContentSettings);
+  contentSettingsButton.addEventListener("click", requestUserCategorySettings);
   render(DOMCache.contentSettings, contentSettingsButton);
+}
+
+function requestUserCategorySettings(e) {
+  e.stopImmediatePropagation();
+  renderUserCategorySettings(e.target, getCurrentContentID())
 }
 
 // Deletes the settings button when the current category that has it's content rendered is non-editable (it's a devCategory);
@@ -354,32 +367,8 @@ export function deleteContentSettingsButton() {
     DOMCache.contentSettings,
     ".settings-container",
   );
-  editContentTitleButton.removeEventListener("click", renderContentSettings);
+  editContentTitleButton.removeEventListener("click", requestUserCategorySettings);
   editContentTitleButton.remove();
-}
-
-function renderContentSettings(e) {
-  e.stopImmediatePropagation();
-  const contentSettingsButton = find(
-    DOMCache.contentHeader,
-    ".settings-button",
-  );
-
-  // Removes the event listener that leads to this function being run to prevent conflicts with the
-  // function that will be called inside the renderSettings() function whenever the user will click back
-  // on the settingsButton that triggers this entire event chain
-  contentSettingsButton.removeEventListener("click", renderContentSettings);
-  renderSettings(
-    DOMCache.content,
-    contentSettingsButton,
-    "Rename",
-    renderRenameContentTitleInput,
-    "Delete",
-    Controller.handleDeleteRequest,
-    "category",
-  );
-  // After the renderSettings function is finished, and the user closed the settingsList, re-attach the event listener
-  contentSettingsButton.addEventListener("click", renderContentSettings);
 }
 
 function renderRenameContentTitleInput() {
@@ -471,7 +460,6 @@ export function renderContentCustomizer(type, currentSetting, ...settingNames) {
     }
   }
 
-  console.log(settingNames);
   if (settingNames) {
     // Render a sorting or filter method button into the settingsList for each settingName
     settingNames.forEach((settingName) => {
@@ -619,7 +607,10 @@ function handleTodoElementsClickEvents(e) {
 
   if (hasClass(e.target, "settings-button")) {
     e.stopImmediatePropagation();
-    renderTodoSettings(todoItem.dataset.id);
+    renderTodoSettings(find(
+      find(categoriesContent[getCurrentContentID()], `[data-id="${todoItem.dataset.id}"]`),
+      ".settings-button",
+    ), todoItem.dataset.id);
     return;
   }
 
@@ -680,23 +671,6 @@ export function deleteTodoElement(todoID) {
     `[data-id="${todoID}"]`,
   );
   todoElement.remove();
-}
-
-function renderTodoSettings(todoID) {
-  const todoElement = find(
-    categoriesContent[getCurrentContentID()],
-    `[data-id="${todoID}"]`,
-  );
-  const todoSettingsButton = find(todoElement, ".settings-button");
-  renderSettings(
-    todoElement,
-    todoSettingsButton,
-    "Edit",
-    Controller.handleTodoModalRequest,
-    "Delete",
-    Controller.handleDeleteRequest,
-    "todo",
-  );
 }
 
 // Adds a button on the Todo DOM element that allows the user to render additional information
@@ -958,21 +932,6 @@ export function highlightTodoElement(todoID) {
   window.addEventListener("touchstart", removeHighlight);
 }
 
-//
-//
-//
-// Modal management for adding todos, adding categories, and searching todos:
-// rendering, deleting, handling events, getting input and sending to Controller
-//
-//
-//
-
-//
-//
-// Add todo form
-//
-//
-
 function sendTodoModalRequest(e) {
   // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
   // a complex modal request and provide the dataset.id of the 'content' container as an argument
@@ -984,313 +943,6 @@ function sendTodoModalRequest(e) {
   // and has no special logic, thus can be considered as 'default', and using it as an argument can be considered
   // as asking for the default behavior of a function
   renderAddTodoModal("all-todos");
-}
-
-//
-//
-// Todos searcher
-//
-//
-
-function renderSearchModal() {
-  const todosSearcher = Creator.createTodosSearcher();
-  const searchBar = find(todosSearcher, ".input-container");
-
-  const searchBarInput = find(searchBar, "input");
-  searchBarInput.addEventListener("input", sendSearchCoordinates);
-
-  const searchResultsList = find(todosSearcher, "#search-results-list");
-  searchResultsList.addEventListener(
-    "click",
-    handleAnchorTodoElementsClickEvents,
-  );
-
-  DOMCache.modal.addEventListener("mousedown", closeByClickOutside);
-  function closeByClickOutside(e) {
-    if (e.target === DOMCache.modal) {
-      closeModal();
-    }
-  }
-
-  DOMCache.modal.addEventListener("keyup", closeByKeyboard);
-  function closeByKeyboard(e) {
-    if (e.key === "Escape") {
-      closeModal();
-    }
-  }
-
-  render(DOMCache.modal, todosSearcher);
-  addClass(DOMCache.modal, "show");
-  disableScrolling();
-  applyFocus(searchBar);
-
-  // Traps TAB focus within todosSearcher
-  const trap = focusTrap.createFocusTrap(todosSearcher, {
-    allowOutsideClick: () => true,
-    escapeDeactivates: () => false,
-    setReturnFocus: () => find(DOMCache.main, ".highlighted") || this,
-  });
-  trap.activate();
-
-  // Get user input and ask the Controller to search for todos, which will in turn
-  // ask back the Renderer to render the list of results, if any
-  function sendSearchCoordinates() {
-    PubSub.publish("SEARCH_REQUEST", this.value);
-  }
-
-  function handleAnchorTodoElementsClickEvents(e) {
-    const anchorTodoItem = e.target.closest(".anchor-todo-item");
-    if (!anchorTodoItem) return;
-
-    // If an anchor todo item is clicked, close the search modal and ask the Controller
-    // to handle the logic for showing to the user the todo that they are looking for
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    closeModal();
-    PubSub.publish("SHOW_TODO_LOCATION_REQUEST", anchorTodoItem.dataset.id);
-  }
-
-  function closeModal() {
-    trap.deactivate();
-
-    // Remove event listeners to prevent memory leaks and other unwanted behavior
-    searchBarInput.removeEventListener("input", sendSearchCoordinates);
-    searchResultsList.removeEventListener(
-      "click",
-      handleAnchorTodoElementsClickEvents,
-    );
-
-    DOMCache.modal.removeEventListener("mousedown", closeByClickOutside);
-    DOMCache.modal.removeEventListener("keyup", closeByKeyboard);
-
-    removeClass(DOMCache.modal, "show");
-    enableScrolling();
-    todosSearcher.remove();
-  }
-}
-
-export function renderAnchorTodoElement(ID, title) {
-  const resultsList = find(DOMCache.modal, "#search-results-list");
-  const anchorTodoElement = Creator.createAnchorTodoItem(ID, title);
-
-  render(resultsList, anchorTodoElement);
-}
-
-export function deleteAllAnchorTodoElements() {
-  const resultsList = find(DOMCache.modal, "#search-results-list");
-  findAll(resultsList, ".anchor-todo-item").forEach((result) => {
-    result.remove();
-  });
-}
-
-// If the results list contains a Todo that is already completed, also design
-// the anchorTodoElement to appears as being already completed
-export function markAnchorTodoElementAsCompleted(todoID) {
-  const resultsList = find(DOMCache.modal, "#search-results-list");
-  const anchorTodoElement = find(resultsList, `[data-id= "${todoID}"]`);
-
-  addClass(anchorTodoElement, "completed");
-}
-
-//
-//
-// Delete category & todo form
-//
-//
-
-// Type can be 'todo' or 'category', callLocationID can be todoID or categoryID,
-// callLocationName can be todoTitle or categoryName, and hasTodos specifies
-// whether the 'category' type contains any todos
-export function renderDeleteModal(
-  type,
-  callLocationID,
-  callLocationName,
-  hasTodos,
-) {
-  const deleteModal = Creator.createDeleteModal();
-  const deleteModalPara = find(deleteModal, ".delete-modal-paragraph");
-  // Turn the callLocationName into an array...
-  const itemName = Array.from(callLocationName);
-
-  // ... and if it has more than 50 characters, delete all characters after index 49,
-  // and push three dots at the end of the array '...' to let the user know that the name
-  // is longer than the paragraph can hold without overflowing
-  if (itemName.length > 49) {
-    itemName.splice(49);
-    for (let i = 0; i < 3; i += 1) {
-      itemName.push(".");
-    }
-  }
-
-  deleteModalPara.innerHTML = `Are you sure you want to permanently delete <strong>${itemName.join("")}</strong> ? `;
-
-  const closeButton = find(deleteModal, ".close-modal");
-  closeButton.addEventListener("click", closeModal);
-
-  const deleteButton = find(deleteModal, ".confirm-delete-button");
-  deleteButton.addEventListener("click", sendDeleteConfirmation);
-
-  DOMCache.modal.addEventListener("mousedown", closeByClickOutside);
-  function closeByClickOutside(e) {
-    if (e.target === DOMCache.modal) closeModal();
-  }
-
-  DOMCache.modal.addEventListener("keyup", closeByKeyboard);
-  function closeByKeyboard(e) {
-    if (e.key === "Escape") closeModal();
-  }
-
-  render(DOMCache.modal, deleteModal);
-  addClass(DOMCache.modal, "show");
-
-  // Trap TAB focus within deleteModal
-  const trap = focusTrap.createFocusTrap(deleteModal, {
-    allowOutsideClick: () => true,
-    escapeDeactivates: () => false,
-    returnFocusOnDeactivate: () => true,
-  });
-  trap.activate();
-
-  applyFocus(deleteButton);
-
-  if (type === "category" && hasTodos) {
-    // If the category contains todos, add a custom checkbox that allows the user
-    // to specify whether they want to delete the containing todos
-    const deleteTodosInputContainer = Creator.createDeleteTodosCheckbox();
-    deleteModal.insertBefore(
-      deleteTodosInputContainer,
-      find(deleteModal, ".modal-actions"),
-    );
-  }
-
-  function sendDeleteConfirmation() {
-    closeModal();
-    if (type === "todo") {
-      PubSub.publish("DELETE_TODO_REQUEST", callLocationID);
-      return;
-    }
-
-    if (type === "category") {
-      if (hasTodos && find(deleteModal, "#delete-todos").checked) {
-        PubSub.publish("DELETE_CONTAINING_TODOS_REQUEST", callLocationID);
-      }
-
-      PubSub.publish("DELETE_CATEGORY_REQUEST", callLocationID);
-    }
-  }
-
-  function closeModal() {
-    trap.deactivate();
-
-    // Remove event listeners to prevent memory leaks and other unwanted behavior
-    closeButton.removeEventListener("click", closeModal);
-    deleteButton.removeEventListener("click", sendDeleteConfirmation);
-
-    DOMCache.modal.removeEventListener("mousedown", closeByClickOutside);
-    DOMCache.modal.removeEventListener("keyup", closeByKeyboard);
-
-    removeClass(DOMCache.modal, "show");
-    deleteModal.remove();
-  }
-}
-
-// The location parameter is the containing element of the settings button, and can be one of the following:
-// 1. A userCategory button
-// 2. The 'content' container itself
-// 3. A todo item
-// At this point, only these three locations have a settings button
-// The callLocation is the button that triggers the event that leads to this function
-// editSettingName is the name of the first setting, which is either 'Edit' in case of Todos or 'Rename' in case of categories.
-// editFunction is the function that is run when the user clicks the editSettingButton
-// deleteSettingsName is the name of the second setting, which is 'Delete' in all cases
-// deleteFunction is the function that is run when the user clicks the deleteSettingButton
-// deleteType specifies whether the user is trying to delete a category or a todo
-function renderSettings(
-  location,
-  callLocation,
-  editSettingName,
-  editFunction,
-  deleteSettingName,
-  deleteFunction,
-  deleteType,
-) {
-  // By default, clicking another settings button prevents this instance of hideByClickOutside function from firing, which is responsible
-  // for hiding the current settings list. This leads to two settings lists being rendered in the same time, which is not desired in
-  // this particular case. Manually creating and firing a click event on the document element (the same element on which the hideByClickOutside function
-  // is attached) solves this issue.
-  document.dispatchEvent(new Event("click"));
-
-  addClass(callLocation, "focused");
-  // If the user clicks back on the button that lead to this function, delete the rendered settings
-  callLocation.addEventListener("click", deleteSettings);
-
-  const settingsList = Creator.createElementWithClass("ul", "settings-list");
-  // Render the settingsList in the parent of the button that triggers the event to prevent accessibility
-  // errors when nesting ul elements into button elements
-  render(getParentOf(callLocation), settingsList);
-
-  // If the settingsList is being rendered outside the current viewport, change its positioning
-  if (isOutOfBounds("bottom", settingsList, 100))
-    addClass(settingsList, "top-positioned");
-
-  const editButton = Creator.createSettingItem(editSettingName);
-  editButton.addEventListener("click", edit);
-  render(settingsList, editButton);
-
-  const deleteButton = Creator.createSettingItem(deleteSettingName);
-  deleteButton.addEventListener("click", remove);
-  render(settingsList, deleteButton);
-
-  document.addEventListener("click", deleteByClickOutside);
-  function deleteByClickOutside(e) {
-    if (getParentOf(e.target) !== settingsList) deleteSettings(e);
-  }
-
-  document.addEventListener("keyup", deleteByKeyboard);
-  function deleteByKeyboard(e) {
-    if (e.key === "Escape") {
-      deleteSettings(e);
-    }
-  }
-
-  // Trap TAB focusing within the settingsList
-  const trap = focusTrap.createFocusTrap(settingsList, {
-    allowOutsideClick: () => true,
-    escapeDeactivates: () => false,
-  });
-  trap.activate();
-
-  function deleteSettings(e) {
-    e.stopImmediatePropagation();
-    trap.deactivate();
-
-    // Remove events to prevent memory leaks and other unwanted behavior
-    callLocation.removeEventListener("click", deleteSettings);
-
-    editButton.removeEventListener("click", edit);
-    deleteButton.removeEventListener("click", remove);
-
-    document.removeEventListener("keyup", deleteByKeyboard);
-    document.removeEventListener("click", deleteByClickOutside);
-
-    // Remove the settingsList from the DOM
-    settingsList.remove();
-    removeClass(callLocation, "focused");
-  }
-
-  function edit(e) {
-    e.stopImmediatePropagation();
-    deleteSettings(e);
-    // Run the passed editFunction using the UUIDV of the element, which is either a category button or a todo element
-    editFunction(location.dataset.id);
-  }
-
-  function remove(e) {
-    e.stopImmediatePropagation();
-    deleteSettings(e);
-    // Run the passed deleteFunction using the UUIDV of the element (which can be either a category button or a todo element)
-    deleteFunction(deleteType, location.dataset.id);
-  }
 }
 
 // Location is the element that will contain the renameInput,

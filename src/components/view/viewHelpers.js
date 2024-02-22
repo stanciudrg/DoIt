@@ -146,7 +146,7 @@ export function checkBounds(element, breakpoint) {
 }
 
 export function isSearchBarOpen() {
-  return find(DOMCache.modal, "#search-container");
+  return find(DOMCache.modal, ".search-container");
 }
 
 export function isVisible(ID) {

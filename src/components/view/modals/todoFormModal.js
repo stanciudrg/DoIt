@@ -367,11 +367,9 @@ function TodoFormModal() {
 export function renderEditTodoModal(properties) {
   const todoFormModal = TodoFormModal();
   todoFormModal.initTodoFormModal();
-  todoFormModal.submitButton.textContent = "Edit";
-
+  todoFormModal.modifySubmitButton("Edit");
   const [title, description, priority, dueDate, categoryID, categoryName] =
     properties;
-
   todoFormModal.titleInput.value = title;
   todoFormModal.titleInput.dispatchEvent(new Event("input"));
 
@@ -421,9 +419,7 @@ export function renderEditTodoModal(properties) {
       : formData.get("dueDate");
     // Manually gets the categoryID and categoryName since they are custom inputs that are not recognized by FormData
     const newCategoryID = todoFormModal.categorySelectButton.dataset.id;
-
     todoFormModal.closeModal();
-
     PubSub.publish("EDIT_TODO_REQUEST", {
       todoID: properties[6],
       newTitle: formData.get("title").trim(),

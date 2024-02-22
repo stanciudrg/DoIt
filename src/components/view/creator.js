@@ -15,7 +15,6 @@ export function createElementWithID(type, id) {
 
 function createNamedButton(name, svg, ID) {
   const button = createElementWithClass("button", "named-button");
-
   if (ID) button.id = ID;
 
   if (svg) {
@@ -358,13 +357,17 @@ export function createModal() {
   return modal;
 }
 
-function createModalActions() {
+export function createModalActions() {
   const buttonsContainer = createElementWithClass("div", "modal-actions");
 
   const closeButton = createNamedButton("Cancel");
   closeButton.classList.add("close-modal");
   closeButton.setAttribute("type", "button");
   buttonsContainer.appendChild(closeButton);
+
+  const submitButton = createNamedButton("Add");
+  submitButton.classList.add("submit-modal");
+  buttonsContainer.appendChild(submitButton);
 
   return buttonsContainer;
 }
@@ -380,12 +383,8 @@ export function createFormModal(legendText, className) {
   legend.textContent = legendText;
   fieldset.appendChild(legend);
 
-  const modalActions = createModalActions();
-  const submitButton = createNamedButton("Add");
-  submitButton.classList.add("submit-modal");
-  modalActions.appendChild(submitButton);
-
-  form.appendChild(modalActions);
+  const formOverlay = createElementWithClass("div", "form-overlay");
+  form.appendChild(formOverlay);
 
   return form;
 }
@@ -539,25 +538,6 @@ export function createClearButton(ariaLabel, className) {
   return clearButton;
 }
 
-// Creates the Search todo modal
-export function createTodosSearcher() {
-  const todosSearcher = createElementWithID("div", "search-container");
-
-  const searchBar = createInput(
-    "Todo title",
-    "title",
-    "todos-searcher",
-    "search",
-    { placeholder: "Search todos" },
-  );
-  todosSearcher.appendChild(searchBar);
-
-  const searchResultsList = createElementWithID("ul", "search-results-list");
-  todosSearcher.appendChild(searchResultsList);
-
-  return todosSearcher;
-}
-
 // Creates an anchor that sends the user to the todo's location when clicked,
 // similar to how normal anchor elements send the user to a specific link;
 export function createAnchorTodoItem(ID, title) {
@@ -576,24 +556,6 @@ export function createAnchorTodoItem(ID, title) {
   todoInfo.appendChild(todoTitle);
 
   return anchorTodoItem;
-}
-
-// Used for requesting user confirmation regarding the deletion of:
-// 1. A todo;
-// 2. A category;
-// 3. A category and all its containing todos
-export function createDeleteModal() {
-  const deleteModal = createElementWithClass("div", "delete-modal");
-  const deleteModalPara = createElementWithClass("p", "delete-modal-paragraph");
-  deleteModal.appendChild(deleteModalPara);
-
-  const modalActions = createModalActions();
-  const deleteButton = createNamedButton("Delete");
-  deleteButton.classList.add("confirm-delete-button");
-  modalActions.appendChild(deleteButton);
-  deleteModal.appendChild(modalActions);
-
-  return deleteModal;
 }
 
 // Custom toggle checkbox for selecting whether deleting a category should also delete its containing todos;
