@@ -56,15 +56,15 @@ function filterByNone() {
 }
 
 function filterByPriorityOne() {
-  return (todo) => todo.get("priority") !== 1;
+  return (todo) => Number(todo.get("priority")) !== 1;
 }
 
 function filterByPriorityTwo() {
-  return (todo) => todo.get("priority") !== 2;
+  return (todo) => Number(todo.get("priority")) !== 2;
 }
 
 function filterByPriorityThree() {
-  return (todo) => todo.get("priority") !== 3;
+  return (todo) => Number(todo.get("priority")) !== 3;
 }
 
 function filterByCompleted() {
@@ -134,7 +134,7 @@ export const devCategoryProto = {
     this.todos.forEach((todo) => todo.set("filteredOut", false));
     this.filteredOutTodos = [];
     this.filteredOutTodos = this.todos.filter(
-      filterMethods[this.filterMethod](),
+      filterMethods[this.filterMethod]()
     );
     this.filteredOutTodos.forEach((todo) => todo.set("filteredOut", true));
   },

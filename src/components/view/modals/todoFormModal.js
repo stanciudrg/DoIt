@@ -26,6 +26,7 @@ import {
   updateTextContent,
   checkBounds,
   getCurrentContentID,
+  getParentOf
 } from "../viewHelpers";
 
 function TodoFormModal() {
@@ -364,62 +365,20 @@ function TodoFormModal() {
   return todoFormModal;
 }
 
-export function renderEditTodoModal(properties) {
-  const todoFormModal = TodoFormModal();
-  todoFormModal.initTodoFormModal();
-  todoFormModal.modifySubmitButton("Edit");
-  const [title, description, priority, dueDate, categoryID, categoryName] =
-    properties;
-  todoFormModal.titleInput.value = title;
-  todoFormModal.titleInput.dispatchEvent(new Event("input"));
-
-  if (description) {
-    todoFormModal.descriptionInput.value = description;
-    todoFormModal.descriptionInput.dispatchEvent(new Event("input"));
-  }
-
-  if (priority) {
-    find(
-      todoFormModal.prioritiesFieldset,
-      `input[value='${priority}']`,
-    ).setAttribute("checked", "true");
-  }
-
-  if (categoryID) todoFormModal.selectCategory(categoryID, categoryName);
-  if (dueDate) todoFormModal.selectDate(dueDate);
-
-  // Trap TAB focus within the form
-  const trap = focusTrap.createFocusTrap(todoFormModal.form, {
-    initialFocus: () => DOMCache.modal,
-    allowOutsideClick: () => true,
-    escapeDeactivates: () => false,
-    returnFocusOnDeactivate: () => true,
-    preventScroll: () => true,
-    setReturnFocus() {
-      return find(
-        find(
-          categoriesContent[getCurrentContentID()],
-          `[data-id="${properties[6]}"]`,
-        ),
-        ".settings-button",
-      );
-    },
-  });
-  trap.activate();
-  todoFormModal.setTrap(trap);
-
-  const submitModal = (e) => {
+function EditTodoModal(properties) {
+  const editTodoModal = Object.create(TodoFormModal());
+  editTodoModal.submitModalFn = function submitModalFn(e) {
     // Prevents the default form submission behavior
     e.preventDefault();
     // Gets the formData
-    const formData = new FormData(todoFormModal.form);
+    const formData = new FormData(editTodoModal.form);
     // Formats the dueDate
     const newDueDate = formData.get("dueDate")
       ? formData.get("dueDate").split("/")[1].trim()
       : formData.get("dueDate");
     // Manually gets the categoryID and categoryName since they are custom inputs that are not recognized by FormData
-    const newCategoryID = todoFormModal.categorySelectButton.dataset.id;
-    todoFormModal.closeModal();
+    const newCategoryID = editTodoModal.categorySelectButton.dataset.id;
+    editTodoModal.closeModal();
     PubSub.publish("EDIT_TODO_REQUEST", {
       todoID: properties[6],
       newTitle: formData.get("title").trim(),
@@ -430,60 +389,78 @@ export function renderEditTodoModal(properties) {
     });
   };
 
-  todoFormModal.setSubmitModalFn(submitModal);
+  editTodoModal.initEditTodoModal = function initEditTodoModal() {
+    editTodoModal.initTodoFormModal();
+    editTodoModal.modifySubmitButton("Edit");
+    const [title, description, priority, dueDate, categoryID, categoryName] =
+      properties;
+    editTodoModal.titleInput.value = title;
+    editTodoModal.titleInput.dispatchEvent(new Event("input"));
+
+    if (description) {
+      editTodoModal.descriptionInput.value = description;
+      editTodoModal.descriptionInput.dispatchEvent(new Event("input"));
+    }
+
+    if (priority) {
+      find(
+        editTodoModal.prioritiesFieldset,
+        `input[value='${priority}']`,
+      ).setAttribute("checked", "true");
+    }
+
+    if (categoryID) editTodoModal.selectCategory(categoryID, categoryName);
+    if (dueDate) editTodoModal.selectDate(dueDate);
+
+    editTodoModal.setTrap(
+      focusTrap.createFocusTrap(editTodoModal.form, {
+        initialFocus: () => DOMCache.modal,
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        returnFocusOnDeactivate: () => true,
+        preventScroll: () => true,
+        setReturnFocus() {
+          return find(
+            find(
+              categoriesContent[getCurrentContentID()],
+              `[data-id="${properties[6]}"]`,
+            ),
+            ".settings-button",
+          );
+        },
+      }),
+    );
+
+    editTodoModal.trap.activate();
+    editTodoModal.setSubmitModalFn(editTodoModal.submitModalFn);
+  };
+
+  return editTodoModal;
 }
 
-// The todo modal will have different values already set when opened based
-// on its callLocation and the locationAttributes that are passed along with it
-export function renderAddTodoModal(callLocation, locationAttributes) {
-  const todoFormModal = TodoFormModal();
-  todoFormModal.initTodoFormModal();
+export function renderEditTodoModal(properties) {
+  const editTodoModal = EditTodoModal(properties);
+  editTodoModal.initEditTodoModal();
+}
 
-  if (callLocation === "today") {
-    todoFormModal.datePicker.set("maxDate", format(new Date(), "yyyy-MM-dd"));
-    todoFormModal.selectDate(format(new Date(), "yyyy-MM-dd"), true);
-  }
-
-  if (callLocation === "this-week") {
-    todoFormModal.datePicker.set(
-      "maxDate",
-      format(addDays(new Date(), 7), "yyyy-MM-dd"),
-    );
-    todoFormModal.selectDate(format(new Date(), "yyyy-MM-dd"), true);
-  }
-
-  if (callLocation === "user-category") {
-    const [categoryID, categoryName] = locationAttributes;
-    todoFormModal.selectCategory(categoryID, categoryName);
-  }
-
-  // Trap TAB focus within the form
-  const trap = focusTrap.createFocusTrap(todoFormModal.form, {
-    initialFocus: () => DOMCache.modal,
-    allowOutsideClick: () => true,
-    escapeDeactivates: () => false,
-    returnFocusOnDeactivate: () => true,
-    preventScroll: () => true,
-  });
-  trap.activate();
-  todoFormModal.setTrap(trap);
-
-  const submitModal = (e) => {
+function AddTodoModal(callLocation, locationAttributes) {
+  const addTodoModal = Object.create(TodoFormModal());
+  addTodoModal.submitModalFn = function submitModalFn(e) {
     // Prevents the default form submission behavior
     e.preventDefault();
     // Gets the formData
-    const formData = new FormData(todoFormModal.form);
+    const formData = new FormData(addTodoModal.form);
     // Formats the dueDate
     const dueDate = formData.get("dueDate")
       ? formData.get("dueDate").split("/")[1].trim()
       : formData.get("dueDate");
     // Manually gets the categoryID and categoryName since they are custom inputs that are not recognized by FormData
-    const categoryID = todoFormModal.categorySelectButton.dataset.id;
+    const categoryID = addTodoModal.categorySelectButton.dataset.id;
     const categoryName = !categoryID
       ? ""
-      : todoFormModal.categorySelectButton.textContent;
+      : addTodoModal.categorySelectButton.textContent;
 
-    todoFormModal.closeModal();
+    addTodoModal.closeModal();
 
     PubSub.publish("ADD_TODO_REQUEST", {
       title: formData.get("title").trim(),
@@ -495,5 +472,57 @@ export function renderAddTodoModal(callLocation, locationAttributes) {
     });
   };
 
-  todoFormModal.setSubmitModalFn(submitModal);
+  addTodoModal.initAddTodoModal = function initAddTodoModal() {
+    addTodoModal.initTodoFormModal();
+
+    if (callLocation === "today") {
+      addTodoModal.datePicker.set("maxDate", format(new Date(), "yyyy-MM-dd"));
+      addTodoModal.selectDate(format(new Date(), "yyyy-MM-dd"), true);
+    }
+  
+    if (callLocation === "this-week") {
+      addTodoModal.datePicker.set(
+        "maxDate",
+        format(addDays(new Date(), 7), "yyyy-MM-dd"),
+      );
+      addTodoModal.selectDate(format(new Date(), "yyyy-MM-dd"), true);
+    }
+  
+    if (callLocation === "user-category") {
+      const [categoryID, categoryName] = locationAttributes;
+      addTodoModal.selectCategory(categoryID, categoryName);
+    }
+  
+    // Trap TAB focus within the form
+    addTodoModal.setTrap(focusTrap.createFocusTrap(addTodoModal.form, {
+      initialFocus: () => DOMCache.modal,
+      allowOutsideClick: () => true,
+      escapeDeactivates: () => false,
+      returnFocusOnDeactivate: () => true,
+      preventScroll: () => true,
+    }));
+
+    addTodoModal.trap.activate();
+    addTodoModal.setSubmitModalFn(addTodoModal.submitModalFn);
+  }
+
+  return addTodoModal;
+}
+
+// The todo modal will have different values already set when opened based
+// on its callLocation and the locationAttributes that are passed along with it
+export function renderAddTodoModal(callLocation, locationAttributes) {
+  const addTodoModal = AddTodoModal(callLocation, locationAttributes);
+  addTodoModal.initAddTodoModal();
+}
+
+export function sendTodoModalRequest(e) {
+  // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
+  // a complex modal request and provide the dataset.id of the 'content' container as an argument
+  if (hasClass(e.target, "add-button")) {
+    PubSub.publish("TODO_MODAL_REQUEST", getParentOf(e.target).dataset.id);
+    return;
+  }
+  // Otherwise call the renderTodoModal with the 'all-todos' argument, which is a devCategory that holds all todos and has no special logic
+  renderAddTodoModal("all-todos");
 }

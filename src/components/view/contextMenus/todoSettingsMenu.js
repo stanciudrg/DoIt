@@ -12,11 +12,24 @@ function TodoSettingsMenu(callLocation, todoID) {
     todoSettingsMenu.deleteSettings(e);
     PubSub.publish("TODO_MODAL_REQUEST", todoID);
   };
+
   todoSettingsMenu.deleteTodo = function deleteTodo(e) {
     e.stopImmediatePropagation();
     todoSettingsMenu.deleteSettings(e);
     PubSub.publish("DELETE_TODO_MODAL_REQUEST", todoID);
   };
+
+  todoSettingsMenu.deleteSettingsFn = function deleteSettingsFn() {
+    todoSettingsMenu.editButton.removeEventListener(
+      "click",
+      todoSettingsMenu.editTodo,
+    );
+    todoSettingsMenu.deleteButton.removeEventListener(
+      "click",
+      todoSettingsMenu.deleteTodo,
+    );
+  }
+
   todoSettingsMenu.initTodoSettingsMenu = function initTodoSettingsMenu() {
     todoSettingsMenu.initContextMenu();
     todoSettingsMenu.editButton.addEventListener(
@@ -31,6 +44,7 @@ function TodoSettingsMenu(callLocation, todoID) {
     render(todoSettingsMenu.settingsList, todoSettingsMenu.deleteButton);
     todoSettingsMenu.trap.activate();
     todoSettingsMenu.checkBounds();
+    todoSettingsMenu.addAdditionalDeleteSettingsFn(todoSettingsMenu.deleteSettingsFn)
   };
 
   return todoSettingsMenu;

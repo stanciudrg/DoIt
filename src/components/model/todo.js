@@ -42,7 +42,7 @@ export function Todo(
   // and/or UserCategory objects when sorting their containing todos.
   todo.index = null;
   // Signifies whether the todo is filtered out due to a filter method applied by DevCategory and/or UserCategory objects.
-  todo.filteredOut = null;
+  todo.filteredOut = false;
   // Universally Unique IDentifier. The most important property of the Todo, thoroughly used by the Controller,
   // Organizer, and Renderer modules to communicate the creation, manipulation,
   // or deletion of the Todo. It is also used to differentiate todos that share similar features and

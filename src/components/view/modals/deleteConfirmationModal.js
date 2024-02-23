@@ -62,37 +62,61 @@ function DeleteConfirmationModal(name) {
   return deleteConfirmationModal;
 }
 
-export function renderDeleteTodoModal(todoID, todoName) {
-  const deleteConfirmationModal = DeleteConfirmationModal(todoName);
-  deleteConfirmationModal.initDeleteConfirmationModal();
-
-  const submitModalFn = (e) => {
+function DeleteTodoModal(todoID, todoName) {
+  const deleteTodoModal = Object.create(DeleteConfirmationModal(todoName));
+  deleteTodoModal.submitModalFn = function submitModalFn(e) {
     e.preventDefault();
-    deleteConfirmationModal.closeModal();
+    deleteTodoModal.closeModal();
     PubSub.publish("DELETE_TODO_REQUEST", todoID);
   };
 
-  deleteConfirmationModal.setSubmitModalFn(submitModalFn);
+  deleteTodoModal.initDeleteTodoModal = function initDeleteTodoModal() {
+    deleteTodoModal.initDeleteConfirmationModal();
+    deleteTodoModal.setSubmitModalFn(deleteTodoModal.submitModalFn);
+  };
+
+  return deleteTodoModal;
 }
 
-export function renderDeleteCategoryModal(categoryID, categoryName, hasTodos) {
-  const deleteConfirmationModal = DeleteConfirmationModal(categoryName);
-  deleteConfirmationModal.initDeleteConfirmationModal();
-  let deleteTodosInputContainer;
-  if (hasTodos) {
-    deleteTodosInputContainer = createDeleteTodosCheckbox();
-    render(deleteConfirmationModal.fieldset, deleteTodosInputContainer);
-  }
+export function renderDeleteTodoModal(todoID, todoName) {
+  const deleteTodoModal = DeleteTodoModal(todoID, todoName);
+  deleteTodoModal.initDeleteTodoModal();
+}
 
-  const submitModalFn = (e) => {
+function DeleteCategoryModal(categoryID, categoryName, hasTodos) {
+  const deleteCategoryModal = Object.create(
+    DeleteConfirmationModal(categoryName),
+  );
+  deleteCategoryModal.submitModalFn = function submitModalFn(e) {
     e.preventDefault();
-    deleteConfirmationModal.closeModal();
-    if (find(deleteTodosInputContainer, "#delete-todos").checked) {
+    deleteCategoryModal.closeModal();
+
+    const deleteTodosCheckbox = find(deleteCategoryModal.fieldset, "#delete-todos");
+    if (deleteTodosCheckbox && deleteTodosCheckbox.checked) {
       PubSub.publish("DELETE_CONTAINING_TODOS_REQUEST", categoryID);
     }
 
     PubSub.publish("DELETE_CATEGORY_REQUEST", categoryID);
   };
 
-  deleteConfirmationModal.setSubmitModalFn(submitModalFn);
+  deleteCategoryModal.initDeleteCategoryModal =
+    function initDeleteCategoryModal() {
+      deleteCategoryModal.initDeleteConfirmationModal();
+      if (hasTodos) {
+        const deleteTodosInputContainer = createDeleteTodosCheckbox();
+        render(deleteCategoryModal.fieldset, deleteTodosInputContainer);
+      }
+
+      deleteCategoryModal.setSubmitModalFn(deleteCategoryModal.submitModalFn);
+    };
+  return deleteCategoryModal;
+}
+
+export function renderDeleteCategoryModal(categoryID, categoryName, hasTodos) {
+  const deleteCategoryModal = DeleteCategoryModal(
+    categoryID,
+    categoryName,
+    hasTodos,
+  );
+  deleteCategoryModal.initDeleteCategoryModal();
 }

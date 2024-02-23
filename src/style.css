@@ -191,8 +191,7 @@ that have their own icons */
 /* Ul elements containing the available settings for a a specific feature.
 They simulate a context menu and are positioned relative to their container while
 floating over the rest of the webpage */
-.settings-list,
-.dropdown-list-container {
+.settings-list-container {
     z-index: 2;
     position: absolute;
     top: 28px;
@@ -205,15 +204,14 @@ floating over the rest of the webpage */
     border-radius: var(--medium-border-radius);
 }
 
-.settings-list,
-.dropdown-list-container,
+.settings-list-container,
 .categories-dropdown {
     box-shadow: 0 0 10px 0 rgba(29, 29, 31, 0.2);
     outline: 2px solid rgba(29, 29, 31, 0.04);
 }
 
 /* Class added by JS whenever the .settings-list is being rendered outside of the viewport*/
-.settings-list.top-positioned {
+.settings-list-container.top-positioned {
     top: -68px;
 }
 
@@ -820,13 +818,12 @@ to the current content */
 }
 
 /* Class added to the settingItem that represents the currently applied sorting or filtering method */
-.dropdown-list button.selected,
-.dropdown-list button.selected:hover {
+.settings-list button.selected,
+.settings-list button.selected:hover {
     color: var(--accent-color);
 }
 
-/* The title of the dropdown-list, which is 'Sort by' in case of sorting and 'Filter' in case of filtering */
-.dropdown-list-title {
+.settings-list-title {
     font-weight: 400;
     color: var(--transparent-black);
     padding: 0.5rem 0.75rem 0.5rem 0.5rem;

@@ -14,7 +14,7 @@ export default function Modal(legendText, className) {
   const modal = {};
   modal.form = createFormModal(legendText, className);
   modal.formOverlay = find(modal.form, '.form-overlay');
-  modal.additionalCloseModalFn = null;
+  modal.additionalCloseModalFns = [];
   modal.closeByKeyboard = function closeByKeyboard(e) {
     if (e.key === "Escape") {
       // If a formOverlay is visible, it means that the input that set it to visible
@@ -58,12 +58,12 @@ export default function Modal(legendText, className) {
   modal.addAdditionalCloseModalFn = function addAdditionalCloseModalFn(
     newFn,
   ) {
-    modal.additionalCloseModalFn = newFn;
+    modal.additionalCloseModalFns.push(newFn);
   };
 
   modal.closeModal = function closeModal() {
+    modal.additionalCloseModalFns.forEach((fn) => fn());
     modal.defaultCloseModalFn();
-    if (modal.additionalCloseModalFn) modal.additionalCloseModalFn();
   };
 
   modal.initModal = function initModal() {

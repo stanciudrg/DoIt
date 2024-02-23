@@ -610,6 +610,11 @@ export function renameCategory(categoryID, newName) {
   });
 }
 
+PubSub.subscribe("RENAME_CATEGORY_REQUEST", (msg, args) => {
+  const { categoryID, newName } = args;
+  renameCategory(categoryID, newName);
+})
+
 export function handleDeleteCategoryRequest(categoryID) {
   const category = Organizer.getUserCategory(categoryID);
   const todos = category.getTodos();
@@ -659,23 +664,21 @@ export function handleSortSettingsRequest() {
   // If the current content category is 'Today', do not render the dueDate sorting method, since all
   // todos have the same date (the current date);
   if (currentCategory.getID() === "today") {
-    Renderer.renderContentCustomizer(
-      "sort",
+    Renderer.renderCategorySortMenu(
       currentCategory.getCurrentSortingMethod(),
-      "creation-date",
+      ["creation-date",
       "name",
-      "priority",
+      "priority",]
     );
     return;
   }
 
-  Renderer.renderContentCustomizer(
-    "sort",
+  Renderer.renderCategorySortMenu(
     currentCategory.getCurrentSortingMethod(),
-    "creation-date",
+    ["creation-date",
     "name",
     "priority",
-    "due-date",
+    "due-date",]
   );
 }
 
@@ -683,45 +686,47 @@ PubSub.subscribe("SORT_SETTINGS_REQUEST", handleSortSettingsRequest);
 
 // Asks the renderer to create a settings dropdown list containing the specified filter methods
 export function handleFilterSettingsRequest() {
-  Renderer.renderContentCustomizer(
-    "filter",
+  Renderer.renderCategoryFilterMenu(
     Organizer.getCategory(
       getCurrentContentID(),
     ).getCurrentFilterMethod(),
-    "no-filter",
+    ["no-filter",
     "priority-one",
     "priority-two",
     "priority-three",
     "completed",
-    "uncompleted",
+    "uncompleted",]
   );
 }
 
 PubSub.subscribe("FILTER_SETTINGS_REQUEST", handleFilterSettingsRequest);
 
-export function handleSortTodosRequest(type, categoryID) {
+export function handleSortTodosRequest(type) {
   // Set the new sorting method
-  Organizer.setSortingMethod(categoryID, type);
+  Organizer.setSortingMethod(getCurrentContentID(), type);
 
-  if (getCurrentContentID() !== categoryID) return;
   // Refresh the current content by running deleteContent and then displayNewContent (which reorganizes the category
   // each time it runs)
-
-  deleteContent(categoryID);
-  displayNewContent(categoryID);
+  deleteContent(getCurrentContentID());
+  displayNewContent(getCurrentContentID());
 }
 
-export function handleFilterTodosRequest(type, categoryID) {
+PubSub.subscribe("SORT_TODOS_REQUEST", (msg, type) => {
+    handleSortTodosRequest(type);
+})
+
+export function handleFilterTodosRequest(type) {
   // Set the new filter method
-  Organizer.setFilterMethod(categoryID, type);
+  Organizer.setFilterMethod(getCurrentContentID(), type);
 
-  if (getCurrentContentID() !== categoryID) return;
-
-  // Refresh the current content by running deleteContent and then displayNewContent (which reorganizes the category
-  // each time it runs)
-  deleteContent(categoryID);
-  displayNewContent(categoryID);
+  // Refresh the current content (which reorganizes the category)
+  deleteContent(getCurrentContentID());
+  displayNewContent(getCurrentContentID());
 }
+
+PubSub.subscribe("FILTER_TODOS_REQUEST", (msg, type) => {
+  handleFilterTodosRequest(type);
+})
 
 // The handleTodoModalRequest is called by the Renderer in the following circumstances:
 // 1. When the user wants to add a todo, either by clicking the header's 'Add todo' button or the add button located

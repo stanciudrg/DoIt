@@ -52,6 +52,7 @@ function SearchModal() {
       "click",
       searchModal.handleAnchorTodoElementsClickEvents,
     );
+    searchModal.trap.deactivate();
   };
   searchModal.initSearchModal = function initSearchModal() {
     searchModal.initModal();

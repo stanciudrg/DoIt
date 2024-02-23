@@ -10,13 +10,15 @@ function CategorySettingsMenu(callLocation, categoryID) {
   categorySettingsMenu.renameCategory = function renameCategory(e) {
     e.stopImmediatePropagation();
     categorySettingsMenu.deleteSettings(e);
-    // PubSub
+    PubSub.publish("RENDER_RENAME_INPUT_REQUEST", { callLocation, categoryID });
   };
+  
   categorySettingsMenu.deleteCategory = function deleteCategory(e) {
     e.stopImmediatePropagation();
     categorySettingsMenu.deleteSettings(e);
     PubSub.publish("DELETE_CATEGORY_MODAL_REQUEST", categoryID);
   };
+
   categorySettingsMenu.initCategorySettingsMenu = function initCategorySettingsMenu() {
     categorySettingsMenu.initContextMenu();
     categorySettingsMenu.renameButton.addEventListener(
