@@ -370,6 +370,10 @@ export function renderTodoPriority(todoID, value) {
 }
 
 export function updateTodoPriority(todoID, value) {
+  const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+  const todoPriority = todoElement.querySelector("[class^='todo-priority']");
+  todoPriority.className = '';
+  addClass(todoPriority, `todo-priority-${value}`);
   updateTextContent(
     find(
       find(getTodoElement(todoID), "[class^='todo-priority']"),
