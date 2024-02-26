@@ -10,6 +10,12 @@ export function isEnabled() {
     }
   };
 
+//
+// The following functions have only one purpose: to manipulate localStorage
+// items. The actual reasoning for when and why this functions are being
+// called is defined in organizer.js
+//
+
 export function addCategory(category, categoryID) {
     localStorage.setItem(
         `userCategory-${categoryID}`,

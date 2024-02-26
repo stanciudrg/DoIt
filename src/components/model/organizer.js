@@ -67,6 +67,7 @@ export function addCategory(category) {
   }
 }
 
+// Removes a Todo from its current User Category
 function removeFromUserCategory(todo, categoryID) {
   getUserCategory(categoryID).removeTodo(todo);
   todo.set("categoryID", "");
@@ -77,6 +78,7 @@ function removeFromUserCategory(todo, categoryID) {
   }
 }
 
+// Removes all Todos of the User Category from the User Category, and then deletes it
 export function deleteCategory(categoryID) {
   const category = getCategory(categoryID);
   // First, go through each Todo and call the RemoveFromUserCategory function that will remove the Todo from its
@@ -90,6 +92,8 @@ export function deleteCategory(categoryID) {
   if (LocalStorage.isEnabled()) LocalStorage.deleteCategory(categoryID);
 }
 
+// Changes the name of the User Category and the categoryName property of all Todos
+// that share this User Category
 export function changeUserCategoryName(categoryID, newName) {
   const category = getCategory(categoryID);
 
@@ -97,23 +101,25 @@ export function changeUserCategoryName(categoryID, newName) {
 
   category.setName(newName);
 
-  if (!LocalStorage.isEnabled()) return;
-
-  LocalStorage.changeUserCategoryName(categoryID, newName);
+  if (LocalStorage.isEnabled()) {
+    LocalStorage.changeUserCategoryName(categoryID, newName);
+  }
 
   // Go through each todo of the userCategory...
   category.getTodos().forEach((todo) => {
-    // ... rename its categoryName property...
-    editTodo(todo, 'categoryName', newName);
+    // ... and rename its categoryName property...
+    editTodo(todo, "categoryName", newName);
   });
 }
 
+// Run the filter and sort method on the Category's prototype
 export function organize(categoryID) {
   const category = getCategory(categoryID);
   category.filter();
   category.sort();
 }
 
+// Sets the sortingMethod property of a Category to the specified type (a string);
 export function setSortingMethod(categoryID, type) {
   const category = getCategory(categoryID);
   category.setSortingMethod(type);
@@ -121,6 +127,7 @@ export function setSortingMethod(categoryID, type) {
   if (LocalStorage.isEnabled()) LocalStorage.setSortingMethod(categoryID, type);
 }
 
+// Sets the filterMethod property of a Category to the specified type (a string);
 export function setFilterMethod(categoryID, type) {
   const category = getCategory(categoryID);
   category.setFilterMethod(type);
@@ -139,12 +146,14 @@ function isTodoWiped(id) {
   return !devCategories[0].getTodos().find((item) => item.get("id") === id);
 }
 
+// Adds the Todo to a specified category
 export function addTodo(todo, categoryID) {
   getCategory(categoryID).addTodo(todo);
 
   if (LocalStorage.isEnabled()) LocalStorage.addTodo(todo, todo.get("id"));
 }
 
+// Removes the Todo from the specified category
 export function removeTodo(todo, categoryID) {
   // If the category from which the Todo should be removed is userCategory, also run the
   // removeFromUserCategory function to set Todo's object categoryID and categoryName properties to null
@@ -159,6 +168,7 @@ export function removeTodo(todo, categoryID) {
   }
 }
 
+// Toggles the completedStatus property of a Todo between true and false
 export function toggleCompletedStatus(todo) {
   todo.toggleCompletedStatus();
 
@@ -170,8 +180,8 @@ export function toggleCompletedStatus(todo) {
   }
 }
 
-// Search the devCategories[0] ('All todos') devCategory for the Todos that contain the parameter within their Title,
-// and return an array of results; The parameter must be a string.
+// Searches the devCategories[0] ('All todos') devCategory for the Todos that contain the parameter within their Title,
+// and returns an array of results; The parameter must be a string.
 export function search(parameter) {
   const options = {
     keys: ["title"],

@@ -13,6 +13,7 @@ export function createElementWithID(type, id) {
   return element;
 }
 
+// Creates a button that contains a name, with or without an icon
 function createNamedButton(name, svg, ID) {
   const button = createElementWithClass("button", "named-button");
   if (ID) button.id = ID;
@@ -33,6 +34,7 @@ function createNamedButton(name, svg, ID) {
   return button;
 }
 
+// Creates a button that only contains an icon
 function createIconButton(ariaLabel, svg, ID) {
   const button = createElementWithClass("button", "icon-button");
   button.innerHTML = svg;
@@ -49,6 +51,7 @@ export function createExpandButton(ariaLabel) {
   return button;
 }
 
+// Used for opening context menus
 export function createSettingsButton(ariaLabel) {
   const container = createElementWithClass("div", "settings-container");
 
@@ -58,7 +61,7 @@ export function createSettingsButton(ariaLabel) {
   return container;
 }
 
-// Creates the buttons that are inserted into the settingsList DOM element after it is dynamically created on user input
+// Creates context menu items
 export function createSettingItem(name, className, ID) {
   const li = document.createElement("li");
 
@@ -71,7 +74,7 @@ export function createSettingItem(name, className, ID) {
   return li;
 }
 
-// Creates an input container containing a label and its corresponding input.
+// Creates an input container that contains a label and its corresponding input.
 // Accepts additional ...attrs arguments if setAttribute needs to be called
 export function createInput(name, className, ID, type, ...attrs) {
   const inputContainer = createElementWithClass("div", "input-container");
@@ -115,10 +118,12 @@ export function createHeader(title) {
   return header;
 }
 
+// Creates the button that is used to show / hide the header
 export function createMenuButton() {
   return createIconButton("Hide menu", icons.menu, "menu-button");
 }
 
+// Creates the the header button that is used to add a new todo
 export function createAddTodoButton() {
   const li = document.createElement("li");
   const button = createNamedButton("Add todo", icons.add, "add-todo");
@@ -128,6 +133,7 @@ export function createAddTodoButton() {
   return li;
 }
 
+// Creates the header button that is used to search todos
 export function createSearchButton() {
   const li = document.createElement("li");
   const button = createNamedButton("Search", icons.search, "search");
@@ -155,6 +161,7 @@ export function createUserNavbar() {
   return userNavbar;
 }
 
+// Creates a header button that represents a devCategory
 export function createDevCategoryButton(name, ID) {
   const li = document.createElement("li");
 
@@ -170,6 +177,7 @@ export function createDevCategoryButton(name, ID) {
   return li;
 }
 
+// Creates a header button that represents a userCategory
 export function createUserCategoryButton(name, ID) {
   const li = document.createElement("li");
 
@@ -190,6 +198,7 @@ export function createUserCategoryButton(name, ID) {
   return li;
 }
 
+// Creates the header for the main-content
 export function createContentHeader() {
   const contentHeaderContainer = createElementWithClass(
     "div",
@@ -200,6 +209,7 @@ export function createContentHeader() {
   return contentHeaderContainer;
 }
 
+// Creates the icon only button that represents the sorting settings
 export function createContentSortSetting() {
   const container = createElementWithClass(
     "div",
@@ -212,6 +222,7 @@ export function createContentSortSetting() {
   return container;
 }
 
+// Creates the icon only button that represents the filter settings
 export function createContentFilterSetting() {
   const container = createElementWithClass(
     "div",
@@ -224,15 +235,7 @@ export function createContentFilterSetting() {
   return container;
 }
 
-export function createCustomizeSettingsList() {
-  const container = createElementWithClass("div", "dropdown-list-container");
-  const title = createElementWithClass("h4", "dropdown-list-title");
-  container.appendChild(title);
-  const ul = createElementWithClass("ul", "dropdown-list");
-  container.appendChild(ul);
-  return container;
-}
-
+// Creates the todo element
 export function createTodoItem(ID, index, title) {
   const todoItem = createElementWithClass("li", "todo-item");
   // Turns the todoItem into a focusable element
@@ -274,6 +277,13 @@ export function createTodoItem(ID, index, title) {
 
   return todoItem;
 }
+
+//
+// Functions used to create each Todo property incoming. They are visually
+// represented differently (different location / layout / design), thus why
+// each Todo property has a separate function that is used to create a representative
+// DOM element.
+//
 
 export function createTodoMiniDueDate(value) {
   const miniDueDate = createElementWithClass("div", "todo-mini-due-date");
@@ -342,7 +352,8 @@ export function createTodoCategory(value) {
   return categoryContainer;
 }
 
-// Located at the end of the todos list of each content container.
+// Creates a button used to add a new todo
+// Located at the end of the todos list of each content.
 // To not be confused with the addTodoButton located in the main header.
 export function createAddButton(ariaLabel) {
   const button = createIconButton(ariaLabel, icons.add);
@@ -350,6 +361,7 @@ export function createAddButton(ariaLabel) {
   return button;
 }
 
+// Creates a form container used as a pop-up modal
 export function createModal() {
   const modal = createElementWithID("div", "modal");
   modal.setAttribute("aria-modal", "true");
@@ -357,6 +369,7 @@ export function createModal() {
   return modal;
 }
 
+// Creates the buttons used to manipulate the modal
 export function createModalActions() {
   const buttonsContainer = createElementWithClass("div", "modal-actions");
 
@@ -372,7 +385,7 @@ export function createModalActions() {
   return buttonsContainer;
 }
 
-// Used when rendering the todo & category modals
+// Creates an accessible form element
 export function createFormModal(legendText, className) {
   const form = createElementWithClass("form", className);
 
@@ -389,6 +402,7 @@ export function createFormModal(legendText, className) {
   return form;
 }
 
+// Creates a textarea input
 // Retrieves user input for todo title and todo description
 export function createTextArea(name, className, ID, ...attrs) {
   const inputContainer = createElementWithClass("div", "input-container");
@@ -417,6 +431,7 @@ export function createTextArea(name, className, ID, ...attrs) {
   return inputContainer;
 }
 
+// Creates a checkbox input
 function createCheckboxInput(ID, name, value, textContent) {
   const inputContainer = createElementWithClass("div", `${name}-container`);
 
@@ -475,7 +490,7 @@ export function createPrioritiesFieldset() {
   return prioritiesFieldset;
 }
 
-// Simulates an input by creating a button that opens a list of all user categories on click
+// Simulates an input by creating a button that opens a list of all user categories
 export function createCategoryInput() {
   const inputContainer = createElementWithClass("div", "input-container");
   inputContainer.classList.add("category");
@@ -516,6 +531,7 @@ export function createCategoriesDropdown() {
   return categoriesDropdown;
 }
 
+// Custom <option> element
 export function createCategorySelectItem(ID, name) {
   const li = document.createElement("li");
 
@@ -529,8 +545,7 @@ export function createCategorySelectItem(ID, name) {
   return li;
 }
 
-// Creates an icon only button containing an "X";
-// Used for deleting Due Date and Category input values
+// Creates an icon only button used for deleting Due Date and Category input values
 export function createClearButton(ariaLabel, className) {
   const clearButton = createIconButton(ariaLabel, icons.close);
   clearButton.classList.add(className);

@@ -1,7 +1,11 @@
 import * as focusTrap from "focus-trap";
 import PubSub from "pubsub-js";
-import { DOMCache } from '../DOMCache';
-import { createInput, createCategoriesDropdown, createCategorySelectItem } from "../creator";
+import { DOMCache } from "../DOMCache";
+import {
+  createInput,
+  createCategoriesDropdown,
+  createCategorySelectItem,
+} from "../creator";
 import FormModal from "./formModal";
 import {
   find,
@@ -16,6 +20,8 @@ import {
   checkBounds,
 } from "../viewHelpers";
 
+// Creates a CategoryFormModal object that inherits from FormModal and adds new DOM elements
+// and new functionality to its form element
 function CategoryFormModal() {
   const categoryFormModal = Object.create(
     FormModal("Category details", "category-form"),
@@ -34,14 +40,15 @@ function CategoryFormModal() {
     categoryFormModal.nameInputContainer,
     "#category-name",
   );
+  // Traps focus within the form
   categoryFormModal.trap = focusTrap.createFocusTrap(categoryFormModal.form, {
     allowOutsideClick: () => true,
     escapeDeactivates: () => false,
     returnFocusOnDeactivate: () => true,
     setReturnFocus: () => this,
   });
+  // Enables and disables the submitButton based on the input length of the titleInput
   categoryFormModal.checkInput = function checkInput() {
-    // Only enable the submitButton if the titleInput has at least one character
     if (this.value.match(/([a-zA-Z0-9)]){1,}/g)) {
       enableButton(categoryFormModal.submitButton);
       return;
@@ -49,6 +56,8 @@ function CategoryFormModal() {
 
     disableButton(categoryFormModal.submitButton);
   };
+  // This object's own closeModalFn that specifically manipulates the DOM
+  // elements and event listeners associated with it.
   categoryFormModal.closeModalFn = function closeModalFn() {
     categoryFormModal.trap.deactivate();
     categoryFormModal.nameInput.removeEventListener(
@@ -56,6 +65,9 @@ function CategoryFormModal() {
       categoryFormModal.checkInput,
     );
   };
+  // This object's own submitModalFn that gets the FormData and
+  // sends a request for the category object to be created by providing
+  // the input value
   categoryFormModal.submitModalFn = function submitModalFn(e) {
     e.preventDefault();
     categoryFormModal.closeModal();
@@ -70,13 +82,18 @@ function CategoryFormModal() {
     );
     render(categoryFormModal.fieldset, categoryFormModal.nameInputContainer);
     categoryFormModal.trap.activate();
+    // Adds this closeModalFn to the list of additionalCloseModal functions
+    // that are called by the deleteSettings method on Modal
     categoryFormModal.addAdditionalCloseModalFn(categoryFormModal.closeModalFn);
+    // Sets the submitModalFn that is called by the submitModalHandler method
+    // defined on FormModal
     categoryFormModal.setSubmitModalFn(categoryFormModal.submitModalFn);
   };
 
   return categoryFormModal;
 }
 
+// Renders an AddCategoryModal
 export function renderAddCategoryModal() {
   const categoryFormModal = CategoryFormModal();
   categoryFormModal.initCategoryFormModal();
@@ -167,7 +184,7 @@ export function renderCategoriesDropdownList() {
   }
 }
 
-// Renders a user category button within the categoriesDropdownList on each call
+// Renders a user category button within the categoriesDropdownList
 export function renderCategorySelectItem(categoryID, categoryName) {
   const categorySelectButton = find(
     DOMCache.modal,

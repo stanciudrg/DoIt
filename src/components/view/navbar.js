@@ -22,6 +22,8 @@ import {
 //
 //
 
+// Shows the header using CSS classes. Has additional functionality if mobile mode
+// is detected
 export function showNavbar() {
   DOMCache.menuButton.setAttribute("aria-label", "Hide menu");
   DOMCache.nav.style.visibility = "visible";
@@ -33,9 +35,10 @@ export function showNavbar() {
   }
 
   addClass(DOMCache.header, "visible");
+  // If mobile, continue with other mobile related stuff
   if (!hasClass(DOMCache.header, "mobile")) return;
 
-  // If mobile, disable scrolling and add a grey overlay behind header that prevents user input
+  // Disable scrolling and add a grey overlay behind header that prevents user input
   disableScrolling();
   DOMCache.headerOverlay.style.display = "initial";
   addClass(DOMCache.headerOverlay, "visible");
@@ -100,6 +103,7 @@ export function showNavbar() {
   }
 }
 
+// Hides the header navbar
 export function hideNavbar() {
   DOMCache.menuButton.setAttribute("aria-label", "Show menu");
   if (hasClass(DOMCache.header, "hidden"))
@@ -133,6 +137,7 @@ export function toggleNavbar(e) {
   hideNavbar();
 }
 
+// Toggles mobile mode
 export function checkIfMobile() {
   if (hasClass(DOMCache.header, "mobile")) {
     removeClass(DOMCache.header, "mobile");
@@ -144,24 +149,26 @@ export function checkIfMobile() {
   }
 }
 
+// Adds the 'selected' class to the header button that holds the provided
+// categoryID
 export function selectNewCategoryButton(categoryID) {
   // Is either a devCategory button that has an ID, or a userCategory button that has a
-  // dataset.id. Looks for a devCategory first since they are only three ('All todos',
-  // 'Today', 'Next 7 days');
+  // dataset.id.
   const newButton =
     find(DOMCache.devNavbarList, `[id="${categoryID}"]`) ||
     find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
   addClass(getParentOf(newButton), "selected");
 }
 
+// Removes the 'selected' class from the button that currently holds it
 export function unselectOldCategoryButton() {
   removeClass(find(DOMCache.nav, ".selected"), "selected");
 }
 
+// Updates the todos count of the header button that holds the provided categoryID
 export function updateCategoryTodosCount(categoryID, todosCount) {
   // Is either a devCategory button that has an ID, or a userCategory button that has a
-  // dataset.id. Looks for a devCategory first since they are only three ('All todos',
-  // 'Today', 'Next 7 days');
+  // dataset.id.
   const category =
     find(DOMCache.devNavbarList, `[id="${categoryID}"]`) ||
     find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
@@ -169,6 +176,7 @@ export function updateCategoryTodosCount(categoryID, todosCount) {
   updateTextContent(todosCounter, todosCount);
 }
 
+// Updates the counter of User Categories with the new value
 export function updateUserCategoriesCount(categoriesCount) {
   updateTextContent(
     find(DOMCache.userNavbar, "#categories-counter"),
@@ -176,6 +184,7 @@ export function updateUserCategoriesCount(categoriesCount) {
   );
 }
 
+// Shows / hides the list of user categories
 export function toggleUserCategoriesList() {
   if (hasClass(DOMCache.expandCategoriesButton, "expanded")) {
     DOMCache.expandCategoriesButton.setAttribute(
@@ -214,6 +223,7 @@ function sendDisplayContentRequest() {
   PubSub.publish("DISPLAY_CONTENT_REQUEST", categoryID);
 }
 
+// Renders a header button that represents a devCategory
 export function renderDevCategoryButton(categoryName, categoryID) {
   const devCategoryButton = Creator.createDevCategoryButton(
     categoryName,
@@ -229,6 +239,7 @@ export function renderDevCategoryButton(categoryName, categoryID) {
   categoriesContent[categoryID] = "";
 }
 
+// Renders a header button that represents a userCategory
 export function renderUserCategoryButton(categoryName, categoryID) {
   const userCategoryButton = Creator.createUserCategoryButton(
     categoryName,
@@ -239,6 +250,7 @@ export function renderUserCategoryButton(categoryName, categoryID) {
   categoriesContent[categoryID] = "";
 }
 
+// Handles the click events on userCategoryButtons
 export function handleUserCategoryClickEvents(e) {
   const li = e.target.closest("li");
   const userCategoryButton = find(li, ".todo-holder");
@@ -266,10 +278,11 @@ export function handleUserCategoryClickEvents(e) {
   // bind is used because devCategory buttons have the sendDisplayContentRequest
   // function attached directly on themselves, therefore providing a 'this' value.
   // userCategory button click events, on the other hand, are handled by their ancestor,
-  // thus the userCategory buttons are manually provided as 'this'
+  // therefore they are manually provided as 'this'
   sendDisplayContentRequest.bind(userCategoryButton)();
 }
 
+// Renames the userCategoryButton that holds the provided categoryID
 export function renameUserCategoryButton(categoryID, newName) {
   updateTextContent(
     find(
@@ -280,6 +293,7 @@ export function renameUserCategoryButton(categoryID, newName) {
   );
 }
 
+// Deletes the userCategoryButton that holds the provided categoryID
 export function deleteUserCategoryButton(categoryID) {
   const button = find(DOMCache.userNavbarList, `[data-id="${categoryID}"]`);
   // For accessibility reasons, user category buttons are stored into a li element

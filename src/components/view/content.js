@@ -28,19 +28,21 @@ import {
 //
 //
 
-// Renders the settings button when the current category that has it's content rendered is editable (it's a userCategory)
+// Renders a settings button in the contentSettings DOM element
 export function renderContentSettingsButton() {
   const contentSettingsButton = Creator.createSettingsButton("Edit category");
   contentSettingsButton.addEventListener("click", requestUserCategorySettings);
   render(DOMCache.contentSettings, contentSettingsButton);
 }
 
+// Makes a request to renderUserCategorySettings and provides event information.
+// This function is used as an event handler
 function requestUserCategorySettings(e) {
   e.stopImmediatePropagation();
   renderUserCategorySettings(e.target, getCurrentContentID());
 }
 
-// Deletes the settings button when the current category that has it's content rendered is non-editable (it's a devCategory);
+// Deletes the settings button located in the contentSettings DOM element
 export function deleteContentSettingsButton() {
   const editContentTitleButton = find(
     DOMCache.contentSettings,
@@ -53,21 +55,25 @@ export function deleteContentSettingsButton() {
   editContentTitleButton.remove();
 }
 
+// Updates the title of the current content
 export function renameContentTitle(categoryName) {
   updateTextContent(DOMCache.contentTitle, categoryName);
 }
 
+// Sends a request for a context menu that holds the available sortingMethods
 export function sendSortSettingsRequest(e) {
   e.stopImmediatePropagation();
   PubSub.publish("SORT_SETTINGS_REQUEST");
 }
 
+// Sends a request for a context menu that holds the available filterMethods
 export function sendFilterSettingsRequest(e) {
   e.stopImmediatePropagation();
   PubSub.publish("FILTER_SETTINGS_REQUEST");
 }
 
-// Notifies the user whether the current content is being sorted or filtered
+// Adds or removes a class that is used to visually represent whether the
+// current category is being sorted or not
 export function markContentSortSetting(state) {
   if (state === true) {
     addClass(find(DOMCache.sortSetting, "button"), `sortingOn`);
@@ -77,6 +83,8 @@ export function markContentSortSetting(state) {
   removeClass(find(DOMCache.sortSetting, "button"), `sortingOn`);
 }
 
+// Adds or removes a class that is used to visually represent whether the
+// current category is being filtered or not
 export function markContentFilterSetting(state) {
   if (state === true) {
     addClass(find(DOMCache.filterSetting, "button"), `filterOn`);
@@ -86,6 +94,7 @@ export function markContentFilterSetting(state) {
   removeClass(find(DOMCache.filterSetting, "button"), `filterOn`);
 }
 
+// Renders a unordered list used to store todo elements
 export function renderTodosList(categoryID) {
   // Set the dataset.ID of the 'content' container to match the current ID of the category that provides the todosList
   DOMCache.content.dataset.id = categoryID;
@@ -112,6 +121,7 @@ export function renderTodosList(categoryID) {
   );
 }
 
+// Deletes the unordered list used to store todo elements
 export function deleteTodosList(categoryID) {
   // Remove event listeners to prevent conflicts and avoid memory leaks
   categoriesContent[categoryID].removeEventListener(
@@ -129,6 +139,7 @@ export function deleteTodosList(categoryID) {
   categoriesContent[categoryID] = "";
 }
 
+// Handles click events on todo elements
 function handleTodoElementsClickEvents(e) {
   const todoItem = e.target.closest(".todo-item");
 
@@ -172,6 +183,7 @@ function handleTodoElementsChangeEvents(e) {
   }
 }
 
+// Renders the todo element
 export function renderTodoElement(todoID, index, todoTitle) {
   const todoItem = Creator.createTodoItem(todoID, index, todoTitle);
   // Insert the todoItem at the passed index to ensure that Todo DOM elements
@@ -182,8 +194,7 @@ export function renderTodoElement(todoID, index, todoTitle) {
   );
 }
 
-// Function run by the Controller after organizing a category that is currently being rendered.
-// Refreshes the index of Todo DOM elements to mirror the index property of Todo objects
+// Updates the dataset.index value of a todo
 export function updateTodoIndex(todoID, index) {
   find(
     categoriesContent[getCurrentContentID()],
@@ -191,10 +202,8 @@ export function updateTodoIndex(todoID, index) {
   ).dataset.index = index;
 }
 
+// Moves a Todo DOM element at a specified index. 
 export function moveTodoElement(todoID, index) {
-  // Moves a Todo DOM element at a specified index. Used by the Controller
-  // whenever editing a Todo property changes its order relative to its siblings in case
-  // a sorting or filter method is being used by the category
   const currentContent = categoriesContent[getCurrentContentID()];
   const todoElement = find(currentContent, `[data-id="${todoID}"]`);
   currentContent.insertBefore(
@@ -203,6 +212,7 @@ export function moveTodoElement(todoID, index) {
   );
 }
 
+// Deletes a todo element
 export function deleteTodoElement(todoID) {
   const todoElement = find(
     categoriesContent[getCurrentContentID()],
@@ -211,8 +221,8 @@ export function deleteTodoElement(todoID) {
   todoElement.remove();
 }
 
-// Adds a button on the Todo DOM element that allows the user to render additional information
-// about the Todo.
+// Renders a button on the todo element that allows the user to request additional information
+// about the todo
 export function renderTodoElementExpander(todoID) {
   const todoItem = find(
     categoriesContent[getCurrentContentID()],
@@ -222,8 +232,8 @@ export function renderTodoElementExpander(todoID) {
   render(todoItem, todoExpander);
 }
 
-// Deletes the todoElementExpander when the Todo DOM element no longer contains any additional info
-// that can be rendered
+// Deletes the button that allows the user to request additional information about the todo, 
+// from the todo
 export function deleteTodoElementExpander(todoID) {
   const todoItem = find(
     categoriesContent[getCurrentContentID()],
@@ -233,7 +243,7 @@ export function deleteTodoElementExpander(todoID) {
   todoExpander.remove();
 }
 
-// Inserts a container at the end of the Todo DOM element that contains additional information (eg. priority, dueDate, category);
+// Renders a container that contains the additional information of a todo, inside the todo element
 export function renderTodoAdditionalInfo(todoID) {
   const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
   const todoElementExpander = find(todoElement, ".expand-button");
@@ -247,6 +257,7 @@ export function renderTodoAdditionalInfo(todoID) {
   addClass(todoElement, "expanded");
 }
 
+// Deletes the container at that contains the additional information of a todo, from the todo element
 export function deleteTodoAdditionalInfo(todoID) {
   const todoElement = find(DOMCache.main, `[data-id="${todoID}"]`);
   const todoElementExpander = find(todoElement, ".expand-button");
@@ -265,15 +276,15 @@ export function deleteTodoAdditionalInfo(todoID) {
   }
 }
 
-// Manually triggers a transitionend event when the todoAdditionalInfo container within a Todo DOM element
-// is visible and needs to be deleted because it no longer contains any additional information
-// (eg. when todoAdditionalInfo only contains its category, but the category is removed by the user)
+// Manually triggers a transitionend event on the DOM element that holds the provided
+// todoID as a dataset value
 export function dispatchTransitionEndEvent(todoID) {
   find(DOMCache.main, `[data-id="${todoID}"]`).dispatchEvent(
     new Event("transitionend"),
   );
 }
 
+// Update the custom checkbox to represent the current completedStatus of the todo
 export function updateTodoElementCompletedStatus(todoID, status) {
   if (!todoID || !status) return;
 
@@ -309,6 +320,12 @@ export function colorTodoCompletedStatusSpan(todoID, priority) {
   if (!priority) return;
   addClass(todoCompletedStatusSpan, `priority-${priority}`);
 }
+
+//
+// Functions used to update, render, and delete each Todo property incoming.
+// Each property has its own way of being visually represented, and is located in different
+// ares of a todo element, thus why each property has its own set of three functions
+//
 
 export function updateTodoTitle(todoID, value) {
   updateTextContent(find(getTodoElement(todoID), ".todo-title"), value);
@@ -400,6 +417,7 @@ export function deleteTodoCategory(todoID) {
   find(getTodoElement(todoID), ".todo-category").remove();
 }
 
+// Adds a class that is used to visually indicate that the todo is overdue
 export function markTodoAsOverdue(todoID) {
   addClass(
     find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`),
@@ -407,6 +425,7 @@ export function markTodoAsOverdue(todoID) {
   );
 }
 
+// Removes the class that is used to visually indicate that the todo is overdue
 export function markTodoAsDue(todoID) {
   removeClass(
     find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`),
@@ -414,6 +433,8 @@ export function markTodoAsDue(todoID) {
   );
 }
 
+// Completely disables any user interaction and visually differentiates a todo element
+// to represent the fact that the todo is being filtered out by the category
 export function markTodoAsFiltered(state, todoID) {
   if (!state || !todoID) return;
 

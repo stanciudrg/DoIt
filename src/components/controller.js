@@ -13,21 +13,23 @@ import {
 import { UserCategory } from "./model/category";
 import { Todo } from "./model/todo";
 
-// Helper functions
+// Returns the current string value attached to the sortingMethod property
 function getCurrentSortingMethod() {
   return Organizer.getCategory(
     getCurrentContentID(),
   ).getCurrentSortingMethod();
 }
 
+// Returns the current string value attached to the filterMethod property
 function getCurrentFilterMethod() {
   return Organizer.getCategory(
     getCurrentContentID(),
   ).getCurrentFilterMethod();
 }
 
+// Goes through the properties of a todo object and renders the necessary elements
 function triggerTodoRendering(todo) {
-  // First, render the initial Todo DOM element that contains only the title
+  // Renders the default todo element
   Renderer.renderTodoElement(
     todo.get("id"),
     todo.get("index"),
@@ -47,7 +49,7 @@ function triggerTodoRendering(todo) {
       );
     }
 
-    // If the todo has a dueDate, render a miniDueDate element on it;
+    // If the todo has a dueDate, render a miniDueDate element;
     if (todo.get("dueDate")) {
       Renderer.renderTodoMiniDueDate(
         todo.get("id"),
@@ -61,6 +63,7 @@ function triggerTodoRendering(todo) {
   }
 }
 
+// Adds the todo object in a specific category
 function addTodo(todo, categoryID) {
   Organizer.addTodo(todo, categoryID);
   Renderer.updateCategoryTodosCount(
@@ -80,6 +83,7 @@ function addTodo(todo, categoryID) {
   );
 }
 
+// Creates a Todo object using user input values
 export function handleAddTodoRequest(
   title,
   description,
@@ -117,6 +121,7 @@ PubSub.subscribe("ADD_TODO_REQUEST", (msg, properties) => {
   );
 });
 
+// Deletes the Todo object from the specified category
 function deleteTodo(todo, categoryID) {
   Organizer.removeTodo(todo, categoryID);
   Renderer.updateCategoryTodosCount(
@@ -136,9 +141,10 @@ function deleteTodo(todo, categoryID) {
   });
 }
 
+// Handles the delete request event
 export function handleDeleteTodoRequest(todoID) {
   // Run the todo through the scanTodo function for it to be removed from
-  // all locations using the deleteTodo function
+  // all locations
   const todo = Organizer.getTodo(todoID);
   scanTodo(todo, deleteTodo);
 }
@@ -147,6 +153,7 @@ PubSub.subscribe("DELETE_TODO_REQUEST", (msg, todoID) => {
   handleDeleteTodoRequest(todoID);
 });
 
+// Handles the request to show the additional information of a Todo
 export function handleTodoExpandRequest(todoID) {
   const todo = Organizer.getTodo(todoID);
 
@@ -171,6 +178,7 @@ PubSub.subscribe("TODO_EXPAND_REQUEST", (msg, todoID) => {
   handleTodoExpandRequest(todoID);
 });
 
+// Removes the ability of a Todo to be expanded on user input
 function removeTodoExpandFeature(todo) {
   Renderer.deleteTodoElementExpander(todo.get("id"));
 
@@ -202,6 +210,7 @@ function toggleTodoExpandFeature(todo) {
   }
 }
 
+// Keeps the Todo DOM element and the Todo object's locations in sync
 function manipulateTodoLocation(todoID) {
   const todo = Organizer.getTodo(todoID);
   // Get the latest index;
@@ -222,7 +231,6 @@ function manipulateTodoLocation(todoID) {
     Renderer.markTodoAsFiltered("in", todoID);
   }
 
-  // Update the index of all rendered todos to reflect the indexes of the todos held by the reorganized category
   Organizer.getTodosOf(getCurrentContentID()).forEach(
     (categoryTodo) => {
       Renderer.updateTodoIndex(
@@ -233,6 +241,7 @@ function manipulateTodoLocation(todoID) {
   );
 }
 
+// Handles the request to mark a Todo as completed / uncompleted
 export function handleTodoCompletedStatusChangeRequest(todoID) {
   const todo = Organizer.getTodo(todoID);
   Organizer.toggleCompletedStatus(todo);
@@ -260,9 +269,9 @@ PubSub.subscribe("TODO_COMPLETED_STATUS_CHANGE_REQUEST", (msg, todoID) => {
   handleTodoCompletedStatusChangeRequest(todoID);
 });
 
+// Moves the Todo within and without a date based category ('today' and 'this-week')
+// based on Todo's dueDate
 function scanAndMove(devCategory, todo) {
-  // scanAndMove deals with moving to or removing the todos from the two devCategories that have their
-  // logic based on dueDate: 'today' and 'next 7 days'.
   const parsedDueDate = parseISO(todo.get("dueDate"));
   // if the devCategory already has the Todo, and the Todo's new dueDate is no longer compatible with the devCategory,
   // or the Todo no longer has a dueDate, remove it from the devCategory
@@ -284,6 +293,8 @@ function scanAndMove(devCategory, todo) {
   }
 }
 
+// Determines whether a DOM element needs to be created, updated, or removed
+// based on its previous state
 function scanForVisualChanges(
   todo,
   newValue,
@@ -307,6 +318,12 @@ function scanForVisualChanges(
     deleteFn(todo.get("id"));
   }
 }
+
+//
+// Edit functions for each todo property incoming. Almost all properties of a Todo
+// object are handled differently on the rendering side of the application, 
+// thus why each property has its own function
+//
 
 function editTodoTitle(todo, newTitle) {
   Organizer.editTodo(todo, "title", newTitle);
@@ -456,6 +473,8 @@ function editTodoCategory(todo, newCategoryID, oldCategoryID) {
   }
 }
 
+// Handle the request to edit a Todo. Checks if changes have been made on form submission
+// and calls the respective edit functions
 export function handleEditTodoRequest(
   todoID,
   newTitle,
@@ -499,6 +518,7 @@ PubSub.subscribe("EDIT_TODO_REQUEST", (msg, properties) => {
   );
 });
 
+// Creates the visual representation of a category and its content
 function displayNewContent(categoryID) {
   // First, reapply the current sortingMethod and filterMethod functions on the 'todos' array of
   // the requested Category
@@ -547,6 +567,7 @@ function displayNewContent(categoryID) {
   });
 }
 
+// Deletes the visual representation of a category and its content
 function deleteContent(categoryID) {
   // If the requested category to be deleted does not have the same ID as the dataset.id of the current content, stop
   if (categoryID !== getCurrentContentID()) return;
@@ -580,6 +601,7 @@ PubSub.subscribe("DISPLAY_CONTENT_REQUEST", (msg, categoryID) => {
   handleDisplayContentRequest(categoryID);
 });
 
+// Handles the request to create a new user category with the provided name string
 export function handleCreateCategoryRequest(name) {
   const category = UserCategory(name);
   Organizer.addCategory(category);
@@ -591,6 +613,7 @@ PubSub.subscribe("CREATE_CATEGORY_REQUEST", (msg, name) => {
   handleCreateCategoryRequest(name);
 });
 
+// Renames the specified user category
 export function renameCategory(categoryID, newName) {
   const category = Organizer.getUserCategory(categoryID);
   Organizer.changeUserCategoryName(categoryID, newName);
@@ -615,6 +638,7 @@ PubSub.subscribe("RENAME_CATEGORY_REQUEST", (msg, args) => {
   renameCategory(categoryID, newName);
 })
 
+// Handles the request to delete a user category
 export function handleDeleteCategoryRequest(categoryID) {
   const category = Organizer.getUserCategory(categoryID);
   const todos = category.getTodos();
@@ -643,6 +667,7 @@ PubSub.subscribe("DELETE_CATEGORY_REQUEST", (msg, categoryID) => {
   handleDeleteCategoryRequest(categoryID);
 });
 
+// Handle the request to delete all Todos of a user category
 export function handleDeleteContainingTodosRequest(categoryID) {
   // Go through all the todos of the userCategory and run them through the scanAndDeleteTodo function
   // to remove them from all categories from which they are part of, wiping them from memory
@@ -657,7 +682,7 @@ PubSub.subscribe("DELETE_CONTAINING_TODOS_REQUEST", (msg, categoryID) => {
   handleDeleteContainingTodosRequest(categoryID);
 });
 
-// Asks the renderer to create a settings dropdown list containing the specified sorting methods
+// Handles the request to open a context menu with all sorting methods of a category
 export function handleSortSettingsRequest() {
   const currentCategory = Organizer.getCategory(getCurrentContentID());
 
@@ -684,7 +709,7 @@ export function handleSortSettingsRequest() {
 
 PubSub.subscribe("SORT_SETTINGS_REQUEST", handleSortSettingsRequest);
 
-// Asks the renderer to create a settings dropdown list containing the specified filter methods
+// Handles the request to open a context menu with all filter methods of a category
 export function handleFilterSettingsRequest() {
   Renderer.renderCategoryFilterMenu(
     Organizer.getCategory(
@@ -701,6 +726,9 @@ export function handleFilterSettingsRequest() {
 
 PubSub.subscribe("FILTER_SETTINGS_REQUEST", handleFilterSettingsRequest);
 
+// Handles the request to sort the todos of the currently rendered category
+// Expects a string as type. It needs to match the property names defined on
+// the category.js module
 export function handleSortTodosRequest(type) {
   // Set the new sorting method
   Organizer.setSortingMethod(getCurrentContentID(), type);
@@ -715,6 +743,9 @@ PubSub.subscribe("SORT_TODOS_REQUEST", (msg, type) => {
     handleSortTodosRequest(type);
 })
 
+// Handles the request to filter the todos of the currently rendered category
+// Expects a string as type. It needs to match the property names defined on
+// the category.js module
 export function handleFilterTodosRequest(type) {
   // Set the new filter method
   Organizer.setFilterMethod(getCurrentContentID(), type);
@@ -773,8 +804,7 @@ PubSub.subscribe("TODO_MODAL_REQUEST", (msg, callLocation) => {
   handleTodoModalRequest(callLocation);
 });
 
-// Asks the Renderer to create the categories dropdown list and then fills it with all existing UserCategories.
-// Is being called when the user clicks the custom input for selecting the todo's category
+// Handles the request to open a custom select input for selecting the user category of a Todo
 export const handleCategoriesDropdownRequest = () => {
   Renderer.renderCategoriesDropdownList();
   Organizer.getUserCategories().forEach((category) => {
@@ -787,6 +817,7 @@ PubSub.subscribe(
   handleCategoriesDropdownRequest,
 );
 
+// Handles the request to search for todos using the coordinate retrieved from user input
 export function handleSearchRequest(coordinates) {
   if (!isSearchBarOpen()) return;
   // Get the results array
@@ -809,6 +840,8 @@ PubSub.subscribe("SEARCH_REQUEST", (msg, coordinates) => {
   handleSearchRequest(coordinates);
 });
 
+// Handles the request to show the location of a Todo after being selected from the
+// search results list
 export function handleShowTodoLocationRequest(todoID) {
   // If the Todo can not be found in the current rendered category,
   // change the content to 'All todos' devCategory, then highlight the Todo element
@@ -831,8 +864,8 @@ PubSub.subscribe("SHOW_TODO_LOCATION_REQUEST", (msg, todoID) => {
   handleShowTodoLocationRequest(todoID);
 });
 
-// Asks the Renderer to render a deleteTodo or deleteCategory modal
-// and passes the todo or category info
+// Handles the request to show a delete confirmation message when the user
+// attempts to delete a todo
 export function handleDeleteTodoModalRequest(ID) {
   if (!ID) return;
   const todo = Organizer.getTodo(ID);
@@ -843,6 +876,8 @@ PubSub.subscribe("DELETE_TODO_MODAL_REQUEST", (msg, ID) => {
   handleDeleteTodoModalRequest(ID);
 });
 
+// Handles the request to show a delete confirmation message when the user
+// attempts to delete a user category
 export function handleDeleteCategoryModalRequest(ID) {
   if (!ID) return;
   const category = Organizer.getUserCategory(ID);
@@ -854,6 +889,9 @@ PubSub.subscribe("DELETE_CATEGORY_MODAL_REQUEST", (msg, ID) => {
   handleDeleteCategoryModalRequest(ID);
 });
 
+// Goes through all Todos, checks their dueDate, and determines whether they
+// are overdue and acts accordingly, or whether they need to be moved within
+// and without time based categories ('today' and 'this-week'), and acts accordingly
 function checkDueDates() {
   // Go through each todo...
   Organizer.getTodosOf("all-todos").forEach((todo) => {

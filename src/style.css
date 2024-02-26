@@ -216,8 +216,7 @@ floating over the rest of the webpage */
 }
 
 /* The setting items within a settings list. Dynamically created by JS based on their call location */
-.settings-list .named-button,
-.dropdown-list .named-button {
+.settings-list .named-button {
     display: flex;
     width: 100%;
     align-items: center;
@@ -280,10 +279,9 @@ and for selecting whether deleting a category should also delete its containing 
     opacity: 0;
 }
 
-/* The three types of content that are being rendered into the #modal container.
-The form element is used for the Add and Edit Todo and Add Category modals,
-the .search-container is a div and is used for the Search modal, and the .delete-modal
-is used for the Delete Todo and Delete Category modals */
+/* The two types of content that are being rendered into the #modal container.
+The form element is used for the Add and Edit Todo, Add Category, and Delete Confirmation modals,
+The .search-container is a div and is used for the Search modal */
 form,
 .search-container {
     position: absolute;
@@ -616,9 +614,7 @@ body>header.hidden nav {
     /* Disable the transition effect declared on all buttons to allow the transition effects
     added on the li item to take over */
     transition: none;
-    transition-duration: none;
-    transition-timing-function: none;
-    background-color: inherit;
+    animation: none;
 }
 
 #dev-nav-list>li>button {

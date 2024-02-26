@@ -26,9 +26,11 @@ import {
   updateTextContent,
   checkBounds,
   getCurrentContentID,
-  getParentOf
+  getParentOf,
 } from "../viewHelpers";
 
+// Creates a TodoFormModal object that inherits from FormModal and adds new DOM elements
+// and new functionality to its form element
 function TodoFormModal() {
   const todoFormModal = Object.create(FormModal("Todo details", "todo-form"));
   todoFormModal.textAreasContainer = createElementWithClass(
@@ -76,6 +78,9 @@ function TodoFormModal() {
     todoFormModal.dueDateInputContainer,
     "input",
   );
+  // Custom datePicker imported from the flatpickr JavaScript library. Check flatpickr
+  // Javascript library documentation for more information regarding the settings used
+  // for this app
   // eslint-disable-next-line new-cap
   todoFormModal.datePicker = new flatpickr(todoFormModal.dueDateInput, {
     minDate: format(new Date(), "yyyy-MM-dd"),
@@ -101,11 +106,11 @@ function TodoFormModal() {
     "clear-category",
   );
   todoFormModal.trap = null;
-
+  // Sets the todoFormModal.trap property to a trapObject (focusTrap JS library)
   todoFormModal.setTrap = function setTrap(trapObject) {
     todoFormModal.trap = trapObject;
   };
-  // Modify the default 'Enter' key behavior of Todo title and Todo description text areas
+  // Modifies the default 'Enter' key behavior for Todo title and Todo description text areas
   todoFormModal.changeEnterKeyBehavior = function changeEnterKeyBehavior(e) {
     if (e.key === "Enter" && e.shiftKey) return;
 
@@ -120,8 +125,8 @@ function TodoFormModal() {
     categoryID,
     categoryName,
   ) {
-    // Simulates an input by setting the dataset of the category input button to the value of the categoryID
-    // and by setting the textContent of the category input button to the value of the categoryName
+    // Sets the dataset of the category input button to the value of the categoryID
+    // and the textContent of the category input button to the value of the categoryName
     todoFormModal.categorySelectButton.dataset.id = categoryID;
     updateTextContent(todoFormModal.categorySelectButton, categoryName);
     todoFormModal.categorySelectButton.setAttribute(
@@ -136,18 +141,18 @@ function TodoFormModal() {
     todoFormModal.dueDateInput.value = `${formatDate(dueDate)} / ${dueDate}`;
   };
 
+  // Transforms textareas into autogrowing textareas by keeping their height
+  // the same value as their scrollHeight. Also prevents the textAreasContainer
+  // from changing its scroll position each time an input event is fired
+  // on the textareas. Also enables and disables the submitButton based on the
+  // input length of the titleInput
   todoFormModal.checkInput = function checkInput() {
-    // Transforms textareas into autogrowing textareas by keeping their height
-    // the same value as their scrollHeight. Also prevents the textAreasContainer
-    // from changing its scroll position each time an input event is fired
-    // on the textareas
     const oldScrollPosition = todoFormModal.textAreasContainer.scrollTop;
     this.style.height = "auto";
     this.style.height = `${this.scrollHeight}px`;
     todoFormModal.textAreasContainer.scrollTo(0, oldScrollPosition);
 
     if (this === todoFormModal.titleInput) {
-      // Only enable the submitButton if the titleInput has at least one character
       if (this.value.match(/([a-zA-Z0-9)]){1,}/g)) {
         enableButton(todoFormModal.submitButton);
         return;
@@ -156,8 +161,7 @@ function TodoFormModal() {
       disableButton(todoFormModal.submitButton);
     }
   };
-
-  // By default, the descriptionInput is not always scrolled into view when it is not fully visible and it is being
+  // By default, the descriptionInput is not always scrolled into view when it is not fully visible and is being
   // clicked on mobile devices. This function solves the bug in the majority of cases
   todoFormModal.scrollIntoView = function scrollIntoView() {
     if (DOMCache.mobileVersion.matches) {
@@ -184,16 +188,19 @@ function TodoFormModal() {
       }
     };
 
-  // Automatically replace the dueDate value provided by flatpickr with a custom, formatted version
+  // Replaces the dueDate value set by flatpickr with a custom, formatted version
   todoFormModal.replaceInput = function replaceInput() {
     if (!todoFormModal.dueDateInput.value) return;
     todoFormModal.dueDateInput.value = `${formatDate(todoFormModal.dueDateInput.value)} / ${todoFormModal.dueDateInput.value}`;
   };
 
+  // Clears dueDate's input value
   todoFormModal.clearDateInput = function clearDateInput() {
     todoFormModal.datePicker.clear();
   };
 
+  // Function called by flatpickr whenever the calendar is requested by the user.
+  // Adds custom logic to the flatpickr calendar
   todoFormModal.showCalendar = function showCalendar() {
     const calendar = find(todoFormModal.form, ".flatpickr-calendar");
     // Run the calendar through the checkBounds function to determine whether its position needs to be changed
@@ -236,21 +243,23 @@ function TodoFormModal() {
     todoFormModal.formOverlay.addEventListener("click", hideDueDateOverlay);
   };
 
+  // Send a request for the dropdown list that contains all user categories
+  // to be rendered
   todoFormModal.requestCategoriesDropdown =
     function requestCategoriesDropdown() {
       PubSub.publish("CATEGORIES_DROPDOWN_REQUEST");
     };
 
-  // Clears the current category input value when clicking the clearCategory button
+  // Clears the current category input value
   todoFormModal.clearCategory = function clearCategory() {
     todoFormModal.categorySelectButton.dataset.id = "";
     updateTextContent(todoFormModal.categorySelectButton, "Category");
     addClass(todoFormModal.categorySelectButton, "empty");
   };
-
+  // This object's own closeModalFn that specifically manipulates the DOM
+  // elements and event listeners associated with it.
   todoFormModal.closeModalFn = function closeModalFn() {
     todoFormModal.trap.deactivate();
-    // Remove event listeners to prevent memory leaks and other unwanted behavior
     todoFormModal.titleInput.removeEventListener(
       "input",
       todoFormModal.checkInput,
@@ -298,6 +307,8 @@ function TodoFormModal() {
 
   todoFormModal.initTodoFormModal = function initTodoFormModal() {
     todoFormModal.initFormModal();
+    // Adds this closeModalFn to the list of additionalCloseModal functions
+    // that are called by the deleteSettings method on Modal
     todoFormModal.addAdditionalCloseModalFn(todoFormModal.closeModalFn);
 
     render(todoFormModal.fieldset, todoFormModal.textAreasContainer);
@@ -365,8 +376,14 @@ function TodoFormModal() {
   return todoFormModal;
 }
 
+// Creates an EditTodoModal object that inherits from TodoFormModal and adds
+// new functionality to its form elements.
+// Expects an object that contains the Todo's current properties to be provided.
 function EditTodoModal(properties) {
   const editTodoModal = Object.create(TodoFormModal());
+  // This object's own submitModalFn that gets the FormData and
+  // sends a request for the todo object to be edited by providing
+  // the new input values
   editTodoModal.submitModalFn = function submitModalFn(e) {
     // Prevents the default form submission behavior
     e.preventDefault();
@@ -391,7 +408,12 @@ function EditTodoModal(properties) {
 
   editTodoModal.initEditTodoModal = function initEditTodoModal() {
     editTodoModal.initTodoFormModal();
+    // Changes the name of the submit button to 'Edit' from the default
+    // 'Submit'
     editTodoModal.modifySubmitButton("Edit");
+
+    // Uses the properties object provided to update the input values
+    // to reflect the current properties of the todo
     const [title, description, priority, dueDate, categoryID, categoryName] =
       properties;
     editTodoModal.titleInput.value = title;
@@ -412,6 +434,8 @@ function EditTodoModal(properties) {
     if (categoryID) editTodoModal.selectCategory(categoryID, categoryName);
     if (dueDate) editTodoModal.selectDate(dueDate);
 
+    // Creates and sets a focusTrap that manually returns the focus back
+    // to the location that triggered this function
     editTodoModal.setTrap(
       focusTrap.createFocusTrap(editTodoModal.form, {
         initialFocus: () => DOMCache.modal,
@@ -432,19 +456,32 @@ function EditTodoModal(properties) {
     );
 
     editTodoModal.trap.activate();
+    // Sets the submitModalFn that is called by the submitModalHandler method
+    // defined on FormModal
     editTodoModal.setSubmitModalFn(editTodoModal.submitModalFn);
   };
 
   return editTodoModal;
 }
 
+// Renders an EditTodoModal that has its input values filled in with the
+// specified properties
 export function renderEditTodoModal(properties) {
   const editTodoModal = EditTodoModal(properties);
   editTodoModal.initEditTodoModal();
 }
 
+// Creates an AddTodoModal object that inherits from TodoFormModal and adds
+// new functionality to its form elements.
+// callLocation = a string representing the category from which the
+// AddTodoModal was fired, if any
+// locationAttributes = an object containing any additional information about
+// the callLocation, if needed
 function AddTodoModal(callLocation, locationAttributes) {
   const addTodoModal = Object.create(TodoFormModal());
+  // This object's own submitModalFn that gets the FormData and
+  // sends a request for the todo object to be added to its respective
+  // categories by providing the input values
   addTodoModal.submitModalFn = function submitModalFn(e) {
     // Prevents the default form submission behavior
     e.preventDefault();
@@ -474,12 +511,14 @@ function AddTodoModal(callLocation, locationAttributes) {
 
   addTodoModal.initAddTodoModal = function initAddTodoModal() {
     addTodoModal.initTodoFormModal();
-
+    // Conditional statements that set different values for the dueDate
+    // and category inputs depending on the location from which the
+    // AddTodoModal was called
     if (callLocation === "today") {
       addTodoModal.datePicker.set("maxDate", format(new Date(), "yyyy-MM-dd"));
       addTodoModal.selectDate(format(new Date(), "yyyy-MM-dd"), true);
     }
-  
+
     if (callLocation === "this-week") {
       addTodoModal.datePicker.set(
         "maxDate",
@@ -487,38 +526,46 @@ function AddTodoModal(callLocation, locationAttributes) {
       );
       addTodoModal.selectDate(format(new Date(), "yyyy-MM-dd"), true);
     }
-  
+
     if (callLocation === "user-category") {
       const [categoryID, categoryName] = locationAttributes;
       addTodoModal.selectCategory(categoryID, categoryName);
     }
-  
+
     // Trap TAB focus within the form
-    addTodoModal.setTrap(focusTrap.createFocusTrap(addTodoModal.form, {
-      initialFocus: () => DOMCache.modal,
-      allowOutsideClick: () => true,
-      escapeDeactivates: () => false,
-      returnFocusOnDeactivate: () => true,
-      preventScroll: () => true,
-    }));
+    addTodoModal.setTrap(
+      focusTrap.createFocusTrap(addTodoModal.form, {
+        initialFocus: () => DOMCache.modal,
+        allowOutsideClick: () => true,
+        escapeDeactivates: () => false,
+        returnFocusOnDeactivate: () => true,
+        preventScroll: () => true,
+      }),
+    );
 
     addTodoModal.trap.activate();
+    // Sets the submitModalFn that is called by the submitModalHandler method
+    // defined on FormModal
     addTodoModal.setSubmitModalFn(addTodoModal.submitModalFn);
-  }
+  };
 
   return addTodoModal;
 }
 
-// The todo modal will have different values already set when opened based
-// on its callLocation and the locationAttributes that are passed along with it
+// Renders an AddTodoModal and specifies the location from which
+// the function was called and provides any additional information if needed
 export function renderAddTodoModal(callLocation, locationAttributes) {
   const addTodoModal = AddTodoModal(callLocation, locationAttributes);
   addTodoModal.initAddTodoModal();
 }
 
+// Handler attached to all elements inside the webpage that share the purpose
+// of opening a Todo form modal.
+// If the callLocation is the addButton located at the end of a todosList, it
+// sends a Todo modal request to be handled by a different module, since additional
+// logic needs to be handled in that scenario.
+// Otherwise, it just asks for a default addTodoModal to be rendered
 export function sendTodoModalRequest(e) {
-  // If the callLocation is the addButton located at the end of a todosList, ask the Controller to handle
-  // a complex modal request and provide the dataset.id of the 'content' container as an argument
   if (hasClass(e.target, "add-button")) {
     PubSub.publish("TODO_MODAL_REQUEST", getParentOf(e.target).dataset.id);
     return;

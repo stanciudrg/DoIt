@@ -1,7 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 
+//
 // The sorting methods always take into account whether a Todo is also filteredOut,
-// to keep them at the end of the array.
+// to keep it at the end of the array.
+//
+
 function sortByCreationDate() {
   return (todoA, todoB) => {
     const a = Number(todoA.get("filteredOut"));
@@ -44,6 +47,8 @@ function sortByPriority() {
   };
 }
 
+// Attaches the sorting functions to object properties to avoid using
+// conditional statements
 export const sortingMethods = {
   "creation-date": sortByCreationDate,
   "name": sortByName,
@@ -75,6 +80,8 @@ function filterByUncompleted() {
   return (todo) => todo.get("completedStatus") === true;
 }
 
+// Attaches the filtering functions to object properties to avoid using
+// conditional statements
 export const filterMethods = {
   "no-filter": filterByNone,
   "priority-one": filterByPriorityOne,
@@ -110,7 +117,7 @@ export const devCategoryProto = {
     return this.sortingMethod;
   },
   // 1. Gets the current sortingMethod property of the Category (defined by the Controller)
-  // 2. Uses the sortingMethod property name to access the property of the sortingMethods object
+  // 2. Uses the sortingMethod property name to access the same property on the sortingMethods object
   // 3. The property on the sortingMethods object refers to a function, therefore it calls it.
   // 4. The function returns a sorting function, which is passed to the sort() array method.
   // 5. The sort array method is called on the 'todos' array

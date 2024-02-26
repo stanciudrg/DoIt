@@ -58,6 +58,7 @@ export function checkDateInterval(type, dueDate) {
   // Ensures that date comparisons are not affected by hours, minutes, or seconds
   today.setHours(0, 0, 0, 0);
 
+    // See 'date-fns' JavaScript library documentation for more information regarding the methods used within this function
   if (type === "overdue") {
     return dueDate < today;
   }
@@ -76,7 +77,7 @@ export function checkDateInterval(type, dueDate) {
   return false;
 }
 
-// Scans the todo and calls the passed function with specific arguments based on conditional statements
+// Scans the todo and calls the passed function with different arguments based on conditional statements
 export function scanTodo(todo, fn) {
   const parsedDueDate = parseISO(todo.get("dueDate"));
   // If todo has a dueDate and that dueDate is the current date, run the function with the 'today' argument

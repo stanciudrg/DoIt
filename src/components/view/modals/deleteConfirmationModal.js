@@ -4,6 +4,8 @@ import { createDeleteTodosCheckbox, createElementWithClass } from "../creator";
 import FormModal from "./formModal";
 import { find, render, enableButton } from "../viewHelpers";
 
+// Creates a DeleteConfirmationModal object that inherits from FormModal and adds new DOM elements
+// and new functionality to its form element
 function DeleteConfirmationModal(name) {
   const deleteConfirmationModal = Object.create(
     FormModal("Delete confirmation", "delete-modal"),
@@ -12,6 +14,7 @@ function DeleteConfirmationModal(name) {
     "p",
     "delete-modal-paragraph",
   );
+  // Traps focus within the form
   deleteConfirmationModal.trap = focusTrap.createFocusTrap(
     deleteConfirmationModal.form,
     {
@@ -20,7 +23,7 @@ function DeleteConfirmationModal(name) {
       returnFocusOnDeactivate: () => true,
     },
   );
-
+  // Transforms the provided string
   deleteConfirmationModal.transformString = function transformString(string) {
     // Turn the string into an array...
     const array = Array.from(string);
@@ -35,7 +38,8 @@ function DeleteConfirmationModal(name) {
     }
     return array.join("");
   };
-
+  // This object's own closeModalFn that specifically manipulates the DOM
+  // elements and event listeners associated with it.
   deleteConfirmationModal.closeModalFn = function closeModalFn() {
     deleteConfirmationModal.trap.deactivate();
   };
@@ -48,12 +52,16 @@ function DeleteConfirmationModal(name) {
         deleteConfirmationModal.deleteParagraph,
       );
       deleteConfirmationModal.deleteParagraph.innerHTML = `Are you sure you want to permanently delete <strong>${deleteConfirmationModal.transformString(name)}</strong> ? `;
+      // Changes the name of the submit button to 'Edit' from the default
+      // 'Delete' and adds a new className to its classList
       deleteConfirmationModal.modifySubmitButton(
         "Delete",
         "confirm-delete-button",
       );
       enableButton(deleteConfirmationModal.submitButton);
       deleteConfirmationModal.trap.activate();
+      // Adds this closeModalFn to the list of additionalCloseModal functions
+      // that are called by the deleteSettings method on Modal
       deleteConfirmationModal.addAdditionalCloseModalFn(
         deleteConfirmationModal.closeModalFn,
       );
@@ -62,8 +70,11 @@ function DeleteConfirmationModal(name) {
   return deleteConfirmationModal;
 }
 
+// Creates an DeleteTodoModal object that inherits from DeleteConfirmationModal and adds
+// new functionality to its form elements.
 function DeleteTodoModal(todoID, todoName) {
   const deleteTodoModal = Object.create(DeleteConfirmationModal(todoName));
+  // This object's own submitModalFn that requests for the todo to be deleted
   deleteTodoModal.submitModalFn = function submitModalFn(e) {
     e.preventDefault();
     deleteTodoModal.closeModal();
@@ -72,26 +83,37 @@ function DeleteTodoModal(todoID, todoName) {
 
   deleteTodoModal.initDeleteTodoModal = function initDeleteTodoModal() {
     deleteTodoModal.initDeleteConfirmationModal();
+    // Sets the submitModalFn that is called by the submitModalHandler method
+    // defined on FormModal
     deleteTodoModal.setSubmitModalFn(deleteTodoModal.submitModalFn);
   };
 
   return deleteTodoModal;
 }
 
+// Renders a DeleteTodoModal for the specified todo
 export function renderDeleteTodoModal(todoID, todoName) {
   const deleteTodoModal = DeleteTodoModal(todoID, todoName);
   deleteTodoModal.initDeleteTodoModal();
 }
 
+// Creates an DeleteCategoryModal object that inherits from DeleteConfirmationModal and adds new DOM elements and
+// new functionality to its form elements.
+// hasTodos = whether the category has any todos
 function DeleteCategoryModal(categoryID, categoryName, hasTodos) {
   const deleteCategoryModal = Object.create(
     DeleteConfirmationModal(categoryName),
   );
+  // This object's own submitModalFn that requests for the category to be deleted
+  // and for its its containing todos to also be deleted, if applicable
   deleteCategoryModal.submitModalFn = function submitModalFn(e) {
     e.preventDefault();
     deleteCategoryModal.closeModal();
 
-    const deleteTodosCheckbox = find(deleteCategoryModal.fieldset, "#delete-todos");
+    const deleteTodosCheckbox = find(
+      deleteCategoryModal.fieldset,
+      "#delete-todos",
+    );
     if (deleteTodosCheckbox && deleteTodosCheckbox.checked) {
       PubSub.publish("DELETE_CONTAINING_TODOS_REQUEST", categoryID);
     }
@@ -102,6 +124,9 @@ function DeleteCategoryModal(categoryID, categoryName, hasTodos) {
   deleteCategoryModal.initDeleteCategoryModal =
     function initDeleteCategoryModal() {
       deleteCategoryModal.initDeleteConfirmationModal();
+      // If the category has any todos, render a custom checkbox that
+      // allows the user to specify whether they want for the containing todos
+      // to be deleted along with the category
       if (hasTodos) {
         const deleteTodosInputContainer = createDeleteTodosCheckbox();
         render(deleteCategoryModal.fieldset, deleteTodosInputContainer);
@@ -112,6 +137,7 @@ function DeleteCategoryModal(categoryID, categoryName, hasTodos) {
   return deleteCategoryModal;
 }
 
+// Renders a DeleteTodoModal for the specified category
 export function renderDeleteCategoryModal(categoryID, categoryName, hasTodos) {
   const deleteCategoryModal = DeleteCategoryModal(
     categoryID,

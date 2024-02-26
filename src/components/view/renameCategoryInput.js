@@ -11,6 +11,12 @@ import {
 } from "./viewHelpers";
 import { DOMCache } from "./DOMCache";
 
+// Factory function for creating RenameInputs
+// callLocation = the button that triggered this function / the button that opened the context menu from which
+// a button was clicked and this function was triggered
+// categoryID = the id of the category that is being renamed by RenameInput.
+// elementToReplace = the element that the RenameInput DOM representation is supposed to replace
+// currentName = the current name of the category that is supposed to be renamed by RenameInput
 function RenameInput(callLocation, categoryID, elementToReplace, currentName) {
   const renameInput = {};
   renameInput.field = createInput(
@@ -21,6 +27,7 @@ function RenameInput(callLocation, categoryID, elementToReplace, currentName) {
   );
   renameInput.input = find(renameInput.field, "input");
   renameInput.elementToReplace = null;
+  // Trap TAB focusing within the renameInput.field element
   renameInput.trap = focusTrap.createFocusTrap(renameInput.field, {
     allowOutsideClick: () => true,
     escapeDeactivates: () => false,
@@ -32,11 +39,14 @@ function RenameInput(callLocation, categoryID, elementToReplace, currentName) {
     enableInput(renameInput.input);
   };
 
+  // Prevents the discardChanges function from firing when user
+  // clicks the text input
   renameInput.preventPropagation = function preventPropagation(e) {
     e.stopImmediatePropagation();
   };
 
   renameInput.handleClickActions = function handleClickActions() {
+        // Discard changes if user tries to submit an empty field
     if (renameInput.input.value.trim().length === 0) {
       renameInput.discardChanges();
 
@@ -101,6 +111,7 @@ function RenameInput(callLocation, categoryID, elementToReplace, currentName) {
   return renameInput;
 }
 
+// Renders the RenameInput at the specified location
 function renderRenameInput(callLocation, categoryID) {
   // Find the relative location of callLocation to decide what element needs
   // to be replaced with the rename input
