@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/stanciudrg/restaurant-page#readme",
   "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "babel-loader": "^9.1.3",
     "css-loader": "^6.10.0",
     "css-minimizer-webpack-plugin": "^5.0.1",
     "eslint": "^8.56.0",
@@ -28,7 +31,7 @@
     "mini-css-extract-plugin": "^2.7.6",
     "prettier": "3.2.5",
     "svg-inline-loader": "^0.8.2",
-    "webpack": "^5.89.0",
+    "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
   },
