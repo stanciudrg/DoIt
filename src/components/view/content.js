@@ -202,7 +202,7 @@ export function updateTodoIndex(todoID, index) {
   ).dataset.index = index;
 }
 
-// Moves a Todo DOM element at a specified index. 
+// Moves a Todo DOM element at a specified index.
 export function moveTodoElement(todoID, index) {
   const currentContent = categoriesContent[getCurrentContentID()];
   const todoElement = find(currentContent, `[data-id="${todoID}"]`);
@@ -232,7 +232,7 @@ export function renderTodoElementExpander(todoID) {
   render(todoItem, todoExpander);
 }
 
-// Deletes the button that allows the user to request additional information about the todo, 
+// Deletes the button that allows the user to request additional information about the todo,
 // from the todo
 export function deleteTodoElementExpander(todoID) {
   const todoItem = find(
@@ -366,13 +366,16 @@ export function deleteTodoDescription(todoID) {
 export function renderTodoPriority(todoID, value) {
   const additionalFeatureContainer = getAdditionalFeatureContainer(todoID);
   const priority = Creator.createTodoPriority(value);
-  render(additionalFeatureContainer, priority);
+  additionalFeatureContainer.prepend(priority);
 }
 
 export function updateTodoPriority(todoID, value) {
-  const todoElement = find(categoriesContent[getCurrentContentID()], `[data-id="${todoID}"]`);
+  const todoElement = find(
+    categoriesContent[getCurrentContentID()],
+    `[data-id="${todoID}"]`,
+  );
   const todoPriority = todoElement.querySelector("[class^='todo-priority']");
-  todoPriority.className = '';
+  todoPriority.className = "";
   addClass(todoPriority, `todo-priority-${value}`);
   updateTextContent(
     find(
@@ -390,6 +393,14 @@ export function deleteTodoPriority(todoID) {
 export function renderTodoDueDate(todoID, value) {
   const additionalFeatureContainer = getAdditionalFeatureContainer(todoID);
   const dueDate = Creator.createTodoDueDate(value);
+
+  const todoCategory = find(additionalFeatureContainer, ".todo-category");
+
+  if (todoCategory) {
+    additionalFeatureContainer.insertBefore(dueDate, todoCategory);
+    return;
+  }
+
   render(additionalFeatureContainer, dueDate);
 }
 
