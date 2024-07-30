@@ -12,3 +12,5 @@ Additionally, Do It keeps track of time and verifies the due date of your Todos 
 Todos are also manually moved in and out of the 'Today' and 'Next 7 days' Categories when needed.
 
 This app is a work in progress, and more features will be added in the future.
+
+![Do-It](https://github.com/stanciudrg/do-it/assets/103588717/30c3f660-3011-42cd-a7bf-f4a4866f39aa)
